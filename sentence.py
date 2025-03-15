@@ -2,12 +2,18 @@ import random
 from citation_utils import get_citation_note
 from data import philosophers, concepts, terms, philosopher_concepts, contexts
 
+# Expanded list of introduction templates to reduce repetition
 introduction_templates = [
     "This paper explores the relationship between {term} and {concept} in the context of {context}.",
     "In recent years, there has been a growing interest in {term}, particularly in the field of {context}.",
     "This study aims to examine how {concept} influences {term} within {context}.",
     "The following analysis situates {concept} within the broader discourse of {term} in {context}.",
-    "It is worth noting that {concept} has become central to understanding {term} in {context}."
+    "It is worth noting that {concept} has become central to understanding {term} in {context}.",
+    "Recent scholarship has increasingly focused on {term}, especially within {context}.",
+    "The intersection of {concept} and {term} offers new insights into {context}.",
+    "By examining {concept} through the lens of {term}, this paper contributes to {context}.",
+    "Understanding {term} requires a nuanced approach to {concept}, particularly in {context}.",
+    "This analysis delves into {concept}'s role in shaping {term} within {context}."
 ]
 
 general_templates = [
@@ -42,9 +48,9 @@ def capitalize_first_word(sentence):
         words[0] = words[0].capitalize()
     return ' '.join(words)
 
-def generate_sentence(template_type, references, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], is_first_sentence=False):
+def generate_sentence(template_type, references, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[]):
     """
-    Generates a sentence based on the template type and applies capitalization if it's the first sentence.
+    Generates a sentence based on the template type.
     
     Args:
         template_type (str): Type of sentence ("introduction", "general", "conclusion").
@@ -52,7 +58,6 @@ def generate_sentence(template_type, references, forbidden_philosophers=[], forb
         forbidden_philosophers (list): Philosophers to exclude.
         forbidden_concepts (list): Concepts to exclude.
         forbidden_terms (list): Terms to exclude.
-        is_first_sentence (bool): If True, capitalize the first word.
     
     Returns:
         tuple: (sentence_parts, used_items) where sentence_parts is a list of (text, citation) pairs.
@@ -93,9 +98,8 @@ def generate_sentence(template_type, references, forbidden_philosophers=[], forb
         citation_note = get_citation_note(reference)
         sentence = sentence.replace('[citation]', citation_note)
     
-    # Capitalize first word if it's the first sentence
-    if is_first_sentence:
-        sentence = capitalize_first_word(sentence)
+    # Always capitalize the first word of every sentence for consistency
+    sentence = capitalize_first_word(sentence)
     
     # Strip any leading/trailing spaces and normalize to ensure no extra spaces
     sentence = ' '.join(sentence.split())
