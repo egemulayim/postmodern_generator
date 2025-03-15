@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help improve the generator
 title: "[BUG]"
-labels: bug, duplicate, help wanted, invalid, question, wontfix
+labels: bug
 assignees: egemulayim
 
 ---
