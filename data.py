@@ -252,6 +252,50 @@ philosopher_concepts = {
 }
     # Add more philosophers and their concepts as needed
 
+# Quotes dictionary: maps philosopher full names to lists of their quotes
+quotes = {
+    "Jacques Derrida": [
+        "There is nothing outside the text.",
+        "Deconstruction is not a method, and cannot be transformed into one."
+    ],
+    "Michel Foucault": [
+        "Power is everywhere; not because it embraces everything, but because it comes from everywhere.",
+        "Where there is power, there is resistance."
+    ],
+    "Jean Baudrillard": [
+        "We live in a world where there is more and more information, and less and less meaning.",
+        "The simulacrum is never that which conceals the truth—it is the truth which conceals that there is none."
+    ],
+    "Julia Kristeva": [
+        "The speaking subject gives herself away in her speech.",
+        "Women's writing is a double-edged weapon."
+    ],
+    "Jean-François Lyotard": [
+        "Simplifying to the extreme, I define postmodern as incredulity toward metanarratives.",
+        "Knowledge is and will be produced in order to be sold."
+    ],
+    "Roland Barthes": [
+        "The death of the author is the birth of the reader.",
+        "Language is a skin: I rub my language against the other."
+    ],
+    "Gilles Deleuze": [
+        "A concept is a brick. It can be used to build a courthouse of reason. Or it can be thrown through the window.",
+        "The rhizome is an antigenealogy."
+    ],
+    "Judith Butler": [
+        "Gender is not something one is, it is something one does.",
+        "There is no gender identity behind the expressions of gender."
+    ],
+    "Donna Haraway": [
+        "The cyborg is a creature in a post-gender world.",
+        "We are all chimeras, theorized and fabricated hybrids of machine and organism."
+    ],
+    "Richard Rorty": [
+        "Truth is made rather than found.",
+        "The world does not speak. Only we do."
+    ]
+}
+
 # Lists of first names
 first_names = [
     "John", "Jane", "Michael", "Emily", "David", "Sarah", "Robert", "Laura",
