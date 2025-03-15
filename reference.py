@@ -1,4 +1,3 @@
-# reference.py
 import random
 from data import first_names, last_names, adjectives, nouns, theories, contexts, publishers
 

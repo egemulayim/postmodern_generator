@@ -1,4 +1,3 @@
-# sentence.py
 import random
 from data import philosophers, concepts, terms, philosopher_concepts, contexts
 

@@ -1,4 +1,3 @@
-# main.py
 from essay import generate_essay
 
 if __name__ == "__main__":

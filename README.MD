@@ -74,3 +74,12 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Acknowledgements
 
 I would like to thank Andrew C. Bulhak, the original creator of The Postmodernism Generator, for the inspiration and foundational work that made this project possible.
+
+## Roadmap
+
+The following features and improvements are planned for future releases:
+
+- Enhanced Text Generation: Improve the linguistic and contextual relevancy to generate more coherent and contextually diverse text.
+- User Interface: Develop a web-based user interface for easier interaction with the generator.
+- Additional Datasets: Incorporate more datasets to expand the variety of generated content.
+- Configuration Options: Provide more configuration options to customize the text generation process.

@@ -1,4 +1,3 @@
-# section.py
 from paragraph import generate_paragraph
 import random
 

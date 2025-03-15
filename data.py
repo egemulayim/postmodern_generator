@@ -1,4 +1,3 @@
-# data.py
 philosophers = [
     "Jean Baudrillard", "Michel Foucault", "Jacques Derrida", "Gilles Deleuze", "Félix Guattari",
     "Judith Butler", "Donna Haraway", "Fredric Jameson", "Jean-François Lyotard", "Slavoj Žižek",

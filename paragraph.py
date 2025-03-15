@@ -1,4 +1,3 @@
-# paragraph.py
 import random
 from sentence import generate_sentence
 from data import philosophers, concepts, terms, philosopher_concepts
