@@ -1,4 +1,4 @@
-# Postmodern Generator
+# The Postmodern Generator v0.2
 
 Welcome to The Postmodern Generator project! This repository contains the source code for a unique text generator that produces postmodern-style content. This README file will guide you through the setup, usage, and contribution process for the project.
 

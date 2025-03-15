@@ -16,6 +16,7 @@ introduction_templates = [
     "This analysis delves into {concept}'s role in shaping {term} within {context}."
 ]
 
+# Expanded general templates to include more sophisticated language
 general_templates = [
     "{philosopher} argues that {concept} is pivotal to rethinking {term}.",
     "According to {philosopher}, {concept} disrupts conventional understandings of {term}.",
@@ -28,7 +29,10 @@ general_templates = [
     "{term} serves as a backdrop for {philosopher}'s exploration of {concept}.",
     "Through {concept}, {philosopher} critiques the underpinnings of {term}. [citation]",
     "{philosopher} situates {concept} within a broader discourse of {term}.",
-    "The interplay between {concept} and {term} is a recurring theme in {philosopher}'s work."
+    "The interplay between {concept} and {term} is a recurring theme in {philosopher}'s work.",
+    "This analysis interrogates the différance within {concept}, as {philosopher} suggests, in relation to {term}.",
+    "In light of {philosopher}'s work, {concept} emerges as a site of contestation for {term}.",
+    "The trace of {concept} in {philosopher}'s texts reveals its entanglement with {term}."
 ]
 
 conclusion_templates = [
@@ -36,7 +40,12 @@ conclusion_templates = [
     "These findings have significant implications for {context}, particularly in relation to {concept}.",
     "In summary, the analysis highlights the importance of {term} in the context of {concept}.",
     "This paper has shown that {concept} reshapes our approach to {term} within {context}.",
-    "Future research should explore the implications of {concept} for {term} in {context}."
+    "Future research should explore the implications of {concept} for {term} in {context}.",
+    "The interplay between {concept} and {term} is central to understanding {context}, as this study has shown.",
+    "By examining {term} through the lens of {concept}, this paper contributes to a deeper understanding of {context}.",
+    "The findings suggest that {concept} is a key factor in shaping {term}, with important consequences for {context}.",
+    "This analysis reveals that {term} is deeply influenced by {concept}, challenging traditional views in {context}.",
+    "In light of these results, it is clear that {concept} must be considered in any comprehensive study of {term} within {context}."
 ]
 
 def capitalize_first_word(sentence):

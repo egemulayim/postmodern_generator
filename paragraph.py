@@ -29,11 +29,13 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
     used_terms = set(forbidden_terms)
     for i in range(num_sentences):
         sentence_parts, used_items = generate_sentence(template_type, references, list(used_philosophers), list(used_concepts), list(used_terms))
-        # Collect only the text parts
         text = sentence_parts[0][0]  # Since it's a list with one element (sentence, None)
         # Add transitional word with 30% probability for non-first sentences
         if i > 0 and random.random() < 0.3:
             transitional_word = random.choice(transitional_words)
+            # Ensure the first word of text is lowercase
+            if text:
+                text = text[0].lower() + text[1:] if text else text
             text = f"{transitional_word}, {text}"
         paragraph_sentences.append(text)
         used_philosophers.update([item for item in used_items if item in philosophers])
