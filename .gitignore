@@ -5,3 +5,15 @@ __pycache__/paragraph.cpython-313.pyc
 __pycache__/sentence.cpython-313.pyc
 __pycache__/reference.cpython-313.pyc
 __pycache__/citation_utils.cpython-313.pyc
+
+# Virtual environment
+venv/
+
+# Log files
+*.log
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# IDE specific files
+.vscode/
