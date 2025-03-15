@@ -2,50 +2,51 @@ import random
 from citation_utils import get_citation_note
 from data import philosophers, concepts, terms, philosopher_concepts, contexts
 
-# Expanded list of introduction templates to reduce repetition
+# Expanded introduction templates for variety and sophistication
 introduction_templates = [
-    "This paper explores the relationship between {term} and {concept} in the context of {context}.",
-    "In recent years, there has been a growing interest in {term}, particularly in the field of {context}.",
-    "This study aims to examine how {concept} influences {term} within {context}.",
-    "The following analysis situates {concept} within the broader discourse of {term} in {context}.",
-    "It is worth noting that {concept} has become central to understanding {term} in {context}.",
-    "Recent scholarship has increasingly focused on {term}, especially within {context}.",
-    "The intersection of {concept} and {term} offers new insights into {context}.",
-    "By examining {concept} through the lens of {term}, this paper contributes to {context}.",
-    "Understanding {term} requires a nuanced approach to {concept}, particularly in {context}.",
-    "This analysis delves into {concept}'s role in shaping {term} within {context}."
+    "This paper explores the intricate relationship between {term} and {concept} within the discursive field of {context}.",
+    "In recent scholarly endeavors, {term} has emerged as a focal point, particularly within the ambit of {context}.",
+    "This study seeks to interrogate the modalities through which {concept} shapes {term} in {context}.",
+    "The ensuing analysis situates {concept} within the broader epistemic terrain of {term} in {context}.",
+    "It merits consideration that {concept} has assumed a pivotal role in elucidating {term} within {context}.",
+    "Contemporary discourse increasingly gravitates toward {term}, especially when viewed through {context}.",
+    "The confluence of {concept} and {term} yields novel insights into the fabric of {context}.",
+    "By refracting {concept} through the prism of {term}, this paper enriches the discourse of {context}.",
+    "To apprehend {term} fully, one must adopt a nuanced engagement with {concept} in {context}.",
+    "This inquiry probes {concept}'s constitutive role in the reconfiguration of {term} within {context}."
 ]
 
-# Expanded general templates to include more sophisticated language
+# Expanded general templates with postmodern-inspired complexity
 general_templates = [
-    "{philosopher} argues that {concept} is pivotal to rethinking {term}.",
-    "According to {philosopher}, {concept} disrupts conventional understandings of {term}.",
-    "In the framework of {term}, {concept} emerges as a critical lens. [citation]",
-    "{concept}, as articulated by {philosopher}, reconfigures our approach to {term}.",
-    "{philosopher1} and {philosopher2} offer contrasting interpretations of {concept} within {term}.",
-    "Critics suggest that {philosopher}'s {concept} fails to account for nuances in {term}. [citation]",
-    "Does {concept} adequately address {term}, as {philosopher} contend?",
-    "The notion of {concept} in {philosopher}'s oeuvre illuminates {term}.",
-    "{term} serves as a backdrop for {philosopher}'s exploration of {concept}.",
-    "Through {concept}, {philosopher} critiques the underpinnings of {term}. [citation]",
-    "{philosopher} situates {concept} within a broader discourse of {term}.",
-    "The interplay between {concept} and {term} is a recurring theme in {philosopher}'s work.",
-    "This analysis interrogates the différance within {concept}, as {philosopher} suggests, in relation to {term}.",
-    "In light of {philosopher}'s work, {concept} emerges as a site of contestation for {term}.",
-    "The trace of {concept} in {philosopher}'s texts reveals its entanglement with {term}."
+    "{philosopher} posits that {concept} serves as a linchpin in reimagining {term}.",
+    "For {philosopher}, {concept} destabilizes the sedimented meanings of {term}.",
+    "Within the ambit of {term}, {concept} emerges as a site of epistemic rupture. [citation]",
+    "{concept}, as {philosopher} delineates, reorients our engagement with {term}.",
+    "{philosopher1} and {philosopher2} proffer divergent readings of {concept} vis-à-vis {term}.",
+    "Certain critics aver that {philosopher}'s {concept} elides critical dimensions of {term}. [citation]",
+    "Can {concept}, as {philosopher} contends, fully encapsulate the complexities of {term}?",
+    "In {philosopher}'s corpus, {concept} casts a revelatory light upon {term}.",
+    "{term} functions as the ground against which {philosopher} articulates {concept}.",
+    "Through the lens of {concept}, {philosopher} interrogates the foundational axioms of {term}. [citation]",
+    "{philosopher} embeds {concept} within the expansive discourse of {term}.",
+    "The dialectical interplay of {concept} and {term} recurs throughout {philosopher}'s oeuvre.",
+    "This analysis probes the différance inherent in {concept}, per {philosopher}, relative to {term}.",
+    "In {philosopher}'s schema, {concept} constitutes a contested terrain for {term}.",
+    "The trace of {concept} within {philosopher}'s texts unveils its imbrication with {term}."
 ]
 
+# Expanded conclusion templates for cohesion and variety
 conclusion_templates = [
-    "In conclusion, this study has demonstrated that {concept} plays a crucial role in understanding {term}.",
-    "These findings have significant implications for {context}, particularly in relation to {concept}.",
-    "In summary, the analysis highlights the importance of {term} in the context of {concept}.",
-    "This paper has shown that {concept} reshapes our approach to {term} within {context}.",
-    "Future research should explore the implications of {concept} for {term} in {context}.",
-    "The interplay between {concept} and {term} is central to understanding {context}, as this study has shown.",
-    "By examining {term} through the lens of {concept}, this paper contributes to a deeper understanding of {context}.",
-    "The findings suggest that {concept} is a key factor in shaping {term}, with important consequences for {context}.",
-    "This analysis reveals that {term} is deeply influenced by {concept}, challenging traditional views in {context}.",
-    "In light of these results, it is clear that {concept} must be considered in any comprehensive study of {term} within {context}."
+    "In summation, this inquiry has elucidated the indelible role of {concept} in apprehending {term}.",
+    "These findings bear profound implications for {context}, particularly through the prism of {concept}.",
+    "To conclude, this analysis underscores the salience of {term} vis-à-vis {concept}.",
+    "This study has demonstrated that {concept} fundamentally reconfigures our approach to {term} in {context}.",
+    "Future scholarship might fruitfully explore {concept}'s ramifications for {term} within {context}.",
+    "The symbiosis of {concept} and {term} proves essential to grasping {context}, as evidenced herein.",
+    "By traversing {term} through {concept}, this paper augments our understanding of {context}.",
+    "The results intimate that {concept} is a decisive vector in the constitution of {term} within {context}.",
+    "This examination reveals {term}'s profound entanglement with {concept}, upending orthodoxies in {context}.",
+    "Ultimately, these insights affirm that {concept} is indispensable to any rigorous study of {term} in {context}."
 ]
 
 def capitalize_first_word(sentence):
@@ -59,17 +60,18 @@ def capitalize_first_word(sentence):
 
 def generate_sentence(template_type, references, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[]):
     """
-    Generates a sentence based on the template type.
-    
+    Generates a sentence based on the specified template type.
+
     Args:
         template_type (str): Type of sentence ("introduction", "general", "conclusion").
         references (list): List of citation references.
         forbidden_philosophers (list): Philosophers to exclude.
         forbidden_concepts (list): Concepts to exclude.
         forbidden_terms (list): Terms to exclude.
-    
+
     Returns:
-        tuple: (sentence_parts, used_items) where sentence_parts is a list of (text, citation) pairs.
+        tuple: (sentence_parts, used_items) where sentence_parts is a list of (text, citation) pairs,
+               and used_items is a list of terms/concepts/philosophers used.
     """
     if template_type == "introduction":
         template = random.choice(introduction_templates)
@@ -100,17 +102,17 @@ def generate_sentence(template_type, references, forbidden_philosophers=[], forb
             'philosopher2': random.choice([p for p in philosophers if p != philosopher and p not in forbidden_philosophers])
         }
         sentence = template.format(**data)
-    
+
     # Handle citations
     if '[citation]' in sentence:
         reference = random.choice(references)
         citation_note = get_citation_note(reference)
         sentence = sentence.replace('[citation]', citation_note)
-    
-    # Always capitalize the first word of every sentence for consistency
+
+    # Ensure proper capitalization
     sentence = capitalize_first_word(sentence)
-    
-    # Strip any leading/trailing spaces and normalize to ensure no extra spaces
+
+    # Normalize spacing
     sentence = ' '.join(sentence.split())
-    
+
     return [(sentence, None)], [term, concept] if template_type in ['introduction', 'conclusion'] else [philosopher, concept, term]
