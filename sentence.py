@@ -1,4 +1,6 @@
+# sentence.py
 import random
+from citation_utils import get_citation_note
 from data import philosophers, concepts, terms, philosopher_concepts, contexts
 
 introduction_templates = [
@@ -16,7 +18,7 @@ general_templates = [
     "{concept}, as articulated by {philosopher}, reconfigures our approach to {term}.",
     "{philosopher1} and {philosopher2} offer contrasting interpretations of {concept} within {term}.",
     "Critics suggest that {philosopher}'s {concept} fails to account for nuances in {term}. [citation]",
-    "Does {concept} adequately address {term}, as {philosopher} contends?",
+    "Does {concept} adequately address {term}, as {philosopher} contend?",
     "The notion of {concept} in {philosopher}'s oeuvre illuminates {term}.",
     "{term} serves as a backdrop for {philosopher}'s exploration of {concept}.",
     "Through {concept}, {philosopher} critiques the underpinnings of {term}. [citation]",
@@ -86,28 +88,17 @@ def generate_sentence(template_type, references, forbidden_philosophers=[], forb
         }
         sentence = template.format(**data)
     
-    # Capitalize the first word if this is the first sentence
+    # Handle citations
+    if '[citation]' in sentence:
+        reference = random.choice(references)
+        citation_note = get_citation_note(reference)
+        sentence = sentence.replace('[citation]', citation_note)
+    
+    # Capitalize first word if it's the first sentence
     if is_first_sentence:
         sentence = capitalize_first_word(sentence)
     
-    # Strip leading and trailing spaces to ensure no extra spaces
-    sentence = sentence.strip()
+    # Strip any leading/trailing spaces and normalize to ensure no extra spaces
+    sentence = ' '.join(sentence.split())
     
-    # Handle citations
-    sentence_parts = []
-    if '[citation]' in sentence:
-        reference = random.choice(references)
-        # Split sentence into parts around [citation] if it's still there (shouldn't be after format)
-        parts = sentence.split('[citation]')
-        for i, part in enumerate(parts):
-            part = part.strip()  # Strip each part to remove any extra spaces
-            if part:  # Only add non-empty parts
-                sentence_parts.append((part, None if i == len(parts)-1 else None))
-        citation_text = str(reference).strip()  # Ensure citation has no extra spaces
-        sentence_parts.append((citation_text, None))  # Add citation as part of the sentence
-    else:
-        sentence_parts.append((sentence, None))
-    
-    # Track used items for exclusion in future calls
-    used_items = [term, concept] if template_type in ['introduction', 'conclusion'] else [philosopher, concept, term]
-    return sentence_parts, used_items
+    return [(sentence, None)], [term, concept] if template_type in ['introduction', 'conclusion'] else [philosopher, concept, term]

@@ -1,14 +1,17 @@
+# essay.py
 import random
 from collections import Counter
 from paragraph import generate_paragraph
 from data import philosophers, concepts, terms, contexts, adjectives
 from reference import generate_reference
+from citation_utils import notes
 
 # List of trivial words (not capitalized unless first word or after a colon)
 TRIVIAL_WORDS = {"a", "an", "the", "into", "to", "of", "for", "on", "by", "with", "in", "and", "but", "or"}
 
 def apply_title_case(title):
     """Applies academic title case to a string."""
+    title = title.strip()
     words = title.split()
     result = []
     capitalize_next = True  # Capitalize the first word
@@ -18,9 +21,8 @@ def apply_title_case(title):
             result.append(word.capitalize())
         else:
             result.append(word.lower())
-        # Capitalize the next word if this one ends with a colon
         capitalize_next = word.endswith(":")
-
+    
     return " ".join(result)
 
 def generate_section_title(section_parts):
@@ -29,20 +31,16 @@ def generate_section_title(section_parts):
     term_count = Counter()
     
     for part in section_parts:
-        text = part[0] if isinstance(part, tuple) else part
-        # Remove placeholders
+        text = part.strip()
         text = text.replace("[citation]", "").replace("[reflection]", "").strip()
-        # Normalize text to handle punctuation
         text = text.replace(".", "").replace(",", "").lower()
         words = text.split()
         
-        # Check for philosopher names (which might be multi-word)
         for ph in philosophers:
             ph_lower = ph.lower()
             if ph_lower in text:
                 philosopher_count[ph] += 1
         
-        # Check for concepts and terms (assuming they are single words)
         for word in words:
             word_lower = word.lower()
             if word_lower in [c.lower() for c in concepts]:
@@ -50,16 +48,13 @@ def generate_section_title(section_parts):
             if word_lower in [t.lower() for t in terms]:
                 term_count[word] += 1
     
-    # Get the most common items
     top_philosophers = [ph for ph, _ in philosopher_count.most_common(2)]
     top_concepts = [c for c, _ in concept_count.most_common(2)]
     top_terms = [t for t, _ in term_count.most_common(2)]
     
-    # If no specific content is found, use a generic title
     if not (top_philosophers or top_concepts or top_terms):
         raw_title = "Speculative Reflections"
     else:
-        # Title templates
         templates = [
             "Exploring {concept} in {philosopher}'s Thought",
             "{term} and Its Implications for {concept}",
@@ -73,15 +68,13 @@ def generate_section_title(section_parts):
         ]
         template = random.choice(templates)
         
-        # Fill template with top items
         philosopher = random.choice(top_philosophers) if top_philosophers else "Contemporary Theory"
         concept = random.choice(top_concepts) if top_concepts else "Postmodernism"
         term = random.choice(top_terms) if top_terms else "Discourse"
-        context = random.choice(contexts)  # Use contexts list for variety
+        context = random.choice(contexts)
         
         raw_title = template.format(philosopher=philosopher, concept=concept, term=term, context=context)
     
-    # Apply title case to the raw title
     return apply_title_case(raw_title)
 
 def generate_title():
@@ -89,7 +82,6 @@ def generate_title():
     term = random.choice(terms)
     adjective = random.choice(adjectives)
     raw_title = f"unraveling {concept}: a {adjective} inquiry into {term}"
-    # Apply title case to the raw title
     return apply_title_case(raw_title)
 
 def generate_essay():
@@ -98,38 +90,33 @@ def generate_essay():
 
     # Title
     title = generate_title()
-    essay_parts.append((f"# {title}\n\n", None))
+    essay_parts.append(f"# {title}\n\n")
 
     # Introduction: 6-8 sentences
-    intro_parts = generate_paragraph("introduction", random.randint(6, 8), references)
-    essay_parts.append(("## Introduction\n\n", None))
-    essay_parts.extend(intro_parts)
-    essay_parts.append(("\n\n", None))
+    intro_text = generate_paragraph("introduction", random.randint(6, 8), references)
+    essay_parts.append("## Introduction\n\n")
+    essay_parts.append(intro_text + "\n\n")
 
     # Body sections: 3-5 sections with 2-3 paragraphs each, 6-10 sentences per paragraph
     num_body_sections = random.randint(3, 5)
     for _ in range(num_body_sections):
-        section_parts = []
-        for _ in range(random.randint(2, 3)):  # 2-3 paragraphs per section
-            paragraph_parts = generate_paragraph("general", random.randint(6, 10), references)
-            section_parts.extend(paragraph_parts)
-        section_title = generate_section_title(section_parts)  # Generate dynamic title with title case
-        essay_parts.append((f"## {section_title}\n\n", None))
-        essay_parts.extend(section_parts)
-        essay_parts.append(("\n\n", None))
+        section_paragraphs = []
+        for _ in range(random.randint(2, 3)):
+            paragraph_text = generate_paragraph("general", random.randint(6, 10), references)
+            section_paragraphs.append(paragraph_text)
+        section_title = generate_section_title(section_paragraphs)
+        essay_parts.append(f"## {section_title}\n\n")
+        essay_parts.append('\n\n'.join(section_paragraphs) + "\n\n")
 
     # Conclusion: 6-8 sentences
-    conclusion_parts = generate_paragraph("conclusion", random.randint(6, 8), references)
-    essay_parts.append(("## Conclusion\n\n", None))
-    essay_parts.extend(conclusion_parts)
-    essay_parts.append(("\n\n", None))
+    conclusion_text = generate_paragraph("conclusion", random.randint(6, 8), references)
+    essay_parts.append("## Conclusion\n\n")
+    essay_parts.append(conclusion_text + "\n\n")
 
-    # Notes section
-    notes_section = "## Notes\n\n"
-    for i, ref in enumerate(references, 1):
-        notes_section += f"{i}. {ref}\n"
-    essay_parts.append((notes_section, None))
+    # Notes section (modified to remove double numbering)
+    notes_section = "## Notes\n\n" + "\n".join(notes) + "\n"
+    essay_parts.append(notes_section)
 
     # Combine everything
-    essay_text = "".join([part[0] for part in essay_parts])
+    essay_text = ''.join(essay_parts)
     return essay_text
