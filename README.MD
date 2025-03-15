@@ -22,6 +22,7 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 - **Text Generation**: Generate postmodern-style text with a single command.
 - **Customizable**: Adjust parameters to influence the style and complexity of the generated text.
 - **Extensible**: Easily extend the generator with new datasets, functions, and algorithms.
+- **Lightweight**: This project does not use large language models (LLMs) and is lightweight to run locally.
 
 ## Installation
 
