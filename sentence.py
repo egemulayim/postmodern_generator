@@ -32,21 +32,42 @@ conclusion_templates = [
     "Future research should explore the implications of {concept} for {term} in {context}."
 ]
 
-def generate_sentence(template_type, references, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[]):
+def capitalize_first_word(sentence):
+    """Capitalizes the first letter of the first word in a sentence."""
+    if not sentence:
+        return sentence
+    words = sentence.split()
+    if words:
+        words[0] = words[0].capitalize()
+    return ' '.join(words)
+
+def generate_sentence(template_type, references, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], is_first_sentence=False):
+    """
+    Generates a sentence based on the template type and applies capitalization if it's the first sentence.
+    
+    Args:
+        template_type (str): Type of sentence ("introduction", "general", "conclusion").
+        references (list): List of citation references.
+        forbidden_philosophers (list): Philosophers to exclude.
+        forbidden_concepts (list): Concepts to exclude.
+        forbidden_terms (list): Terms to exclude.
+        is_first_sentence (bool): If True, capitalize the first word.
+    
+    Returns:
+        tuple: (sentence_parts, used_items) where sentence_parts is a list of (text, citation) pairs.
+    """
     if template_type == "introduction":
         template = random.choice(introduction_templates)
         term = random.choice([t for t in terms if t not in forbidden_terms])
         concept = random.choice([c for c in concepts if c not in forbidden_concepts])
         context = random.choice(contexts)
         sentence = template.format(term=term, concept=concept, context=context)
-        return [(sentence, None)], [term, concept]
     elif template_type == "conclusion":
         template = random.choice(conclusion_templates)
         term = random.choice([t for t in terms if t not in forbidden_terms])
         concept = random.choice([c for c in concepts if c not in forbidden_concepts])
         context = random.choice(contexts)
         sentence = template.format(term=term, concept=concept, context=context)
-        return [(sentence, None)], [term, concept]
     else:  # general
         template = random.choice(general_templates)
         philosopher = random.choice([p for p in philosophers if p not in forbidden_philosophers])
@@ -57,20 +78,28 @@ def generate_sentence(template_type, references, forbidden_philosophers=[], forb
             concept = random.choice([c for c in concepts if c not in forbidden_concepts])
         term = random.choice([t for t in terms if t not in forbidden_terms])
         data = {
-            "philosopher": philosopher,
-            "concept": concept,
-            "term": term,
-            "philosopher1": philosopher,
-            "philosopher2": random.choice([p for p in philosophers if p != philosopher and p not in forbidden_philosophers])
+            'philosopher': philosopher,
+            'concept': concept,
+            'term': term,
+            'philosopher1': philosopher,
+            'philosopher2': random.choice([p for p in philosophers if p != philosopher and p not in forbidden_philosophers])
         }
-        sentence_parts = []
-        if "[citation]" in template:
-            reference = random.choice(references)
-            sentence = template.replace("[citation]", "").format(**data)
-            sentence_parts.append((sentence, None))
-            sentence_parts.append(("[citation]", str(reference)))
-        else:
-            sentence = template.format(**data)
-            sentence_parts.append((sentence, None))
-        used_items = [philosopher, concept, term]
-        return sentence_parts, used_items
+        sentence = template.format(**data)
+    
+    # Capitalize the first word if this is the first sentence
+    if is_first_sentence:
+        sentence = capitalize_first_word(sentence)
+    
+    # Handle citations
+    sentence_parts = []
+    if '[citation]' in sentence:
+        reference = random.choice(references)
+        sentence = sentence.replace('[citation]', '')
+        sentence_parts.append((sentence, None))
+        sentence_parts.append(('[citation]', str(reference)))
+    else:
+        sentence_parts.append((sentence, None))
+    
+    # Track used items for exclusion in future calls
+    used_items = [term, concept] if template_type in ['introduction', 'conclusion'] else [philosopher, concept, term]
+    return sentence_parts, used_items
