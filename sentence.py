@@ -74,7 +74,7 @@ def generate_sentence(template_type, references, forbidden_philosophers=[], forb
         template = random.choice(general_templates)
         philosopher = random.choice([p for p in philosophers if p not in forbidden_philosophers])
         if philosopher in philosopher_concepts:
-            related_concepts = [c for c in philosopher_concepts[philosopher][0] if c not in forbidden_concepts]
+            related_concepts = [c for c in philosopher_concepts[philosopher] if c not in forbidden_concepts]
             concept = random.choice(related_concepts) if related_concepts else random.choice([c for c in concepts if c not in forbidden_concepts])
         else:
             concept = random.choice([c for c in concepts if c not in forbidden_concepts])
