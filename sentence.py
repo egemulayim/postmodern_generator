@@ -1,3 +1,4 @@
+# sentence.py
 import random
 from data import philosophers, concepts, terms, philosopher_concepts, contexts
 
@@ -89,6 +90,9 @@ def generate_sentence(template_type, references, forbidden_philosophers=[], forb
     # Capitalize the first word if this is the first sentence
     if is_first_sentence:
         sentence = capitalize_first_word(sentence)
+    
+    # Strip any leading/trailing spaces and normalize to ensure no extra spaces
+    sentence = ' '.join(sentence.split())
     
     # Handle citations
     sentence_parts = []
