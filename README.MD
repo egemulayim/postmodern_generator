@@ -11,6 +11,7 @@ Welcome to The Postmodern Generator project! This repository contains the source
 - [Contributing](#contributing)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
+- [Known Issues](#known-issues)
 
 ## Introduction
 
@@ -75,7 +76,12 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 I would like to thank Andrew C. Bulhak, the original creator of The Postmodernism Generator, for the inspiration and foundational work that made this project possible.
 
-## Roadmap
+## Known Issues
+
+- **Redundant Phrases**: The generated text may sometimes include redundant use of synonymous words and phrases back to back, which can hinder factuality and comprehension. This issue is known and is being actively worked on to improve the quality of the generated content.
+- **Overly Generic Phrasing**: Some generated text may be overly generic, which can reduce the uniqueness and impact of the content. This issue is also being addressed.
+
+## Roadmap
 
 The following features and improvements are planned for future releases:
 
