@@ -65,7 +65,7 @@ Contributions to The Postmodern Generator project are welcome! To contribute, fo
     ```bash
     git push origin feature-name
     ```
-5. Create a pull request on the main rpython [main.py](http://_vscodecontentref_/2) --length 500 --style complexepository.
+5. Create a pull request on the main repository.
 
 ## License
 
