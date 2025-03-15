@@ -26,7 +26,7 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 
 To install the Postmodern Generator, follow these steps:
 
-1. Ensure you have Python 3.7 or higher installed. You can download it from [python.org](https://www.python.org/).
+1. Ensure you have Python 3.11 or higher installed. You can download it from [python.org](https://www.python.org/).
 2. Clone the repository:
     ```bash
     git clone https://github.com/egemulayim/postmodern_generator.git
