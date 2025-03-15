@@ -25,7 +25,7 @@ philosophers = [
 # Lists of concepts
 concepts = [
     "simulacra", "hyperreality", "the desert of the real", "power/knowledge", "discipline",
-    "biopolitics", "genealogy", "deconstruction", "rhizome", "assemblage", "deterritorialization",
+    "biopolitics", "genealogy", "deconstruction", "différance", "rhizome", "assemblage", "deterritorialization",
     "reterritorialization", "gender performativity", "cyborg", "late capitalism", "pastiche",
     "incredulity towards metanarratives", "spectacle", "dromology", "hybridity", "subaltern",
     "orientalism", "phallogocentrism", "jouissance", "the gaze", "the Other", "heterotopia",
