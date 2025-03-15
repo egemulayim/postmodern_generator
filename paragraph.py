@@ -1,4 +1,3 @@
-# paragraph.py
 import random
 from sentence import generate_sentence
 from data import philosophers, concepts, terms, philosopher_concepts
@@ -23,8 +22,8 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
     used_concepts = set(forbidden_concepts)
     used_terms = set(forbidden_terms)
     for i in range(num_sentences):
-        is_first = (i == 0)
-        sentence_parts, used_items = generate_sentence(template_type, references, list(used_philosophers), list(used_concepts), list(used_terms), is_first_sentence=is_first)
+        # Always set is_first_sentence to True to capitalize each sentence's first word
+        sentence_parts, used_items = generate_sentence(template_type, references, list(used_philosophers), list(used_concepts), list(used_terms), is_first_sentence=True)
         # Collect only the text parts
         text = ''
         for part in sentence_parts:
@@ -40,10 +39,10 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
     # Add reflection with 70% chance
     if random.random() < 0.7 and used_concepts:
         concept = random.choice(list(used_concepts))
-        associated_philosophers = [p for p in philosophers if p in philosopher_concepts and concept in philosopher_concepts[p][0]]
+        associated_philosophers = [p for p in philosophers if p in philosopher_concepts and concept in philosopher_concepts[p]]
         if associated_philosophers:
             philosopher = random.choice(associated_philosophers)
             reflection = f"For further discussion on {concept}, see {philosopher}'s work."
-            paragraph_str += ' ' + reflection + '.'
+            paragraph_str += ' ' + reflection
     
     return paragraph_str

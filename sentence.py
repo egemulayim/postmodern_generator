@@ -1,4 +1,3 @@
-# sentence.py
 import random
 from citation_utils import get_citation_note
 from data import philosophers, concepts, terms, philosopher_concepts, contexts

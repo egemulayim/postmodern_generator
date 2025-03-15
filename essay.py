@@ -1,4 +1,3 @@
-# essay.py
 import random
 from collections import Counter
 from paragraph import generate_paragraph
