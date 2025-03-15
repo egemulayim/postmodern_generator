@@ -1,4 +1,3 @@
-# sentence.py
 import random
 from data import philosophers, concepts, terms, philosopher_concepts, contexts
 
@@ -91,16 +90,21 @@ def generate_sentence(template_type, references, forbidden_philosophers=[], forb
     if is_first_sentence:
         sentence = capitalize_first_word(sentence)
     
-    # Strip any leading/trailing spaces and normalize to ensure no extra spaces
-    sentence = ' '.join(sentence.split())
+    # Strip leading and trailing spaces to ensure no extra spaces
+    sentence = sentence.strip()
     
     # Handle citations
     sentence_parts = []
     if '[citation]' in sentence:
         reference = random.choice(references)
-        sentence = sentence.replace('[citation]', '')
-        sentence_parts.append((sentence, None))
-        sentence_parts.append(('[citation]', str(reference)))
+        # Split sentence into parts around [citation] if it's still there (shouldn't be after format)
+        parts = sentence.split('[citation]')
+        for i, part in enumerate(parts):
+            part = part.strip()  # Strip each part to remove any extra spaces
+            if part:  # Only add non-empty parts
+                sentence_parts.append((part, None if i == len(parts)-1 else None))
+        citation_text = str(reference).strip()  # Ensure citation has no extra spaces
+        sentence_parts.append((citation_text, None))  # Add citation as part of the sentence
     else:
         sentence_parts.append((sentence, None))
     

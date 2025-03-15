@@ -1,1 +1,6 @@
 *pycache*, *.pyc, *.pyo, .DS_Store, .env
+__pycache__/data.cpython-313.pyc
+__pycache__/essay.cpython-313.pyc
+__pycache__/paragraph.cpython-313.pyc
+__pycache__/sentence.cpython-313.pyc
+__pycache__/reference.cpython-313.pyc

@@ -1,4 +1,3 @@
-# essay.py
 import random
 from collections import Counter
 from paragraph import generate_paragraph
@@ -10,7 +9,6 @@ TRIVIAL_WORDS = {"a", "an", "the", "into", "to", "of", "for", "on", "by", "with"
 
 def apply_title_case(title):
     """Applies academic title case to a string."""
-    title = title.strip()
     words = title.split()
     result = []
     capitalize_next = True  # Capitalize the first word
@@ -83,7 +81,7 @@ def generate_section_title(section_parts):
         
         raw_title = template.format(philosopher=philosopher, concept=concept, term=term, context=context)
     
-    # Apply title case to the raw title and ensure no extra spaces
+    # Apply title case to the raw title
     return apply_title_case(raw_title)
 
 def generate_title():
@@ -91,7 +89,7 @@ def generate_title():
     term = random.choice(terms)
     adjective = random.choice(adjectives)
     raw_title = f"unraveling {concept}: a {adjective} inquiry into {term}"
-    # Apply title case to the raw title and ensure no extra spaces
+    # Apply title case to the raw title
     return apply_title_case(raw_title)
 
 def generate_essay():
@@ -132,7 +130,6 @@ def generate_essay():
         notes_section += f"{i}. {ref}\n"
     essay_parts.append((notes_section, None))
 
-    # Combine everything and normalize spaces
+    # Combine everything
     essay_text = "".join([part[0] for part in essay_parts])
-    essay_text = ' '.join(essay_text.split())  # Normalize spaces to ensure no more than one space between words
     return essay_text
