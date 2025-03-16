@@ -3,7 +3,7 @@ from citation_utils import get_citation_note
 from data import philosophers, concepts, terms, philosopher_concepts, contexts
 from quotes import quotes
 
-# Fixed template lists with commas added
+# Sentence templates
 introduction_templates = [
     "This paper examines {term} in relation to {concept} within {context}.",
     "The interplay between {concept} and {term} shapes our understanding of {context}.",
@@ -22,7 +22,7 @@ introduction_templates = [
 general_templates = [
     "{philosopher} argues that {concept} redefines {term} in significant ways.",
     "According to {philosopher}, {term} is deeply tied to {concept}.",
-    "As {philosopher} stated, '{quote}', highlighting {concept} in {context}.",
+    "As {philosopher} stated, \"{quote}\", highlighting {concept} in {context}.",  # Updated to use double quotes
     "{philosopher1} and {philosopher2} offer contrasting views on {term} through {concept}.",
     "{philosopher} posits that {concept} serves as a linchpin in reimagining {term}.",
     "For {philosopher}, {concept} destabilizes the sedimented meanings of {term}.",
