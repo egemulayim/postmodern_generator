@@ -90,3 +90,4 @@ The following features and improvements are planned for future releases:
 - User Interface: Develop a web-based user interface for easier interaction with the generator.
 - Additional Datasets: Incorporate more datasets to expand the variety of generated content.
 - Configuration Options: Provide more configuration options to customize the text generation process.
+- Add option to generate in HTML and Markdown formatting systems.
