@@ -139,15 +139,19 @@ def generate_essay():
         used_quotes=used_quotes, all_references=all_references, cited_references=cited_references
     )
     essay_parts.append("## Conclusion\n\n")
-    # Add metafictional sentence
+    # Add metafictional sentence as a separate sentence
     if conclusion_concepts:
         concept = random.choice(list(conclusion_concepts))
-        metafiction_sentence = f"In attempting to conclude this essay, we find ourselves caught in the very {concept} we sought to analyze, a testament to its pervasive influence."
+        metafiction_sentence = f"in attempting to conclude this essay, we find ourselves caught in the very {concept} we sought to analyze, a testament to its pervasive influence."
+        # Capitalize as a new sentence and ensure it ends with a period
+        metafiction_sentence = metafiction_sentence[0].upper() + metafiction_sentence[1:]
+        if not metafiction_sentence.endswith('.'):
+            metafiction_sentence += '.'
         conclusion_text += ' ' + metafiction_sentence
     essay_parts.append(conclusion_text + "\n\n")
 
     # References section
-    essay_parts.append("## References\n\n")
+    essay_parts.append("## Notes\n\n")
     for i, ref in enumerate(cited_references, 1):
         essay_parts.append(f"[^{i}]: {ref}\n")
 

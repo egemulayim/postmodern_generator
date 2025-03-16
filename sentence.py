@@ -4,110 +4,93 @@ from citation_utils import get_citation_note
 from data import philosophers, concepts, terms, philosopher_concepts, contexts
 from quotes import quotes
 
-# Expanded introduction templates for variety and sophistication
+# A list of introduction templates for variety and sophistication
 introduction_templates = [
-    "This paper examines {term} in relation to {concept} within {context}.",
-    "The interplay between {concept} and {term} shapes our understanding of {context}.",
-    "This paper explores the intricate relationship between {term} and {concept} within the discursive field of {context}.",
-    "In recent scholarly endeavors, {term} has emerged as a focal point, particularly within the ambit of {context}.",
-    "This study seeks to interrogate the modalities through which {concept} shapes {term} in {context}.",
-    "The ensuing analysis situates {concept} within the broader epistemic terrain of {term} in {context}.",
-    "It merits consideration that {concept} has assumed a pivotal role in elucidating {term} within {context}.",
-    "Contemporary discourse increasingly gravitates toward {term}, especially when viewed through {context}.",
-    "The confluence of {concept} and {term} yields novel insights into the fabric of {context}.",
-    "By refracting {concept} through the prism of {term}, this paper enriches the discourse of {context}.",
-    "To apprehend {term} fully, one must adopt a nuanced engagement with {concept} in {context}.",
-    "This inquiry probes {concept}'s constitutive role in the reconfiguration of {term} within {context}.",
-    "This essay, in its initial foray, navigates the contested terrain of {term} through {concept} in {context}, resisting closure.",
-    "The opening salvo of this analysis foregrounds {concept}'s entanglement with {term} within {context}, a terrain of perpetual deferral.",
-    "Here, we embark on an exploration of {term}, its nexus with {concept} unfolding within the fractured landscape of {context}.",
-    # New templates for complexity and postmodern flair
-    "This essay, in its attempt to grapple with {term}, inadvertently becomes a testament to {concept} within {context}.",
-    "The following analysis, while centered on {term}, is invariably shaped by the specter of {concept} in {context}.",
-    "To commence, {term} emerges not as a stable entity but as a diffraction of {concept} within {context}, eluding fixity.",
-    "This text initiates its journey by tracing the unstable contours of {term} through {concept}, situated precariously in {context}.",
-    "In a gesture both preliminary and provisional, this study probes {term} as it intersects with {concept} amidst {context}."
+    "this paper examines {term} in relation to {concept} within {context}.",
+    "the interplay between {concept} and {term} shapes our understanding of {context}.",
+    "this paper explores the intricate relationship between {term} and {concept} within the discursive field of {context}.",
+    "in recent scholarly endeavors, {term} has emerged as a focal point, particularly within the ambit of {context}.",
+    "this study seeks to interrogate the modalities through which {concept} shapes {term} in {context}.",
+    "the ensuing analysis situates {concept} within the broader epistemic terrain of {term} in {context}.",
+    "it merits consideration that {concept} has assumed a pivotal role in elucidating {term} within {context}.",
+    "contemporary discourse increasingly gravitates toward {term}, especially when viewed through {context}.",
+    "the confluence of {concept} and {term} yields novel insights into the fabric of {context}.",
+    "by refracting {concept} through the prism of {term}, this paper enriches the discourse of {context}.",
+    "to apprehend {term} fully, one must adopt a nuanced engagement with {concept} in {context}.",
+    "this inquiry probes {concept}'s constitutive role in the reconfiguration of {term} within {context}.",
+    "this essay, in its initial foray, navigates the contested terrain of {term} through {concept} in {context}, resisting closure.",
+    "the opening salvo of this analysis foregrounds {concept}'s entanglement with {term} within {context}, a terrain of perpetual deferral.",
+    "here, we embark on an exploration of {term}, its nexus with {concept} unfolding within the fractured landscape of {context}.",
+    "this essay, in its attempt to grapple with {term}, inadvertently becomes a testament to {concept} within {context}.",
+    "the following analysis, while centered on {term}, is invariably shaped by the specter of {concept} in {context}.",
+    "to commence, {term} emerges not as a stable entity but as a diffraction of {concept} within {context}, eluding fixity.",
+    "this text initiates its journey by tracing the unstable contours of {term} through {concept}, situated precariously in {context}.",
+    "in a gesture both preliminary and provisional, this study probes {term} as it intersects with {concept} amidst {context}."
 ]
 
-# Expanded general templates with intertextuality, metafiction, and irony
+# A list of general templates containing intertextuality, metafiction, irony, and other postmodern elements
 general_templates = [
     "{philosopher} argues that {concept} redefines {term} in significant ways.",
-    "According to {philosopher}, {term} is deeply tied to {concept}.",
-    "As {philosopher} stated, \"{quote}\", highlighting {concept} in {context}.",
+    "according to {philosopher}, {term} is deeply tied to {concept}.",
+    "as {philosopher} stated, \"{quote}\", highlighting {concept} in {context}.",
     "{philosopher1} and {philosopher2} offer contrasting views on {term} through {concept}.",
     "{philosopher} posits that {concept} serves as a linchpin in reimagining {term}.",
-    "For {philosopher}, {concept} destabilizes the sedimented meanings of {term}.",
-    "Within the ambit of {term}, {concept} emerges as a site of epistemic rupture. [citation]",
+    "for {philosopher}, {concept} destabilizes the sedimented meanings of {term}.",
+    "within the ambit of {term}, {concept} emerges as a site of epistemic rupture. [citation]",
     "{concept}, as {philosopher} delineates, reorients our engagement with {term}.",
     "{philosopher1} and {philosopher2} proffer divergent readings of {concept} vis-à-vis {term}.",
-    "Certain critics aver that {philosopher}'s {concept} elides critical dimensions of {term}. [citation]",
-    "Can {concept}, as {philosopher} contemplates, fully encapsulate the complexities of {term}?",
-    "In {philosopher}'s corpus, {concept} casts a revelatory light upon {term}.",
+    "certain critics aver that {philosopher}'s {concept} elides critical dimensions of {term}. [citation]",
+    "can {concept}, as {philosopher} contemplates, fully encapsulate the complexities of {term}?",
+    "in {philosopher}'s corpus, {concept} casts a revelatory light upon {term}.",
     "{term} functions as the ground against which {philosopher} articulates {concept}.",
-    "Through the lens of {concept}, {philosopher} interrogates the foundational axioms of {term}. [citation]",
+    "through the lens of {concept}, {philosopher} interrogates the foundational axioms of {term}. [citation]",
     "{philosopher} embeds {concept} within the expansive discourse of {term}.",
-    "The dialectical interplay of {concept} and {term} recurs throughout {philosopher}'s oeuvre.",
-    "This analysis probes the différance inherent in {concept}, per {philosopher}, relative to {term}.",
-    "In {philosopher}'s schema, {concept} constitutes a contested terrain for {term}.",
-    "The trace of {concept} within {philosopher}'s texts unveils its imbrication with {term}.",
-    # Intertextual templates
+    "the dialectical interplay of {concept} and {term} recurs throughout {philosopher}'s oeuvre.",
+    "this analysis probes the différance inherent in {concept}, per {philosopher}, relative to {term}.",
+    "in {philosopher}'s schema, {concept} constitutes a contested terrain for {term}.",
+    "the trace of {concept} within {philosopher}'s texts unveils its imbrication with {term}.",
     "{philosopher} often cites {other_philosopher}'s work, particularly the idea of {other_concept}, saying, \"{quote}\", to support their argument on {term}.",
     "{philosopher}'s engagement with {concept} resonates with {other_philosopher}'s exploration of {other_concept}, illuminating {term}.",
-    "Echoing {other_philosopher}'s insights, {philosopher} frames {concept} as a {term} within {context}.",
+    "echoing {other_philosopher}'s insights, {philosopher} frames {concept} as a {term} within {context}.",
     "{philosopher1}'s notion of {concept} can be juxtaposed with {philosopher2}'s {other_concept}, revealing the multifaceted nature of {term}.",
-    # Metafiction templates
-    "This essay, in its exploration of {term}, finds itself entangled in the very {concept} it seeks to unpack.",
-    "The act of writing about {concept} inevitably entangles the author in the same discursive practices that {term} critiques.",
-    "This paragraph, in its attempt to elucidate {term}, inevitably falls into the trap of {concept}.",
-    "As we proceed, it becomes clear that the very act of writing about {term} implicates us in {concept}.",
-    "In writing this essay, the author becomes complicit in the {concept} they analyze, a {term} without resolution.",
-    "This text, in its interrogation of {term}, mirrors the very {concept} it seeks to deconstruct.",
-    # Irony and parody templates
-    "It is ironic that, in an age obsessed with {term}, {concept} remains elusive.",
-    "Any definitive statement about {concept} is inherently problematic, given its fluid and contested nature.",
-    "The pursuit of {concept} as a {term} reveals its own impossibility, a paradox {philosopher} might appreciate.",
-    "In the shadow of {concept}, {term} becomes a site of perpetual deferral, as {philosopher} might suggest.",
-    # New complex templates
+    "this essay, in its exploration of {term}, finds itself entangled in the very {concept} it seeks to unpack.",
+    "the act of writing about {concept} inevitably entangles the author in the same discursive practices that {term} critiques.",
+    "this paragraph, in its attempt to elucidate {term}, inevitably falls into the trap of {concept}.",
+    "as we proceed, it becomes clear that the very act of writing about {term} implicates us in {concept}.",
+    "in writing this essay, the author becomes complicit in the {concept} they analyze, a {term} without resolution.",
+    "this text, in its interrogation of {term}, mirrors the very {concept} it seeks to deconstruct.",
+    "it is ironic that, in an age obsessed with {term}, {concept} remains elusive.",
+    "any definitive statement about {concept} is inherently problematic, given its fluid and contested nature.",
+    "the pursuit of {concept} as a {term} reveals its own impossibility, a paradox {philosopher} might appreciate.",
+    "in the shadow of {concept}, {term} becomes a site of perpetual deferral, as {philosopher} might suggest.",
     "{philosopher} argues that {concept} is central to understanding {term} (though some, like {other_philosopher}, disagree).",
-    "The concept of {concept}, as {philosopher} suggests, is fraught with contradictions—yet it remains indispensable for analyzing {term}.",
-    "While {philosopher} celebrates {concept}, it is crucial to recognize its limitations in addressing {term}.",
+    "the concept of {concept}, as {philosopher} suggests, is fraught with contradictions—yet it remains indispensable for analyzing {term}.",
+    "while {philosopher} celebrates {concept}, it is crucial to recognize its limitations in addressing {term}.",
     "{philosopher}'s {concept} offers a powerful lens for viewing {term}, yet it risks oversimplifying the complexities involved.",
-    "In a {context}, {term} becomes a battleground where {concept} and its counterpoints collide."
+    "in a {context}, {term} becomes a battleground where {concept} and its counterpoints collide."
 ]
 
+# A list of conclusion templates for generating sophisticated and nuanced conclusions
 conclusion_templates = [
-    "In summation, this inquiry has elucidated the indelible role of {concept} in apprehension {term}.",
-    "These findings bear profound implications for {context}, particularly through the prism of {concept}.",
-    "To conclude, this analysis underscores the salience of {term} vis-à-vis {concept}.",
-    "This study has demonstrated that {concept} fundamentally reconfigures our approach to {term} in {context}.",
-    "Future scholarship might fruitfully explore {concept}'s ramification for {term} within {context}.",
-    "The symbiosis of {concept} and {term} proves essential to grasping {context}, as evidenced herein.",
-    "By traversing {term} through {concept}, this paper augments our understanding of {context}.",
-    "The results intimate that {concept} is a decisive vector in the constitution of {term} within {context}.",
-    "This examination reveals {term}'s profound entanglement with {concept}, upending orthodoxies in {context}.",
-    "Ultimately, these insights affirm that {concept} is indispensable to any rigorous study of {term} in {context}.",
-    # New metafiction template
-    "This essay, in its attempt to {term}, has perhaps only succeeded in demonstrating the complexity and elusiveness of {concept}.",
-    # New irony template
-    "The very act of concluding this discussion underscores {concept}'s pervasive influence, as even in summarizing, we are entangled in its discursive web.",
-    # Additional conclusion templates for variety
-    "In closing, the interplay of {concept} and {term} within {context} remains a site of unending contestation.",
-    "This analysis, in its final gesture, affirms {concept}'s centrality to {term}, yet leaves its resolution open.",
-    "The conclusion, like {concept} itself, resists closure, echoing {term}'s fluidity in {context}.",
-    # New templates for postmodern flair
-    "Ultimately, this exploration of {term} through {concept} leaves us with more questions than answers, a fitting end for a postmodern inquiry.",
-    "As we conclude, it becomes apparent that {concept} is not merely a lens for viewing {term}, but an inescapable condition of our {context}.",
-    "In attempting to conclude this essay, we find ourselves caught in the very {concept} we sought to analyze, a testament to its pervasive influence."
+    "in summation, this inquiry has elucidated the indelible role of {concept} in apprehension {term}.",
+    "these findings bear profound implications for {context}, particularly through the prism of {concept}.",
+    "to conclude, this analysis underscores the salience of {term} vis-à-vis {concept}.",
+    "this study has demonstrated that {concept} fundamentally reconfigures our approach to {term} in {context}.",
+    "future scholarship might fruitfully explore {concept}'s ramification for {term} within {context}.",
+    "the symbiosis of {concept} and {term} proves essential to grasping {context}, as evidenced herein.",
+    "by traversing {term} through {concept}, this paper augments our understanding of {context}.",
+    "the results intimate that {concept} is a decisive vector in the constitution of {term} within {context}.",
+    "this examination reveals {term}'s profound entanglement with {concept}, upending orthodoxies in {context}.",
+    "ultimately, these insights affirm that {concept} is indispensable to any rigorous study of {term} in {context}.",
+    "this essay, in its attempt to {term}, has perhaps only succeeded in demonstrating the complexity and elusiveness of {concept}.",
+    "the very act of concluding this discussion underscores {concept}'s pervasive influence, as even in summarizing, we are entangled in its discursive web.",
+    "in closing, the interplay of {concept} and {term} within {context} remains a site of unending contestation.",
+    "this analysis, in its final gesture, affirms {concept}'s centrality to {term}, yet leaves its resolution open.",
+    "the conclusion, like {concept} itself, resists closure, echoing {term}'s fluidity in {context}.",
+    "ultimately, this exploration of {term} through {concept} leaves us with more questions than answers, a fitting end for a postmodern inquiry.",
+    "as we conclude, it becomes apparent that {concept} is not merely a lens for viewing {term}, but an inescapable condition of our {context}.",
+    "in attempting to conclude this essay, we find ourselves caught in the very {concept} we sought to analyze, a testament to its pervasive influence."
 ]
-
-def capitalize_first_word(sentence):
-    """Capitalize the first word of a sentence."""
-    if not sentence:
-        return sentence
-    words = sentence.split()
-    if words:
-        words[0] = words[0].capitalize()
-    return ' '.join(words)
 
 def generate_sentence(template_type, references, mentioned_philosophers, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], used_quotes=set(), all_references=None, cited_references=[]):
     """
@@ -246,6 +229,5 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
             sentence = sentence.replace('[citation]', citation_text)
     
     # Finalize sentence
-    sentence = capitalize_first_word(sentence)
     sentence = ' '.join(sentence.split())
     return [(sentence, None)], used_philosophers, used_concepts, used_terms

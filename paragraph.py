@@ -5,13 +5,13 @@ from data import philosophers, concepts, terms, philosopher_concepts
 
 # Extended list of transitional words
 transitional_words = [
-    "Moreover", "However", "In addition", "Furthermore", "Consequently",
-    "Therefore", "Nonetheless", "Conversely", "Similarly", "Specifically",
-    "Additionally", "Nevertheless", "On the other hand", "In contrast",
-    "Accordingly", "As a result", "Hence", "Thus", "For instance", "Namely",
-    "Meanwhile", "Alternatively", "Subsequently", "Indeed", "Likewise", 
-    "Concomitantly", "Still", "Yet", "Equally", "Otherwise", "After all",
-    "In other words", "As a matter of fact", "To that end", "In case as such"
+    "moreover", "however", "in addition", "furthermore", "consequently",
+    "therefore", "nonetheless", "conversely", "similarly", "specifically",
+    "additionally", "nevertheless", "on the other hand", "in contrast",
+    "accordingly", "as a result", "hence", "thus", "for instance", "namely",
+    "meanwhile", "alternatively", "subsequently", "indeed", "likewise", 
+    "concomitantly", "still", "yet", "equally", "otherwise", "after all",
+    "in other words", "as a matter of fact", "to that end", "in case as such"
 ]
 
 def generate_paragraph(template_type, num_sentences, references, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], mentioned_philosophers=set(), used_quotes=set(), all_references=None, cited_references=[]):
@@ -109,20 +109,34 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
 
     paragraph_sentences = []
     for i, sentence in enumerate(selected_sentences):
-        if i > 0:
-            transitional_word = random.choice(transitional_words)
-            paragraph_sentences.append(f"{transitional_word}, {sentence}")
-        else:
+        # Ensure sentence ends with a period
+        if not sentence.endswith('.'):
+            sentence += '.'
+        if i == 0:
+            # Capitalize the first sentence
+            if sentence:
+                sentence = sentence[0].upper() + sentence[1:]
             paragraph_sentences.append(sentence)
-    paragraph_str = '. '.join(paragraph_sentences).strip() + '.'
+        else:
+            transitional_word = random.choice(transitional_words).capitalize()
+            # Decapitalize the first word of the sentence after the transitional word, unless it's a proper noun
+            words = sentence.split()
+            if words and words[0].lower() not in terms and words[0].lower() not in concepts and words[0].lower() not in philosophers:
+                sentence = words[0].lower() + ' ' + ' '.join(words[1:]) if len(words) > 1 else words[0].lower()
+            paragraph_sentences.append(f"{transitional_word}, {sentence}")
 
+    paragraph_str = ' '.join(paragraph_sentences)
+
+    # Add reflection only for 'general' paragraphs with 20% chance
     if random.random() < 0.2 and template_type == 'general':
         concept = random.choice([c for c in concepts if c not in forbidden_concepts])
         associated_philosophers = [p for p in philosophers if p in philosopher_concepts and concept in philosopher_concepts[p]]
         if associated_philosophers:
             philosopher = random.choice(associated_philosophers)
             philosopher_name = philosopher if philosopher not in mentioned_philosophers else philosopher.split()[-1]
-            reflection = f"For further discussion on {concept}, see {philosopher_name}'s work."
+            reflection = f"for further discussion on {concept}, see {philosopher_name}'s work."
+            # Capitalize reflection as a new sentence
+            reflection = reflection[0].upper() + reflection[1:]
             paragraph_str += ' ' + reflection
 
     return paragraph_str, used_concepts_in_paragraph, used_terms_in_paragraph

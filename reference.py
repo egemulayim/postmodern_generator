@@ -1,68 +1,150 @@
 import random
-from data import first_names, last_names, years, publishers, title_words, generate_title  # Added generate_title
+from data import philosophers, concepts, terms, contexts, adjectives
 
-# Different types of works and their citation formats
-work_types = [
-    "book", "journal_article", "book_section", "conference_talk", "symposium_talk"
+# Expanded word pools for authentic and varied titles
+verbs = [
+    "explore", "investigate", "analyze", "examine", "deconstruct", "reimagine", 
+    "critique", "interrogate", "unveil", "disrupt", "reconstruct", "transcend", 
+    "subvert", "recontextualize", "problematize", "theorize", "synthesize", 
+    "elucidate", "illuminate", "dismantle", "reframe", "negotiate", "navigate", 
+    "articulate", "destabilize", "reconceptualize", "foreground", "situate", 
+    "trace", "map", "chart", "survey", "assess", "evaluate", "appraise", 
+    "revisit", "reassess", "reconsider", "rethink", "reimagine", "re-envision"
 ]
+
+nouns = [
+    "discourse", "narrative", "paradigm", "framework", "lens", "perspective", 
+    "approach", "methodology", "ontology", "epistemology", "hegemony", 
+    "subjectivity", "agency", "identity", "power", "resistance", "subversion", 
+    "transgression", "alterity", "difference", "multiplicity", "plurality", 
+    "complexity", "ambiguity", "contradiction", "paradox", "dialectic", 
+    "interplay", "intersection", "convergence", "divergence", "tension", 
+    "rupture", "disruption", "transformation", "evolution", "genealogy", 
+    "archaeology", "cartography", "topography", "landscape", "terrain", 
+    "milieu", "context", "situation", "condition", "circumstance", "conjuncture"
+]
+
+prepositions = ["of", "in", "through", "beyond", "against", "within", "across", "between", "amidst", "towards"]
+
+conjunctions = ["and", "or", "but", "yet", "while", "as", "through"]
+
+# Title templates for variety and academic plausibility
+title_templates = [
+    "{verb} the {noun}: {adjective} {concept} in {context}",
+    "{adjective} {noun}: {verb} {term} through {concept}",
+    "towards a {adjective} {noun} of {concept}",
+    "{verb} {term}: a {adjective} inquiry",
+    "the {noun} of {concept}: {verb} {term} in {context}",
+    "{concept} and {term}: {verb} the {noun}",
+    "beyond {term}: {verb} {concept} in {context}",
+    "{verb} the {noun}: {concept} as {term}",
+    "the {adjective} {noun}: {verb} {concept} and {term}",
+    "{concept} in {context}: {verb} the {noun} of {term}"
+]
+
+# Work type-specific elements for realistic references
+publishers = [
+    "Oxford University Press", "Cambridge University Press", "Harvard University Press", 
+    "MIT Press", "Routledge", "Palgrave Macmillan", "University of Chicago Press", 
+    "Princeton University Press", "Yale University Press", "Stanford University Press"
+]
+
+journals = [
+    "Critical Inquiry", "Cultural Studies", "Theory, Culture & Society", 
+    "Postmodern Culture", "Social Text", "New Literary History", 
+    "boundary 2", "Public Culture", "Differences", "October"
+]
+
+conferences = [
+    "International Conference on Postmodernism", "Symposium on Cultural Theory", 
+    "Annual Meeting of the Modern Language Association", "Conference on Postcolonial Studies", 
+    "Workshop on Critical Theory", "Seminar on Continental Philosophy", 
+    "Colloquium on Literary Criticism", "Forum on Social Theory", 
+    "Congress on Cultural Studies", "Summit on Philosophy and Literature"
+]
+
+locations = [
+    "New York", "London", "Paris", "Berlin", "Tokyo", "Sydney", 
+    "Toronto", "Chicago", "San Francisco", "Amsterdam"
+]
+
+# Author and editor names for variety
+authors = [
+    "Smith, J.", "Johnson, A.", "Williams, B.", "Brown, C.", "Davis, D.", 
+    "Miller, E.", "Wilson, F.", "Moore, G.", "Taylor, H.", "Anderson, I.", 
+    "Thomas, K.", "Jackson, L.", "White, M.", "Harris, N.", "Martin, O.", 
+    "Thompson, P.", "Garcia, Q.", "Martinez, R.", "Robinson, S.", "Clark, T."
+]
+
+editors = [
+    "Lee, U.", "Walker, V.", "Hall, W.", "Allen, X.", "Young, Y.", 
+    "King, Z.", "Wright, A.", "Lopez, B.", "Hill, C.", "Scott, D."
+]
+
+def generate_title():
+    """
+    Generate an authentic, academic-sounding title using templates and word pools.
+    
+    Returns:
+        str: A capitalized title string.
+    """
+    template = random.choice(title_templates)
+    verb = random.choice(verbs)
+    noun = random.choice(nouns)
+    adjective = random.choice(adjectives)
+    concept = random.choice(concepts)
+    term = random.choice(terms)
+    context = random.choice(contexts)
+    
+    title = template.format(
+        verb=verb.capitalize(),
+        noun=noun,
+        adjective=adjective,
+        concept=concept,
+        term=term,
+        context=context
+    )
+    return title
 
 def generate_reference():
     """
-    Generates a random reference with varied work types and citation styles.
+    Generate a reference with a randomly selected work type and an enhanced title.
+    
+    Work types included:
+        - Book
+        - Journal article
+        - Chapter in edited volume
+        - Conference paper
     
     Returns:
-        str: Formatted reference string based on work type.
+        str: A formatted reference string.
     """
-    first_name = random.choice(first_names)
-    last_name = random.choice(last_names)
-    author = f"{last_name}, {first_name[0]}."
-    year = random.choice(years)
-    
-    # Generate title (two random words from title_words)
-    title = generate_title()  # Now properly imported from data.py
-    
-    work_type = random.choice(work_types)
+    work_type = random.choice(["book", "journal", "chapter", "conference"])
+    author = random.choice(authors)
+    year = random.randint(1950, 2023)
+    title = generate_title()
     
     if work_type == "book":
         publisher = random.choice(publishers)
-        return f"{author} ({year}). *{title}*. {publisher}."
+        reference = f"{author} ({year}). *{title}*. {publisher}."
     
-    elif work_type == "journal_article":
-        journal = random.choice(["Journal of Postmodern Studies", "Cultural Critique", "Postcolonial Review",
-                               "Critical Theory Quarterly", "Gender Studies Journal", "Media and Society",
-                               "Philosophy Today", "Literary Theory Review", "Anthropocene Studies",
-                               "Neoliberalism and Culture"])
+    elif work_type == "journal":
+        journal_name = random.choice(journals)
         volume = random.randint(1, 50)
-        issue = random.randint(1, 4)
+        issue = random.randint(1, 12)
         pages = f"{random.randint(1, 100)}-{random.randint(101, 200)}"
-        return f"{author} ({year}). *{title}*. {journal}, {volume}({issue}), {pages}."
+        reference = f"{author} ({year}). *{title}*. {journal_name}, {volume}({issue}), {pages}."
     
-    elif work_type == "book_section":
-        editor_first = random.choice(first_names)
-        editor_last = random.choice(last_names)
-        editor = f"{editor_last}, {editor_first[0]}."
-        book_title = generate_title()  # Generate a new title for the book
+    elif work_type == "chapter":
+        editor = random.choice(editors)
+        book_title = generate_title()  # Separate title for the edited volume
+        pages = f"{random.randint(1, 100)}-{random.randint(101, 200)}"
         publisher = random.choice(publishers)
-        pages = f"{random.randint(1, 100)}-{random.randint(101, 200)}"
-        return f"{author} ({year}). *{title}*. In {editor} (Ed.), *{book_title}* (pp. {pages}). {publisher}."
+        reference = f"{author} ({year}). *{title}*. In {editor} (Ed.), *{book_title}* (pp. {pages}). {publisher}."
     
-    elif work_type == "conference_talk":
-        conference = random.choice(["Annual Conference on Postmodern Theory", "International Symposium on Critical Theory",
-                                  "Global Forum on Cultural Studies", "Conference on Postcolonial Literature",
-                                  "Symposium on Gender and Media", "Philosophy Congress", "Literary Theory Summit",
-                                  "Anthropocene Research Meeting", "Neoliberalism Conference", "Digital Humanities Forum"])
-        location = random.choice(["New York", "London", "Paris", "Berlin", "Tokyo", "Sydney", "Toronto", "Amsterdam",
-                                "Boston", "Chicago", "San Francisco", "Los Angeles", "Seattle", "Washington D.C.",
-                                "Online"])
-        return f"{author} ({year}). *{title}*. {conference}, {location}."
+    elif work_type == "conference":
+        conference_name = random.choice(conferences)
+        location = random.choice(locations)
+        reference = f"{author} ({year}). *{title}*. {conference_name}, {location}."
     
-    else:  # symposium_talk
-        symposium = random.choice(["Symposium on Postmodernism", "International Symposium on Poststructuralism",
-                                 "Global Symposium on Cultural Critique", "Symposium on Queer Theory",
-                                 "Postcolonial Studies Symposium", "Gender and Technology Symposium",
-                                 "Philosophy and Ethics Symposium", "Literary Theory Workshop",
-                                 "Anthropocene and Ecology Symposium", "Neoliberalism and Society Symposium"])
-        location = random.choice(["New York", "London", "Paris", "Berlin", "Tokyo", "Sydney", "Toronto", "Amsterdam",
-                                "Boston", "Chicago", "San Francisco", "Los Angeles", "Seattle", "Washington D.C.",
-                                "Online"])
-        return f"{author} ({year}). *{title}*. {symposium}, {location}."
+    return reference
