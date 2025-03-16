@@ -3,18 +3,16 @@ from collections import Counter
 from paragraph import generate_paragraph
 from data import philosophers, concepts, italicized_terms, terms, contexts, adjectives
 from quotes import quotes
-from reference import generate_reference  # Assumed utility
+from reference import generate_reference
 
 TRIVIAL_WORDS = {"a", "an", "the", "into", "to", "of", "for", "on", "by", "with", "in", "and", "but", "or"}
 
 def capitalize_italicized(word):
     """Capitalize the first letter of a word and apply italics if in italicized_terms."""
-    # Capitalize the first letter
     if word and word[0].isalpha():
         capitalized = word[0].upper() + word[1:]
     else:
         capitalized = word
-    # Apply italics if the word (lowercase) is in italicized_terms
     if capitalized.lower() in italicized_terms:
         return f"*{capitalized}*"
     return capitalized
@@ -136,11 +134,16 @@ def generate_essay():
         essay_parts.append('\n\n'.join(section_paragraphs) + "\n\n")
 
     # Conclusion
-    conclusion_text, _, _ = generate_paragraph(
+    conclusion_text, conclusion_concepts, conclusion_terms = generate_paragraph(
         "conclusion", random.randint(6, 8), all_references, mentioned_philosophers,
         used_quotes=used_quotes, all_references=all_references, cited_references=cited_references
     )
     essay_parts.append("## Conclusion\n\n")
+    # Add metafictional sentence
+    if conclusion_concepts:
+        concept = random.choice(list(conclusion_concepts))
+        metafiction_sentence = f"In attempting to conclude this essay, we find ourselves caught in the very {concept} we sought to analyze, a testament to its pervasive influence."
+        conclusion_text += ' ' + metafiction_sentence
     essay_parts.append(conclusion_text + "\n\n")
 
     # References section
