@@ -1,2 +1,2 @@
-numpy>=1.23.x
-nltk>=3.8.x
+numpy
+nltk
