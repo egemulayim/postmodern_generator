@@ -17,3 +17,4 @@ venv/
 
 # IDE specific files
 .vscode/
+__pycache__/quotes.cpython-313.pyc

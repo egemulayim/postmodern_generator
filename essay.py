@@ -1,7 +1,8 @@
 import random
 from collections import Counter
 from paragraph import generate_paragraph
-from data import philosophers, concepts, terms, contexts, adjectives, quotes
+from data import philosophers, concepts, terms, contexts, adjectives
+from quotes import quotes
 from reference import generate_reference  # Assumed utility
 from citation_utils import notes  # Assumed utility
 
@@ -83,13 +84,14 @@ def generate_essay():
     mentioned_philosophers = set()
     used_concepts = set()
     used_terms = set()
+    used_quotes = set()  # Track quotes across the essay
 
     # Title
     title = generate_title()
     essay_parts.append(f"# {title}\n\n")
 
     # Introduction
-    intro_text, intro_concepts, intro_terms = generate_paragraph("introduction", random.randint(6, 8), references, mentioned_philosophers)
+    intro_text, intro_concepts, intro_terms = generate_paragraph("introduction", random.randint(6, 8), references, mentioned_philosophers, used_quotes=used_quotes)
     essay_parts.append("## Introduction\n\n")
     essay_parts.append(intro_text + "\n\n")
     used_concepts.update(intro_concepts)
@@ -100,7 +102,7 @@ def generate_essay():
     for _ in range(num_body_sections):
         section_paragraphs = []
         for _ in range(random.randint(2, 3)):
-            paragraph_text, paragraph_concepts, paragraph_terms = generate_paragraph("general", random.randint(6, 10), references, mentioned_philosophers)
+            paragraph_text, paragraph_concepts, paragraph_terms = generate_paragraph("general", random.randint(6, 10), references, mentioned_philosophers, used_quotes=used_quotes)
             section_paragraphs.append(paragraph_text)
             used_concepts.update(paragraph_concepts)
             used_terms.update(paragraph_terms)
@@ -108,8 +110,8 @@ def generate_essay():
         essay_parts.append(f"## {section_title}\n\n")
         essay_parts.append('\n\n'.join(section_paragraphs) + "\n\n")
 
-    # Conclusion (uses collected concepts/terms)
-    conclusion_text, _, _ = generate_paragraph("conclusion", random.randint(6, 8), references, mentioned_philosophers)
+    # Conclusion
+    conclusion_text, _, _ = generate_paragraph("conclusion", random.randint(6, 8), references, mentioned_philosophers, used_quotes=used_quotes)
     essay_parts.append("## Conclusion\n\n")
     essay_parts.append(conclusion_text + "\n\n")
 

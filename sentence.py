@@ -1,13 +1,12 @@
-# sentence.py
-
 import random
-from citation_utils import get_citation_note  # Assumed utility for citations
-from data import philosophers, concepts, terms, philosopher_concepts, contexts, quotes
+from citation_utils import get_citation_note 
+from data import philosophers, concepts, terms, philosopher_concepts, contexts
+from quotes import quotes
 
-# Sentence templates
+# Fixed template lists with commas added
 introduction_templates = [
     "This paper examines {term} in relation to {concept} within {context}.",
-    "The interplay between {concept} and {term} shapes our understanding of {context}."
+    "The interplay between {concept} and {term} shapes our understanding of {context}.",
     "This paper explores the intricate relationship between {term} and {concept} within the discursive field of {context}.",
     "In recent scholarly endeavors, {term} has emerged as a focal point, particularly within the ambit of {context}.",
     "This study seeks to interrogate the modalities through which {concept} shapes {term} in {context}.",
@@ -24,7 +23,7 @@ general_templates = [
     "{philosopher} argues that {concept} redefines {term} in significant ways.",
     "According to {philosopher}, {term} is deeply tied to {concept}.",
     "As {philosopher} stated, '{quote}', highlighting {concept} in {context}.",
-    "{philosopher1} and {philosopher2} offer contrasting views on {term} through {concept}."
+    "{philosopher1} and {philosopher2} offer contrasting views on {term} through {concept}.",
     "{philosopher} posits that {concept} serves as a linchpin in reimagining {term}.",
     "For {philosopher}, {concept} destabilizes the sedimented meanings of {term}.",
     "Within the ambit of {term}, {concept} emerges as a site of epistemic rupture. [citation]",
@@ -64,7 +63,7 @@ def capitalize_first_word(sentence):
         words[0] = words[0].capitalize()
     return ' '.join(words)
 
-def generate_sentence(template_type, references, mentioned_philosophers, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[]):
+def generate_sentence(template_type, references, mentioned_philosophers, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], used_quotes=set()):
     """
     Generate a sentence based on template type, handling philosopher names and quotes.
     
@@ -75,9 +74,14 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
         forbidden_philosophers (list): Philosophers to exclude
         forbidden_concepts (list): Concepts to exclude
         forbidden_terms (list): Terms to exclude
+        used_quotes (set): Quotes already used in the essay
     
     Returns:
-        tuple: ([(sentence, None)], list of used items)
+        tuple: ([(sentence, None)], used_philosophers, used_concepts, used_terms)
+               - [(sentence, None)]: List with a tuple of the sentence and None
+               - used_philosophers (list): Philosophers used in the sentence
+               - used_concepts (list): Concepts used in the sentence
+               - used_terms (list): Terms used in the sentence
     """
     if template_type == "introduction":
         template = random.choice(introduction_templates)
@@ -85,7 +89,9 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
         concept = random.choice([c for c in concepts if c not in forbidden_concepts])
         context = random.choice(contexts)
         sentence = template.format(term=term, concept=concept, context=context)
-        used_items = [term, concept]
+        used_philosophers = []
+        used_concepts = [concept]
+        used_terms = [term]
     
     elif template_type == "conclusion":
         template = random.choice(conclusion_templates)
@@ -93,7 +99,9 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
         concept = random.choice([c for c in concepts if c not in forbidden_concepts])
         context = random.choice(contexts)
         sentence = template.format(term=term, concept=concept, context=context)
-        used_items = [term, concept]
+        used_philosophers = []
+        used_concepts = [concept]
+        used_terms = [term]
     
     else:  # general
         template = random.choice(general_templates)
@@ -123,17 +131,23 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
         }
         used_philosophers = [philosopher]
         
-       
         # Handle quote if needed
         if '{quote}' in template:
             if philosopher in quotes:
-                selected_quote = random.choice(quotes[philosopher])
-                template = template.replace('{quote}', selected_quote)
+                available_quotes = [q for q in quotes[philosopher] if q not in used_quotes]
+                if available_quotes:
+                    selected_quote = random.choice(available_quotes)
+                    template = template.replace('{quote}', selected_quote)
+                    used_quotes.add(selected_quote)  # Track the used quote
+                else:
+                    # Fallback to a template without quote if all quotes are used
+                    while '{quote}' in template:
+                        template = random.choice(general_templates)
             else:
-                # Fallback to a template without quote
+                # Fallback to a template without quote if philosopher has no quotes
                 while '{quote}' in template:
                     template = random.choice(general_templates)
-         
+        
         # Handle second philosopher if needed
         if '{philosopher2}' in template:
             available_philosophers = [p for p in philosophers if p != philosopher and p not in forbidden_philosophers]
@@ -149,14 +163,15 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
             else:
                 # Fallback: Choose a template without {philosopher2}
                 while '{philosopher2}' in template:
-                 template = random.choice(general_templates)
+                    template = random.choice(general_templates)
         
         # Add context if required
         if '{context}' in template:
             data['context'] = random.choice(contexts)
         
         sentence = template.format(**data)
-        used_items = used_philosophers + [concept, term]
+        used_concepts = [concept]
+        used_terms = [term]
     
     # Add citation if present
     if '[citation]' in sentence:
@@ -166,4 +181,4 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
     
     sentence = capitalize_first_word(sentence)
     sentence = ' '.join(sentence.split())  # Normalize spacing
-    return [(sentence, None)], used_items
+    return [(sentence, None)], used_philosophers, used_concepts, used_terms

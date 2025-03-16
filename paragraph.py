@@ -1,4 +1,3 @@
-# paragraph.py
 import random
 from sentence import generate_sentence
 from data import philosophers, concepts, terms, philosopher_concepts
@@ -12,7 +11,7 @@ transitional_words = [
     "Meanwhile", "Alternatively", "Subsequently", "Indeed", "Likewise", "Concomitantly", "Still"
 ]
 
-def generate_paragraph(template_type, num_sentences, references, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], mentioned_philosophers=set()):
+def generate_paragraph(template_type, num_sentences, references, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], mentioned_philosophers=set(), used_quotes=set()):
     """
     Generate a paragraph by selecting sentences from a pool of generated sentences.
 
@@ -24,20 +23,38 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
         forbidden_concepts (list): Concepts to exclude from generation
         forbidden_terms (list): Terms to exclude from generation
         mentioned_philosophers (set): Set of philosophers already mentioned in the text
+        used_quotes (set): Quotes already used in the essay
 
     Returns:
-        str: A fully formed paragraph as a string
+        tuple: (paragraph_str, used_concepts_in_paragraph, used_terms_in_paragraph)
+               - paragraph_str (str): The generated paragraph
+               - used_concepts_in_paragraph (set): Concepts used in the paragraph
+               - used_terms_in_paragraph (set): Terms used in the paragraph
     """
     # Generate a pool of sentences (1.5 times the required number for diversity)
     pool_size = int(num_sentences * 1.5)
     sentence_pool = []
+    used_data = []
     for _ in range(pool_size):
-        sentence_parts, _ = generate_sentence(template_type, references, mentioned_philosophers, forbidden_philosophers, forbidden_concepts, forbidden_terms)
+        sentence_parts, used_phils, used_concs, used_trms = generate_sentence(
+            template_type, references, mentioned_philosophers, 
+            forbidden_philosophers, forbidden_concepts, forbidden_terms, used_quotes
+        )
         sentence_text, _ = sentence_parts[0]  # Unpack the tuple to get the sentence string
         sentence_pool.append(sentence_text)
+        used_data.append((used_phils, used_concs, used_trms))
 
     # Select the required number of sentences from the pool
-    selected_sentences = random.sample(sentence_pool, num_sentences)
+    selected_indices = random.sample(range(len(sentence_pool)), min(num_sentences, len(sentence_pool)))
+    selected_sentences = [sentence_pool[i] for i in selected_indices]
+
+    # Collect used concepts and terms from selected sentences
+    used_concepts_in_paragraph = set()
+    used_terms_in_paragraph = set()
+    for idx in selected_indices:
+        _, used_concs, used_trms = used_data[idx]  # Ignore used_phils since essay.py doesn't need it
+        used_concepts_in_paragraph.update(used_concs)
+        used_terms_in_paragraph.update(used_trms)
 
     # Construct the paragraph with transitional words
     if len(selected_sentences) > 1:
@@ -62,4 +79,4 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
             reflection = f"For further discussion on {concept}, see {philosopher_name}'s work."
             paragraph_str += ' ' + reflection
 
-    return paragraph_str
+    return paragraph_str, used_concepts_in_paragraph, used_terms_in_paragraph
