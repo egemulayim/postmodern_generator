@@ -1,4 +1,4 @@
-import random  # Added to fix "random" not defined error
+import random
 
 # Lists of philosophers
 philosophers = [
