@@ -179,7 +179,7 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
             if reference not in cited_references:
                 cited_references.append(reference)
             number = cited_references.index(reference) + 1
-            citation_text = f"[{number}]"  # Changed to plain number in brackets
+            citation_text = f"[^{number}]"  # Use Obsidian footnote syntax
             sentence = sentence.replace('[citation]', citation_text)
         
         used_concepts = [concept]

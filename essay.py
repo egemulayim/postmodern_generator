@@ -124,11 +124,10 @@ def generate_essay():
     essay_parts.append("## Conclusion\n\n")
     essay_parts.append(conclusion_text + "\n\n")
 
-    # Notes section
+    # References section with footnote definitions
     essay_parts.append("## Notes\n\n")
     for i, ref in enumerate(cited_references, 1):
-        essay_parts.append(f"{i}. {ref}\n")  # Simple numbered list
-    essay_parts.append("\n")
+        essay_parts.append(f"[^{i}]: {ref}\n")
 
     # Combine everything
     essay_text = ''.join(essay_parts)
