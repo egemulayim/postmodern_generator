@@ -19,6 +19,7 @@ introduction_templates = [
     "This inquiry probes {concept}'s constitutive role in the reconfiguration of {term} within {context}."
 ]
 
+# Expanded general templates with intertextuality, metafiction, and irony
 general_templates = [
     "{philosopher} argues that {concept} redefines {term} in significant ways.",
     "According to {philosopher}, {term} is deeply tied to {concept}.",
@@ -30,7 +31,7 @@ general_templates = [
     "{concept}, as {philosopher} delineates, reorients our engagement with {term}.",
     "{philosopher1} and {philosopher2} proffer divergent readings of {concept} vis-à-vis {term}.",
     "Certain critics aver that {philosopher}'s {concept} elides critical dimensions of {term}. [citation]",
-    "Can {concept}, as {philosopher} contends, fully encapsulate the complexities of {term}?",
+    "Can {concept}, as {philosopher} contemplates, fully encapsulate the complexities of {term}?",
     "In {philosopher}'s corpus, {concept} casts a revelatory light upon {term}.",
     "{term} functions as the ground against which {philosopher} articulates {concept}.",
     "Through the lens of {concept}, {philosopher} interrogates the foundational axioms of {term}. [citation]",
@@ -38,20 +39,32 @@ general_templates = [
     "The dialectical interplay of {concept} and {term} recurs throughout {philosopher}'s oeuvre.",
     "This analysis probes the différance inherent in {concept}, per {philosopher}, relative to {term}.",
     "In {philosopher}'s schema, {concept} constitutes a contested terrain for {term}.",
-    "The trace of {concept} within {philosopher}'s texts unveils its imbrication with {term}."
+    "The trace of {concept} within {philosopher}'s texts unveils its imbrication with {term}.",
+    # Intertextual template
+    "{philosopher} often cites {other_philosopher}'s work, particularly the idea of {other_concept}, saying, \"{quote}\", to support their argument on {term}.",
+    # Metafiction templates
+    "This essay, in its exploration of {term}, finds itself entangled in the very {concept} it seeks to unpack.",
+    "The act of writing about {concept} inevitably entangles the author in the same discursive practices that {term} critiques.",
+    # Irony and parody templates
+    "It is ironic that, in an age obsessed with {term}, {concept} remains elusive.",
+    "Any definitive statement about {concept} is inherently problematic, given its fluid and contested nature."
 ]
 
 conclusion_templates = [
-    "In summation, this inquiry has elucidated the indelible role of {concept} in apprehending {term}.",
+    "In summation, this inquiry has elucidated the indelible role of {concept} in apprehension {term}.",
     "These findings bear profound implications for {context}, particularly through the prism of {concept}.",
     "To conclude, this analysis underscores the salience of {term} vis-à-vis {concept}.",
     "This study has demonstrated that {concept} fundamentally reconfigures our approach to {term} in {context}.",
-    "Future scholarship might fruitfully explore {concept}'s ramifications for {term} within {context}.",
+    "Future scholarship might fruitfully explore {concept}'s ramification for {term} within {context}.",
     "The symbiosis of {concept} and {term} proves essential to grasping {context}, as evidenced herein.",
     "By traversing {term} through {concept}, this paper augments our understanding of {context}.",
     "The results intimate that {concept} is a decisive vector in the constitution of {term} within {context}.",
     "This examination reveals {term}'s profound entanglement with {concept}, upending orthodoxies in {context}.",
-    "Ultimately, these insights affirm that {concept} is indispensable to any rigorous study of {term} in {context}."
+    "Ultimately, these insights affirm that {concept} is indispensable to any rigorous study of {term} in {context}.",
+    # New metafiction template
+    "This essay, in its attempt to {term}, has perhaps only succeeded in demonstrating the complexity and elusiveness of {concept}.",
+    # New irony template
+    "The very act of concluding this discussion underscores {concept}'s pervasive influence, as even in summarizing, we are entangled in its discursive web."
 ]
 
 def capitalize_first_word(sentence):
@@ -179,7 +192,7 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
             if reference not in cited_references:
                 cited_references.append(reference)
             number = cited_references.index(reference) + 1
-            citation_text = f"[^{number}]"  # Use Obsidian footnote syntax
+            citation_text = f"[^ {number}]"  # Use Obsidian footnote syntax with space for readability
             sentence = sentence.replace('[citation]', citation_text)
         
         used_concepts = [concept]
