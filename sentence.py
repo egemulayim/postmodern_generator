@@ -123,17 +123,7 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
         }
         used_philosophers = [philosopher]
         
-        # Handle second philosopher if needed
-        if '{philosopher2}' in template:
-            philosopher2 = random.choice([p for p in philosophers if p != philosopher and p not in forbidden_philosophers])
-            if philosopher2 not in mentioned_philosophers:
-                philosopher2_name = philosopher2
-                mentioned_philosophers.add(philosopher2)
-            else:
-                philosopher2_name = philosopher2.split()[-1]
-            data['philosopher2'] = philosopher2_name
-            used_philosophers.append(philosopher2)
-        
+       
         # Handle quote if needed
         if '{quote}' in template:
             if philosopher in quotes:
@@ -143,6 +133,23 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
                 # Fallback to a template without quote
                 while '{quote}' in template:
                     template = random.choice(general_templates)
+         
+        # Handle second philosopher if needed
+        if '{philosopher2}' in template:
+            available_philosophers = [p for p in philosophers if p != philosopher and p not in forbidden_philosophers]
+            if available_philosophers:
+                philosopher2 = random.choice(available_philosophers)
+                if philosopher2 not in mentioned_philosophers:
+                    philosopher2_name = philosopher2
+                    mentioned_philosophers.add(philosopher2)
+                else:
+                    philosopher2_name = philosopher2.split()[-1]
+                data['philosopher2'] = philosopher2_name
+                used_philosophers.append(philosopher2)
+            else:
+                # Fallback: Choose a template without {philosopher2}
+                while '{philosopher2}' in template:
+                 template = random.choice(general_templates)
         
         # Add context if required
         if '{context}' in template:
