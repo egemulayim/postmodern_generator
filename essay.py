@@ -4,7 +4,6 @@ from paragraph import generate_paragraph
 from data import philosophers, concepts, terms, contexts, adjectives
 from quotes import quotes
 from reference import generate_reference  # Assumed utility
-from citation_utils import notes  # Assumed utility
 
 TRIVIAL_WORDS = {"a", "an", "the", "into", "to", "of", "for", "on", "by", "with", "in", "and", "but", "or"}
 
@@ -79,19 +78,23 @@ def generate_title():
 
 def generate_essay():
     """Generate the full essay."""
-    references = [generate_reference() for _ in range(12)]
+    all_references = [generate_reference() for _ in range(12)]  # List of all possible references
+    cited_references = []  # List to track references cited in the essay
     essay_parts = []
     mentioned_philosophers = set()
     used_concepts = set()
     used_terms = set()
-    used_quotes = set()  # Track quotes across the essay
+    used_quotes = set()
 
     # Title
     title = generate_title()
     essay_parts.append(f"# {title}\n\n")
 
     # Introduction
-    intro_text, intro_concepts, intro_terms = generate_paragraph("introduction", random.randint(6, 8), references, mentioned_philosophers, used_quotes=used_quotes)
+    intro_text, intro_concepts, intro_terms = generate_paragraph(
+        "introduction", random.randint(6, 8), all_references, mentioned_philosophers,
+        used_quotes=used_quotes, all_references=all_references, cited_references=cited_references
+    )
     essay_parts.append("## Introduction\n\n")
     essay_parts.append(intro_text + "\n\n")
     used_concepts.update(intro_concepts)
@@ -102,7 +105,10 @@ def generate_essay():
     for _ in range(num_body_sections):
         section_paragraphs = []
         for _ in range(random.randint(2, 3)):
-            paragraph_text, paragraph_concepts, paragraph_terms = generate_paragraph("general", random.randint(6, 10), references, mentioned_philosophers, used_quotes=used_quotes)
+            paragraph_text, paragraph_concepts, paragraph_terms = generate_paragraph(
+                "general", random.randint(6, 10), all_references, mentioned_philosophers,
+                used_quotes=used_quotes, all_references=all_references, cited_references=cited_references
+            )
             section_paragraphs.append(paragraph_text)
             used_concepts.update(paragraph_concepts)
             used_terms.update(paragraph_terms)
@@ -111,12 +117,19 @@ def generate_essay():
         essay_parts.append('\n\n'.join(section_paragraphs) + "\n\n")
 
     # Conclusion
-    conclusion_text, _, _ = generate_paragraph("conclusion", random.randint(6, 8), references, mentioned_philosophers, used_quotes=used_quotes)
+    conclusion_text, _, _ = generate_paragraph(
+        "conclusion", random.randint(6, 8), all_references, mentioned_philosophers,
+        used_quotes=used_quotes, all_references=all_references, cited_references=cited_references
+    )
     essay_parts.append("## Conclusion\n\n")
     essay_parts.append(conclusion_text + "\n\n")
 
-    # Notes
-    notes_section = "## Notes\n\n" + "\n".join(notes) + "\n"
-    essay_parts.append(notes_section)
+    # Notes section
+    essay_parts.append("## Notes\n\n")
+    for i, ref in enumerate(cited_references, 1):
+        essay_parts.append(f"{i}. {ref}\n")  # Simple numbered list
+    essay_parts.append("\n")
 
-    return ''.join(essay_parts)
+    # Combine everything
+    essay_text = ''.join(essay_parts)
+    return essay_text

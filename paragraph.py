@@ -11,19 +11,21 @@ transitional_words = [
     "Meanwhile", "Alternatively", "Subsequently", "Indeed", "Likewise", "Concomitantly", "Still"
 ]
 
-def generate_paragraph(template_type, num_sentences, references, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], mentioned_philosophers=set(), used_quotes=set()):
+def generate_paragraph(template_type, num_sentences, references, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], mentioned_philosophers=set(), used_quotes=set(), all_references=None, cited_references=[]):
     """
     Generate a paragraph by selecting sentences from a pool of generated sentences.
 
     Args:
         template_type (str): Type of paragraph ('introduction', 'general', or 'conclusion')
         num_sentences (int): Number of sentences desired in the paragraph
-        references (list): List of references for citations
+        references (list): List of references for citations (not used directly)
         forbidden_philosophers (list): Philosophers to exclude from generation
         forbidden_concepts (list): Concepts to exclude from generation
         forbidden_terms (list): Terms to exclude from generation
         mentioned_philosophers (set): Set of philosophers already mentioned in the text
         used_quotes (set): Quotes already used in the essay
+        all_references (list): List of all possible references for citation
+        cited_references (list): List of references cited so far in the essay
 
     Returns:
         tuple: (paragraph_str, used_concepts_in_paragraph, used_terms_in_paragraph)
@@ -37,8 +39,9 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
     used_data = []
     for _ in range(pool_size):
         sentence_parts, used_phils, used_concs, used_trms = generate_sentence(
-            template_type, references, mentioned_philosophers, 
-            forbidden_philosophers, forbidden_concepts, forbidden_terms, used_quotes
+            template_type, references, mentioned_philosophers,
+            forbidden_philosophers, forbidden_concepts, forbidden_terms,
+            used_quotes, all_references, cited_references
         )
         sentence_text, _ = sentence_parts[0]  # Unpack the tuple to get the sentence string
         sentence_pool.append(sentence_text)

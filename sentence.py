@@ -22,7 +22,7 @@ introduction_templates = [
 general_templates = [
     "{philosopher} argues that {concept} redefines {term} in significant ways.",
     "According to {philosopher}, {term} is deeply tied to {concept}.",
-    "As {philosopher} stated, \"{quote}\", highlighting {concept} in {context}.",  # Updated to use double quotes
+    "As {philosopher} stated, \"{quote}\", highlighting {concept} in {context}.",
     "{philosopher1} and {philosopher2} offer contrasting views on {term} through {concept}.",
     "{philosopher} posits that {concept} serves as a linchpin in reimagining {term}.",
     "For {philosopher}, {concept} destabilizes the sedimented meanings of {term}.",
@@ -63,18 +63,20 @@ def capitalize_first_word(sentence):
         words[0] = words[0].capitalize()
     return ' '.join(words)
 
-def generate_sentence(template_type, references, mentioned_philosophers, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], used_quotes=set()):
+def generate_sentence(template_type, references, mentioned_philosophers, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], used_quotes=set(), all_references=None, cited_references=[]):
     """
     Generate a sentence based on template type, handling philosopher names and quotes.
     
     Args:
         template_type (str): 'introduction', 'general', or 'conclusion'
-        references (list): List of references for citations
+        references (list): List of references for citations (not used directly)
         mentioned_philosophers (set): Set of philosophers already mentioned
         forbidden_philosophers (list): Philosophers to exclude
         forbidden_concepts (list): Concepts to exclude
         forbidden_terms (list): Terms to exclude
         used_quotes (set): Quotes already used in the essay
+        all_references (list): List of all possible references for citation
+        cited_references (list): List of references cited so far in the essay
     
     Returns:
         tuple: ([(sentence, None)], used_philosophers, used_concepts, used_terms)
@@ -170,14 +172,18 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
             data['context'] = random.choice(contexts)
         
         sentence = template.format(**data)
+        
+        # Handle citation if present
+        if '[citation]' in sentence and all_references:
+            reference = random.choice(all_references)
+            if reference not in cited_references:
+                cited_references.append(reference)
+            number = cited_references.index(reference) + 1
+            citation_text = f"[{number}]"  # Changed to plain number in brackets
+            sentence = sentence.replace('[citation]', citation_text)
+        
         used_concepts = [concept]
         used_terms = [term]
-    
-    # Add citation if present
-    if '[citation]' in sentence:
-        reference = random.choice(references)
-        citation_note = get_citation_note(reference)
-        sentence = sentence.replace('[citation]', citation_note)
     
     sentence = capitalize_first_word(sentence)
     sentence = ' '.join(sentence.split())  # Normalize spacing
