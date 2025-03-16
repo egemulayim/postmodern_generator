@@ -1,9 +1,10 @@
 import random
+import string
 from citation_utils import get_citation_note 
 from data import philosophers, concepts, terms, philosopher_concepts, contexts
 from quotes import quotes
 
-# Sentence templates
+# Expanded introduction templates for variety and sophistication
 introduction_templates = [
     "This paper examines {term} in relation to {concept} within {context}.",
     "The interplay between {concept} and {term} shapes our understanding of {context}.",
@@ -16,7 +17,10 @@ introduction_templates = [
     "The confluence of {concept} and {term} yields novel insights into the fabric of {context}.",
     "By refracting {concept} through the prism of {term}, this paper enriches the discourse of {context}.",
     "To apprehend {term} fully, one must adopt a nuanced engagement with {concept} in {context}.",
-    "This inquiry probes {concept}'s constitutive role in the reconfiguration of {term} within {context}."
+    "This inquiry probes {concept}'s constitutive role in the reconfiguration of {term} within {context}.",
+    "This essay, in its initial foray, navigates the contested terrain of {term} through {concept} in {context}, resisting closure.",
+    "The opening salvo of this analysis foregrounds {concept}'s entanglement with {term} within {context}, a terrain of perpetual deferral.",
+    "Here, we embark on an exploration of {term}, its nexus with {concept} unfolding within the fractured landscape of {context}."
 ]
 
 # Expanded general templates with intertextuality, metafiction, and irony
@@ -47,7 +51,16 @@ general_templates = [
     "The act of writing about {concept} inevitably entangles the author in the same discursive practices that {term} critiques.",
     # Irony and parody templates
     "It is ironic that, in an age obsessed with {term}, {concept} remains elusive.",
-    "Any definitive statement about {concept} is inherently problematic, given its fluid and contested nature."
+    "Any definitive statement about {concept} is inherently problematic, given its fluid and contested nature.",
+    # Additional intertextual templates
+    "{philosopher}'s engagement with {concept} resonates with {other_philosopher}'s exploration of {other_concept}, illuminating {term}.",
+    "Echoing {other_philosopher}'s insights, {philosopher} frames {concept} as a {term} within {context}.",
+    # Additional metafiction templates
+    "In writing this essay, the author becomes complicit in the {concept} they analyze, a {term} without resolution.",
+    "This text, in its interrogation of {term}, mirrors the very {concept} it seeks to deconstruct.",
+    # Additional irony templates
+    "The pursuit of {concept} as a {term} reveals its own impossibility, a paradox {philosopher} might appreciate.",
+    "In the shadow of {concept}, {term} becomes a site of perpetual deferral, as {philosopher} might suggest."
 ]
 
 conclusion_templates = [
@@ -64,7 +77,11 @@ conclusion_templates = [
     # New metafiction template
     "This essay, in its attempt to {term}, has perhaps only succeeded in demonstrating the complexity and elusiveness of {concept}.",
     # New irony template
-    "The very act of concluding this discussion underscores {concept}'s pervasive influence, as even in summarizing, we are entangled in its discursive web."
+    "The very act of concluding this discussion underscores {concept}'s pervasive influence, as even in summarizing, we are entangled in its discursive web.",
+    # Additional conclusion templates for variety
+    "In closing, the interplay of {concept} and {term} within {context} remains a site of unending contestation.",
+    "This analysis, in its final gesture, affirms {concept}'s centrality to {term}, yet leaves its resolution open.",
+    "The conclusion, like {concept} itself, resists closure, echoing {term}'s fluidity in {context}."
 ]
 
 def capitalize_first_word(sentence):
@@ -78,25 +95,21 @@ def capitalize_first_word(sentence):
 
 def generate_sentence(template_type, references, mentioned_philosophers, forbidden_philosophers=[], forbidden_concepts=[], forbidden_terms=[], used_quotes=set(), all_references=None, cited_references=[]):
     """
-    Generate a sentence based on template type, handling philosopher names and quotes.
+    Generate a sentence based on template type, handling philosopher names and quotes dynamically.
     
     Args:
-        template_type (str): 'introduction', 'general', or 'conclusion'
-        references (list): List of references for citations (not used directly)
-        mentioned_philosophers (set): Set of philosophers already mentioned
-        forbidden_philosophers (list): Philosophers to exclude
-        forbidden_concepts (list): Concepts to exclude
-        forbidden_terms (list): Terms to exclude
-        used_quotes (set): Quotes already used in the essay
-        all_references (list): List of all possible references for citation
-        cited_references (list): List of references cited so far in the essay
+        template_type (str): Type of sentence ('introduction', 'conclusion', or 'general').
+        references: Unused parameter (retained for compatibility).
+        mentioned_philosophers (set): Philosophers already mentioned in the essay.
+        forbidden_philosophers (list): Philosophers to exclude.
+        forbidden_concepts (list): Concepts to exclude.
+        forbidden_terms (list): Terms to exclude.
+        used_quotes (set): Quotes already used.
+        all_references (list): List of references for citations.
+        cited_references (list): References already cited.
     
     Returns:
-        tuple: ([(sentence, None)], used_philosophers, used_concepts, used_terms)
-               - [(sentence, None)]: List with a tuple of the sentence and None
-               - used_philosophers (list): Philosophers used in the sentence
-               - used_concepts (list): Concepts used in the sentence
-               - used_terms (list): Terms used in the sentence
+        tuple: (sentence_list, used_philosophers, used_concepts, used_terms)
     """
     if template_type == "introduction":
         template = random.choice(introduction_templates)
@@ -119,85 +132,104 @@ def generate_sentence(template_type, references, mentioned_philosophers, forbidd
         used_terms = [term]
     
     else:  # general
-        template = random.choice(general_templates)
-        philosopher = random.choice([p for p in philosophers if p not in forbidden_philosophers])
+        # Get available philosophers
+        available_philosophers = [p for p in philosophers if p not in forbidden_philosophers]
+        if not available_philosophers:
+            raise ValueError("No available philosophers to choose from.")
         
-        # Select concept
-        if philosopher in philosopher_concepts:
-            related_concepts = [c for c in philosopher_concepts[philosopher] if c not in forbidden_concepts]
-            concept = random.choice(related_concepts) if related_concepts else random.choice([c for c in concepts if c not in forbidden_concepts])
-        else:
-            concept = random.choice([c for c in concepts if c not in forbidden_concepts])
+        # Filter templates based on number of philosopher fields
+        template_pool = [
+            t for t in general_templates
+            if len([f for _, f, _, _ in string.Formatter().parse(t) if f and (f.startswith('philosopher') or f == 'other_philosopher')]) <= len(available_philosophers)
+        ]
+        if not template_pool:
+            raise ValueError("No suitable templates available for the current number of philosophers.")
         
-        term = random.choice([t for t in terms if t not in forbidden_terms])
+        template = random.choice(template_pool)
         
-        # Handle philosopher name
-        if philosopher not in mentioned_philosophers:
-            philosopher_name = philosopher  # Full name on first mention
-            mentioned_philosophers.add(philosopher)
-        else:
-            philosopher_name = philosopher.split()[-1]  # Last name on subsequent mentions
+        # Parse all fields in the template
+        fields = [field for _, field, _, _ in string.Formatter().parse(template) if field]
         
-        data = {
-            'philosopher': philosopher_name,
-            'philosopher1': philosopher_name,  # Same as philosopher
-            'concept': concept,
-            'term': term
-        }
-        used_philosophers = [philosopher]
+        # Determine quote source
+        quote_source_field = 'other_philosopher' if 'other_philosopher' in fields else ('philosopher' if 'philosopher' in fields else 'philosopher1')
         
-        # Handle quote if needed
-        if '{quote}' in template:
-            if philosopher in quotes:
-                available_quotes = [q for q in quotes[philosopher] if q not in used_quotes]
+        # Initialize data and tracking lists
+        data = {}
+        used_philosophers = []
+        used_concepts = []
+        used_terms = []
+        
+        # Populate philosopher fields
+        for field in fields:
+            if field.startswith('philosopher') or field == 'other_philosopher':
+                available = [p for p in available_philosophers if p not in used_philosophers]
+                if not available:
+                    raise ValueError(f"Not enough philosophers available for field '{field}'.")
+                phil = random.choice(available)
+                phil_name = phil if phil not in mentioned_philosophers else phil.split()[-1]
+                if phil not in mentioned_philosophers:
+                    mentioned_philosophers.add(phil)
+                data[field] = phil_name
+                used_philosophers.append(phil)
+        
+        # Populate concept fields
+        for field in fields:
+            if field == 'concept':
+                main_phil = data.get('philosopher', data.get('philosopher1'))
+                if main_phil and main_phil in philosopher_concepts:
+                    related_concepts = [c for c in philosopher_concepts[main_phil] if c not in forbidden_concepts and c not in used_concepts]
+                    concept = random.choice(related_concepts) if related_concepts else random.choice([c for c in concepts if c not in forbidden_concepts and c not in used_concepts])
+                else:
+                    concept = random.choice([c for c in concepts if c not in forbidden_concepts and c not in used_concepts])
+                data[field] = concept
+                used_concepts.append(concept)
+            elif field == 'other_concept':
+                other_phil = data.get('other_philosopher')
+                if other_phil and other_phil in philosopher_concepts:
+                    related_concepts = [c for c in philosopher_concepts[other_phil] if c not in forbidden_concepts and c not in used_concepts]
+                    other_concept = random.choice(related_concepts) if related_concepts else random.choice([c for c in concepts if c not in forbidden_concepts and c not in used_concepts])
+                else:
+                    other_concept = random.choice([c for c in concepts if c not in forbidden_concepts and c not in used_concepts])
+                data[field] = other_concept
+                used_concepts.append(other_concept)
+        
+        # Populate term field
+        if 'term' in fields:
+            term = random.choice([t for t in terms if t not in forbidden_terms and t not in used_terms])
+            data['term'] = term
+            used_terms.append(term)
+        
+        # Populate context field
+        if 'context' in fields:
+            data['context'] = random.choice(contexts)
+        
+        # Handle quote replacement
+        if 'quote' in fields:
+            quote_source = data.get(quote_source_field)
+            if quote_source and quote_source in quotes:
+                available_quotes = [q for q in quotes[quote_source] if q not in used_quotes]
                 if available_quotes:
                     selected_quote = random.choice(available_quotes)
                     template = template.replace('{quote}', selected_quote)
-                    used_quotes.add(selected_quote)  # Track the used quote
+                    used_quotes.add(selected_quote)
                 else:
-                    # Fallback to a template without quote if all quotes are used
-                    while '{quote}' in template:
-                        template = random.choice(general_templates)
+                    template = template.replace('"{quote}"', '')
             else:
-                # Fallback to a template without quote if philosopher has no quotes
-                while '{quote}' in template:
-                    template = random.choice(general_templates)
+                template = template.replace('"{quote}"', '')
         
-        # Handle second philosopher if needed
-        if '{philosopher2}' in template:
-            available_philosophers = [p for p in philosophers if p != philosopher and p not in forbidden_philosophers]
-            if available_philosophers:
-                philosopher2 = random.choice(available_philosophers)
-                if philosopher2 not in mentioned_philosophers:
-                    philosopher2_name = philosopher2
-                    mentioned_philosophers.add(philosopher2)
-                else:
-                    philosopher2_name = philosopher2.split()[-1]
-                data['philosopher2'] = philosopher2_name
-                used_philosophers.append(philosopher2)
-            else:
-                # Fallback: Choose a template without {philosopher2}
-                while '{philosopher2}' in template:
-                    template = random.choice(general_templates)
-        
-        # Add context if required
-        if '{context}' in template:
-            data['context'] = random.choice(contexts)
-        
+        # Format the sentence
         sentence = template.format(**data)
         
-        # Handle citation if present
+        # Handle citations
         if '[citation]' in sentence and all_references:
             reference = random.choice(all_references)
             if reference not in cited_references:
                 cited_references.append(reference)
             number = cited_references.index(reference) + 1
-            citation_text = f"[^ {number}]"  # Use Obsidian footnote syntax with space for readability
+            citation_text = f"[^ {number}]"
             sentence = sentence.replace('[citation]', citation_text)
-        
-        used_concepts = [concept]
-        used_terms = [term]
     
+    # Finalize sentence
     sentence = capitalize_first_word(sentence)
-    sentence = ' '.join(sentence.split())  # Normalize spacing
+    sentence = ' '.join(sentence.split())
     return [(sentence, None)], used_philosophers, used_concepts, used_terms
