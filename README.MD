@@ -81,7 +81,8 @@ I would like to thank Andrew C. Bulhak, the original creator of The Postmodernis
 
 - **Redundant Phrases**: The generated text may sometimes include redundant use of the same or synonymous words and phrases back to back, which can hinder factuality and comprehension. This issue is known and is being actively worked on to improve the quality of the generated content.
 - **Overly Generic Phrasing**: Some generated text may be overly generic, which can reduce the uniqueness and impact of the content. This issue is being addressed.
-- **Double Periods at Sentence Endings**: Some sentences may abruptly end with double periods. This issue is being addressed.
+- **Excessive Categorization of Concepts & Terms**: Some words are included in both categories. A randomly called concept which also exists in the category of terms will not be italicized due to being called as a concept.
+- **Capitalization Issues**: First words of sentences and names of thinkers do not adhere to the rules of capitalization at all times.
 
 ## Roadmap
 
