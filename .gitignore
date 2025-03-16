@@ -5,6 +5,7 @@ __pycache__/paragraph.cpython-313.pyc
 __pycache__/sentence.cpython-313.pyc
 __pycache__/reference.cpython-313.pyc
 __pycache__/citation_utils.cpython-313.pyc
+__pycache__/quotes.cpython-313.pyc
 
 # Virtual environment
 venv/
@@ -17,4 +18,3 @@ venv/
 
 # IDE specific files
 .vscode/
-__pycache__/quotes.cpython-313.pyc
