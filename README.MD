@@ -84,6 +84,7 @@ Contributions to The Postmodern Generator project are welcome! To contribute, fo
 
 ## Known Issues
 
+- **Capitalization Issues**: First words of sentences, initials of first names, and names of thinkers/philosophers do not adhere to the rules of capitalization at all times. Occassionally, you may see a wildly capitalized first letter even when the word that contains it is not found at the beginning of a sentence.
 - **Redundant Phrases**: The generated text may sometimes include redundant use of the same or synonymous words and phrases back to back, which can hinder factuality and comprehension. This issue is known and is being actively worked on to improve the quality of the generated content.
 - **Overly Generic Phrasing**: Some generated text may be overly generic, which can reduce the uniqueness and impact of the content. This issue is being addressed.
 - **Excessive Categorization of Concepts & Terms**: Some words are included in the categories of both concepts and terms. A randomly called concept which also exists in the category of terms will not be italicized due to being called as a concept.
