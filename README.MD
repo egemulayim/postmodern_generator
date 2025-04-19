@@ -47,7 +47,7 @@ To install the Postmodern Generator, follow these steps:
 
 ## Usage
 
-To generate postmodern text, use the following command:
+To generate postmodern text, execute the following command in your terminal:
 
 ```bash
 python main.py
