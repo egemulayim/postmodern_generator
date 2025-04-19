@@ -1,5 +1,5 @@
 """
-paragraph.py - A module for generating coherent paragraphs in academic writing.
+A module for generating coherent paragraphs in generated essays.
 This module provides functions to create paragraphs with a focus on
 thematic coherence, using a variety of transitional expressions and rhetorical devices.
 It includes functions to generate paragraphs for different sections of an essay,

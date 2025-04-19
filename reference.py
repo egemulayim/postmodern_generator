@@ -1,5 +1,5 @@
 """
-reference.py - A module for generating academic references in a postmodern context.
+A module for generating academic references in a postmodern context.
 This module creates a variety of academic references, including books, journal articles,
 chapters in edited volumes, and conference papers.
 The references are designed to reflect the complexity and depth of postmodern discourse,

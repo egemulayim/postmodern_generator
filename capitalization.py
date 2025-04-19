@@ -1,5 +1,5 @@
 """
-capitalization.py - A module for handling proper capitalization and italicization in academic text.
+A module for handling proper capitalization and italicization in the generated essay.
 This module ensures that philosopher names, titles, and specific terms are properly capitalized
 and italicized according to academic conventions.
 It also provides functions to format headings in title case and italicize terms

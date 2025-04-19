@@ -1,5 +1,5 @@
 """
-metafiction.py - A module for generating metafictional elements in postmodern essays.
+A module for generating metafictional elements in generated essays.
 This module provides functions to create metafictional elements
 that can be inserted into academic writing, particularly in the context of
 postmodern philosophy and theory.

@@ -1,5 +1,5 @@
 """
-citation_utils.py - A module for handling the citation system with academic conventions.
+A module for handling the citation system with academic conventions.
 This module provides functions to generate various types of citations
 including footnotes, inline citations, and bibliographic entries.
 It also includes functions for generating citations with multiple authors,

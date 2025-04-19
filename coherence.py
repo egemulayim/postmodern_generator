@@ -1,12 +1,10 @@
 """
-coherence.py - A module for maintaining thematic and conceptual coherence in generated essays.
+A module for maintaining thematic and conceptual coherence in generated essays.
 This module manages the tracking of concepts, terms, and philosophers used in the essay,
 ensuring that the generated content remains thematically consistent and coherent.
 It includes functions for selecting weighted concepts, terms, and philosophers,
 as well as generating dialectical progressions and oppositional concepts.
 It also provides a system for recording usage and managing relationships between concepts.
-It is designed to work in conjunction with other modules in the essay generation system,
-allowing for a cohesive and sophisticated output.
 """
 
 import random

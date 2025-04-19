@@ -1,6 +1,7 @@
 """
-enhanced_sentence.py - Contains advanced templates for sentence generation
-in academic writing.
+A module for generating sentence data for a postmodern essay generator.
+It contains advanced templates for sentence generation
+in generated essays.
 This module includes templates for introductions, conclusions,
 general statements, and rhetorical questions.
 It also includes metafictional elements that reflect on the writing process itself.

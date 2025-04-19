@@ -1,5 +1,5 @@
 """
-essay.py - A module for coherent essay structure and generation.
+A module for coherent essay structure and generation.
 This module generates a full essay with coherent sections,
 properly formatted citations, and a bibliography.
 It includes functions for generating titles, sections, and

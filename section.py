@@ -1,5 +1,5 @@
 """
-section.py - A module for generating sections of a postmodern essay.
+A module for generating sections of a postmodern essay.
 This module provides functions to create sections of an essay,
 including headings and paragraphs.
 It is designed to be used in conjunction with other modules

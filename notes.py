@@ -1,5 +1,5 @@
 """
-notes.py - A module for generating footnotes and bibliography entries
+A module for generating footnotes and bibliography entries
 that maintain coherence with the main text of the essay.
 This module provides a system for managing notes (footnotes) and bibliography entries.
 It ensures coherence between the notes, the main text, and bibliography.

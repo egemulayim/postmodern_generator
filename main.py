@@ -1,5 +1,5 @@
 """
-main.py - Main entry point for the enhanced postmodern essay generator.
+Main entry point for the postmodern essay generator.
 This script generates a postmodern essay with optional random seed for reproducibility.
 It uses the `essay` module to create the essay content and includes
 academic citation conventions.

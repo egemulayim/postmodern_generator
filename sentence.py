@@ -1,5 +1,5 @@
 """
-sentence.py - A module for sentence generation that incorporates
+A module for sentence generation that incorporates
 dynamic philosopher names, quotes, and citation systems.
 """
 

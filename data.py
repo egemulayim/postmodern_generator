@@ -1,3 +1,11 @@
+"""
+A module for generating data for a postmodern essay generator.
+This module includes lists of philosophers, concepts, terms, contexts,
+adjectives, and academic vocabulary relevant to postmodern philosophy.
+It also includes a dictionary of philosopher concepts,
+which maps philosophers to their key concepts.
+"""
+
 import random
 
 # Lists of philosophers

@@ -1,7 +1,7 @@
 """
-abstract_generator.py - A module for generating sophisticated academic abstracts with keywords.
-This module creates a comprehensive abstract for a postmodern essay,
-including a theoretical framing, methodology, and significance section.
+A module for generating sophisticated academic abstracts with keywords.
+This module creates an abstract for the generated essay,
+including a theoretical framing, methodology, and significance details.
 It also generates a list of keywords relevant to the essay's themes.
 The abstract is designed to be coherent and thematically consistent,
 while also incorporating a metafictional element.
