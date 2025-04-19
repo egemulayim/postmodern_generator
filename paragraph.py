@@ -228,8 +228,8 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
             if not (words[0].startswith('"') or words[0].startswith("'")):
                 sentence = words[0].lower() + ' ' + ' '.join(words[1:]) if len(words) > 1 else words[0].lower()
         
-        # Apply capitalization to ensure proper nouns are capitalized
-        sentence = ensure_proper_capitalization(sentence)
+        # Apply capitalization to ensure proper nouns are capitalized, but DON'T capitalize the first letter
+        sentence = ensure_proper_capitalization(sentence, capitalize_first=False)
         
         paragraph_sentences.append(f"{transition} {sentence}")
 

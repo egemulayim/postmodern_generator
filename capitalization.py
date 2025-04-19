@@ -18,12 +18,13 @@ LOWERCASE_WORDS = {
     "beyond", "plus", "except", "but", "up", "out", "around", "down", "off", "above"
 }
 
-def ensure_proper_capitalization(text):
+def ensure_proper_capitalization(text, capitalize_first=True):
     """
     Ensure proper capitalization of philosopher names and sentence beginnings.
     
     Args:
         text (str): The text to process
+        capitalize_first (bool): Whether to capitalize the first letter of text and sentence beginnings
         
     Returns:
         str: The text with proper capitalization
@@ -31,39 +32,55 @@ def ensure_proper_capitalization(text):
     if not text:
         return text
     
-    # Always capitalize first letter of text
-    if text and text[0].isalpha():
-        text = text[0].upper() + text[1:]
-    
-    # Capitalize philosopher names
+    # Capitalize philosopher names first
     for philosopher in philosophers:
-        # Ensure we match whole words only
-        pattern = r'\b' + re.escape(philosopher.lower()) + r'\b'
-        text = re.sub(pattern, philosopher, text, flags=re.IGNORECASE)
+        # Ensure we match whole words only and handle partial names (last names)
+        full_name_pattern = r'\b' + re.escape(philosopher.lower()) + r'\b'
+        text = re.sub(full_name_pattern, philosopher, text, flags=re.IGNORECASE)
+        
+        # Also handle last names only by splitting the philosopher name and matching the last part
+        name_parts = philosopher.split()
+        if len(name_parts) > 1:
+            last_name = name_parts[-1]
+            last_name_pattern = r'\b' + re.escape(last_name.lower()) + r'\b'
+            text = re.sub(last_name_pattern, last_name, text, flags=re.IGNORECASE)
     
-    # Capitalize beginning of sentences
-    sentences = re.split(r'([.!?]\s+)', text)
-    result = []
+    # Handle special suffixes like "Jr." that should always be capitalized
+    suffixes = ["Jr.", "Sr.", "III", "IV", "V", "VI"]
+    for suffix in suffixes:
+        suffix_pattern = r'\b' + re.escape(suffix.lower()) + r'\b'
+        text = re.sub(suffix_pattern, suffix, text, flags=re.IGNORECASE)
     
-    for i in range(len(sentences)):
-        if i % 2 == 0:  # This is a sentence, not a separator
-            if sentences[i] and len(sentences[i]) > 0:
-                # Make sure the first word is capitalized if it's alphabetic
-                first_word_match = re.match(r'^\s*(\w+)', sentences[i])
-                if first_word_match:
-                    first_word = first_word_match.group(1)
-                    capitalized = first_word[0].upper() + first_word[1:] if first_word and first_word[0].isalpha() else first_word
-                    sentences[i] = re.sub(r'^\s*\w+', lambda m: ' ' * (m.start() - m.start()) + capitalized, sentences[i])
-        result.append(sentences[i])
+    # Only handle sentence capitalization if requested
+    if capitalize_first:
+        # Capitalize first letter of the text
+        if text and text[0].isalpha():
+            text = text[0].upper() + text[1:]
+        
+        # Capitalize beginning of sentences, but be careful about initials
+        # This regex looks for sentence endings followed by space and a word
+        # But excludes patterns like "A. Smith" or "J.R.R. Tolkien"
+        sentence_pattern = r'([.!?])\s+(?!([A-Z]\.)+\s)(\w)'
+        
+        def capitalize_match(match):
+            punctuation = match.group(1)
+            next_char = match.group(3)
+            # Capitalize the next character if it's a letter
+            if next_char.isalpha():
+                return punctuation + ' ' + next_char.upper()
+            return match.group(0)
+        
+        text = re.sub(sentence_pattern, capitalize_match, text)
     
-    return ''.join(result)
+    return text
 
-def ensure_proper_capitalization_with_italics(text):
+def ensure_proper_capitalization_with_italics(text, capitalize_first=True):
     """
     Ensure proper capitalization while preserving existing italics.
     
     Args:
         text (str): The text to process with potential italics markers
+        capitalize_first (bool): Whether to capitalize the first letter of text
         
     Returns:
         str: The text with proper capitalization and preserved italics
@@ -81,13 +98,16 @@ def ensure_proper_capitalization_with_italics(text):
             # This is an italicized part - preserve it but capitalize if needed
             italicized_text = part[1:-1]  # Remove asterisks
             # Only capitalize first letter if it's a title or beginning of sentence
-            if len(processed_parts) == 0 or processed_parts[-1].rstrip().endswith(('.', '!', '?')):
+            if (len(processed_parts) == 0 and capitalize_first) or (processed_parts and processed_parts[-1].rstrip().endswith(('.', '!', '?'))):
                 if italicized_text and italicized_text[0].isalpha():
                     italicized_text = italicized_text[0].upper() + italicized_text[1:]
             processed_parts.append(f"*{italicized_text}*")
         else:
             # Regular text - apply full capitalization rules
-            processed_parts.append(ensure_proper_capitalization(part))
+            if len(processed_parts) == 0:  # If this is the first part
+                processed_parts.append(ensure_proper_capitalization(part, capitalize_first=capitalize_first))
+            else:  # For subsequent parts, we always capitalize the beginning of sentences
+                processed_parts.append(ensure_proper_capitalization(part, capitalize_first=False))
     
     return ''.join(processed_parts)
 
