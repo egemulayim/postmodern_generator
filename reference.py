@@ -1,3 +1,13 @@
+"""
+reference.py - A module for generating academic references in a postmodern context.
+This module creates a variety of academic references, including books, journal articles,
+chapters in edited volumes, and conference papers.
+The references are designed to reflect the complexity and depth of postmodern discourse,
+while also adhering to academic citation conventions.
+It includes functions to generate titles, references, and work types,
+as well as a function to generate a complete bibliography.
+"""
+
 import random
 from data import philosophers, concepts, terms, contexts, adjectives
 

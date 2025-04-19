@@ -1,159 +1,268 @@
+"""
+essay.py - A module for coherent essay structure and generation.
+This module generates a full essay with coherent sections,
+properly formatted citations, and a bibliography.
+It includes functions for generating titles, sections, and
+abstracts, as well as managing notes and references.
+It also ensures proper capitalization and formatting
+of headings and terms.
+"""
+
 import random
 from collections import Counter
+import metafiction
+from coherence import EssayCoherence
 from paragraph import generate_paragraph
 from data import philosophers, concepts, italicized_terms, terms, contexts, adjectives
-from quotes import quotes
+from citation_utils import get_citation_note
 from reference import generate_reference
-
-TRIVIAL_WORDS = {"a", "an", "the", "into", "to", "of", "for", "on", "by", "with", "in", "and", "but", "or"}
-
-def capitalize_italicized(word):
-    """Capitalize the first letter of a word and apply italics if in italicized_terms."""
-    if word and word[0].isalpha():
-        capitalized = word[0].upper() + word[1:]
-    else:
-        capitalized = word
-    if capitalized.lower() in italicized_terms:
-        return f"*{capitalized}*"
-    return capitalized
-
-def apply_title_case(title):
-    """Applies academic title case, handling italicized terms."""
-    title = title.strip()
-    words = title.split()
-    result = []
-    capitalize_next = True
-    for word in words:
-        if capitalize_next or word.lower() not in TRIVIAL_WORDS:
-            result.append(capitalize_italicized(word))
-        else:
-            result.append(word.lower())
-        capitalize_next = word.endswith(":")
-    return " ".join(result)
-
-abstract_title_templates = [
-    "The Abyss of Meaning: {concept} and {term} in Dialogue",
-    "Fragments of Thought: Reflections on {philosopher}'s {concept}",
-    "Echoes of {term}: A Postmodern Inquiry",
-    "Navigating the Labyrinth: {concept} in {context}",
-    "The Play of Signifiers: {term} and {concept}",
-    "Disrupting the Center: {philosopher} and {term}",
-    "Between the Lines: {concept} as {term}",
-    "The Specter of {concept}: Haunting {context}",
-    "Unraveling {term}: A {context} Perspective",
-    "The Rhizomatic Web: {concept} and {term}"
-]
-
-def generate_section_title(section_parts):
-    """Generate a section title based on content using abstract templates."""
-    philosopher_count = Counter()
-    concept_count = Counter()
-    term_count = Counter()
-    
-    for part in section_parts:
-        text = part.strip().replace("[citation]", "").replace("[reflection]", "").lower()
-        text = text.replace(".", "").replace(",", "").replace("*", "")
-        words = text.split()
-        
-        for ph in philosophers:
-            if ph.lower() in text:
-                philosopher_count[ph] += 1
-        for word in words:
-            if word in [c.lower() for c in concepts]:
-                concept_count[word] += 1
-            if word in [t.lower() for t in terms]:
-                term_count[word] += 1
-    
-    top_philosophers = [ph for ph, _ in philosopher_count.most_common(1)]
-    top_concepts = [c for c, _ in concept_count.most_common(1)]
-    top_terms = [t for t, _ in term_count.most_common(1)]
-    
-    template = random.choice(abstract_title_templates)
-    data = {}
-    if '{concept}' in template:
-        concept = top_concepts[0] if top_concepts else random.choice(concepts)
-        data['concept'] = concept
-    if '{term}' in template:
-        term = top_terms[0] if top_terms else random.choice(terms)
-        data['term'] = term
-    if '{philosopher}' in template:
-        philosopher = top_philosophers[0] if top_philosophers else random.choice(philosophers)
-        data['philosopher'] = philosopher
-    if '{context}' in template:
-        data['context'] = random.choice(contexts)
-    
-    raw_title = template.format(**data)
-    return apply_title_case(raw_title)
-
-def generate_title():
-    """Generate the essay title."""
-    concept = random.choice(concepts)
-    term = random.choice(terms)
-    adjective = random.choice(adjectives)
-    raw_title = f"unraveling {concept}: a {adjective} inquiry into {term}"
-    return apply_title_case(raw_title)
+from capitalization import (
+    ensure_proper_capitalization_with_italics, 
+    format_headings_with_title_case,
+    italicize_terms_in_text,
+    apply_title_case
+)
+from notes import NoteSystem
+from abstract_generator import generate_enhanced_abstract
 
 def generate_essay():
-    """Generate the full essay."""
-    all_references = [generate_reference() for _ in range(12)]
-    cited_references = []
+    """Generate the full essay with enhanced internal reasoning, proper capitalization, and coherent notes."""
+    # Initialize coherence manager for thematic unity
+    coherence_manager = EssayCoherence()
+    
+    # Initialize note system for managing citations and bibliography
+    note_system = NoteSystem()
+    
+    # Generate references
+    all_references = [generate_reference() for _ in range(15)]
     essay_parts = []
-    mentioned_philosophers = set()
-    used_concepts = set()
-    used_terms = set()
     used_quotes = set()
 
-    # Title
-    title = generate_title()
+    # Title with greater sophistication
+    raw_title = generate_title(coherence_manager)
+    # Apply title case without running through the regular capitalization system
+    title = apply_title_case(raw_title)
     essay_parts.append(f"# {title}\n\n")
 
-    # Introduction
+    # Generate a more comprehensive abstract with keywords
+    abstract = generate_enhanced_abstract(coherence_manager)
+    
+    # Apply capitalization fix to the abstract
+    abstract = ensure_proper_capitalization_with_italics(abstract)
+    
+    # Apply italicization to terms
+    abstract = italicize_terms_in_text(abstract)
+    
+    essay_parts.append(abstract)
+
+    # Initialize empty sets for tracking concepts and terms
+    intro_concepts = set()
+    intro_terms = set()
+
+    # Introduction with more theoretical sophistication
+    intro_theme = coherence_manager.get_section_theme()
+    
+    # Create a basic context for the introduction
+    intro_context = {
+        'section': 'introduction'
+    }
+    
+    # Generate the introduction paragraph
     intro_text, intro_concepts, intro_terms = generate_paragraph(
-        "introduction", random.randint(6, 8), all_references, mentioned_philosophers,
-        used_quotes=used_quotes, all_references=all_references, cited_references=cited_references
+        "introduction", random.randint(7, 9), all_references, 
+        used_quotes=used_quotes, note_system=note_system, context=intro_context
     )
+    
+    # Add metafictional element to introduction
+    intro_text = metafiction.insert_metafiction_in_paragraph(intro_text)
+    
+    # Apply capitalization fix
+    intro_text = ensure_proper_capitalization_with_italics(intro_text)
+    
+    # Apply italicization to terms
+    intro_text = italicize_terms_in_text(intro_text)
+    
     essay_parts.append("## Introduction\n\n")
     essay_parts.append(intro_text + "\n\n")
-    used_concepts.update(intro_concepts)
-    used_terms.update(intro_terms)
+    
+    # Record usage
+    coherence_manager.record_usage(concepts=intro_concepts, terms=intro_terms)
 
-    # Body sections
+    # Body sections with dialectical development
     num_body_sections = random.randint(3, 5)
-    for _ in range(num_body_sections):
+    
+    # Create a dialectical progression for section themes
+    starting_concept = coherence_manager.primary_concepts[0] if coherence_manager.primary_concepts else random.choice(concepts)
+    dialectic = coherence_manager.develop_dialectic(starting_concept, num_steps=num_body_sections - 1)
+    
+    for i in range(num_body_sections):
+        # Get a thematic focus for this section that continues the dialectic
+        section_theme = coherence_manager.get_section_theme()
+        if i < len(dialectic):
+            section_theme['concept'] = dialectic[i]
+        
         section_paragraphs = []
-        for _ in range(random.randint(2, 3)):
+        section_concepts = set()
+        section_terms = set()
+        num_paragraphs = random.randint(2, 3)
+        
+        for j in range(num_paragraphs):
+            # Create context for this paragraph
+            paragraph_context = {
+                'concepts': set() if j == 0 else section_concepts,
+                'terms': set() if j == 0 else section_terms,
+                'section': section_theme.get('concept', 'general'),
+                'philosophers': [section_theme.get('philosopher'), section_theme.get('related_philosopher')]
+            }
+            
             paragraph_text, paragraph_concepts, paragraph_terms = generate_paragraph(
-                "general", random.randint(6, 10), all_references, mentioned_philosophers,
-                used_quotes=used_quotes, all_references=all_references, cited_references=cited_references
+                "general", random.randint(6, 10), all_references,
+                used_quotes=used_quotes, note_system=note_system, context=paragraph_context
             )
+            
+            # Add metafictional elements with decreasing probability
+            if j == num_paragraphs - 1 or random.random() < 0.4:
+                paragraph_text = metafiction.insert_metafiction_in_paragraph(paragraph_text)
+            
+            # Apply capitalization fix
+            paragraph_text = ensure_proper_capitalization_with_italics(paragraph_text)
+            
+            # Apply italicization to terms
+            paragraph_text = italicize_terms_in_text(paragraph_text)
+            
             section_paragraphs.append(paragraph_text)
-            used_concepts.update(paragraph_concepts)
-            used_terms.update(paragraph_terms)
-        section_title = generate_section_title(section_paragraphs)
+            section_concepts.update(paragraph_concepts)
+            section_terms.update(paragraph_terms)
+            coherence_manager.record_usage(concepts=paragraph_concepts, terms=paragraph_terms)
+        
+        # Generate a section title and apply title case appropriately
+        raw_section_title = generate_section_title(section_paragraphs, coherence_manager, section_theme)
+        section_title = apply_title_case(raw_section_title)
+        
         essay_parts.append(f"## {section_title}\n\n")
         essay_parts.append('\n\n'.join(section_paragraphs) + "\n\n")
 
-    # Conclusion
+    # Conclusion with enhanced self-reference
+    conclusion_context = {
+        'concepts': coherence_manager.primary_concepts[:2],
+        'terms': coherence_manager.primary_terms[:2],
+        'section': 'conclusion'
+    }
+    
     conclusion_text, conclusion_concepts, conclusion_terms = generate_paragraph(
-        "conclusion", random.randint(6, 8), all_references, mentioned_philosophers,
-        used_quotes=used_quotes, all_references=all_references, cited_references=cited_references
+        "conclusion", random.randint(6, 8), all_references,
+        used_quotes=used_quotes, note_system=note_system, context=conclusion_context
     )
+    
+    coherence_manager.record_usage(concepts=conclusion_concepts, terms=conclusion_terms)
+    
+    # Add metafictional conclusion
+    metafictional_conclusion = metafiction.generate_metafictional_conclusion(
+        coherence_manager.used_concepts, coherence_manager.used_terms
+    )
+    conclusion_text += ' ' + metafictional_conclusion
+    
+    # Apply capitalization fix
+    conclusion_text = ensure_proper_capitalization_with_italics(conclusion_text)
+    
+    # Apply italicization to terms
+    conclusion_text = italicize_terms_in_text(conclusion_text)
+    
     essay_parts.append("## Conclusion\n\n")
-    # Add metafictional sentence as a separate sentence
-    if conclusion_concepts:
-        concept = random.choice(list(conclusion_concepts))
-        metafiction_sentence = f"in attempting to conclude this essay, we find ourselves caught in the very {concept} we sought to analyze, a testament to its pervasive influence."
-        # Capitalize as a new sentence and ensure it ends with a period
-        metafiction_sentence = metafiction_sentence[0].upper() + metafiction_sentence[1:]
-        if not metafiction_sentence.endswith('.'):
-            metafiction_sentence += '.'
-        conclusion_text += ' ' + metafiction_sentence
     essay_parts.append(conclusion_text + "\n\n")
 
-    # References section
-    essay_parts.append("## Notes\n\n")
-    for i, ref in enumerate(cited_references, 1):
-        essay_parts.append(f"[^{i}]: {ref}\n")
+    # Generate notes and bibliography sections
+    notes_section = note_system.generate_notes_section()
+    bibliography_section = note_system.generate_bibliography_section()
+    
+    # Add notes and bibliography to the essay
+    if notes_section:
+        essay_parts.append(notes_section)
+    
+    if bibliography_section:
+        essay_parts.append(bibliography_section)
 
+    # Combine all parts into the essay text
     essay_text = ''.join(essay_parts)
+    
+    # Final pass: ensure all headings have proper title case
+    essay_text = format_headings_with_title_case(essay_text)
+    
     return essay_text
+
+def generate_title(coherence_manager):
+    """
+    Generate a more sophisticated and thematically coherent title.
+    
+    Args:
+        coherence_manager: The EssayCoherence instance to use for theme management
+    
+    Returns:
+        str: A formatted title
+    """
+    # Get primary themes for consistency
+    primary_concept = coherence_manager.get_weighted_concept()
+    primary_term = coherence_manager.get_weighted_term()
+    
+    # More sophisticated title templates
+    title_templates = [
+        f"The {random.choice(['Dialectic', 'Discourse', 'Problematic', 'Aporia', 'Paradox'])} of {primary_concept}: {random.choice(['Toward', 'Towards', 'Interrogating', 'Rethinking', 'Reimagining'])} {primary_term}",
+        f"{primary_concept} and {primary_term}: {random.choice(['Beyond', 'After', 'Against', 'Within', 'Between'])} {coherence_manager.get_related_concept(primary_concept)}",
+        f"{random.choice(['Deconstructing', 'Problematizing', 'Negotiating', 'Tracing', 'Mapping'])} {primary_concept}: {primary_term} in the Age of {coherence_manager.get_oppositional_concept(primary_concept)}",
+        f"The {random.choice(['Impossibility', 'Possibility', 'Crisis', 'Politics', 'Poetics'])} of {primary_term}: {primary_concept} and its {random.choice(['Discontents', 'Others', 'Afterlives', 'Limits', 'Futures'])}",
+        f"{primary_concept}/{primary_term}: {random.choice(['Towards', 'Beyond', 'After', 'Against'])} a {random.choice(['Critical', 'Radical', 'Deconstructive', 'Post-Dialectical', 'Non-Representational'])} Theory",
+        f"{random.choice(['Reading', 'Writing', 'Theorizing', 'Thinking', 'Performing'])} {primary_concept} {random.choice(['After', 'Through', 'Against', 'With', 'Beyond'])} {primary_term}",
+        f"{random.choice(['The End of', 'After', 'Beyond', 'Against', 'Rethinking'])} {primary_concept}: {primary_term} in the Era of {coherence_manager.get_related_concept(primary_concept)}"
+    ]
+    
+    raw_title = random.choice(title_templates)
+    
+    # Record usage of concepts and terms in the title
+    coherence_manager.record_usage(
+        concepts=[primary_concept, coherence_manager.get_related_concept(primary_concept)],
+        terms=[primary_term]
+    )
+    
+    return raw_title
+
+def generate_section_title(section_parts, coherence_manager, section_theme):
+    """
+    Generate a section title based on content and thematic focus.
+    
+    Args:
+        section_parts: The content of the section
+        coherence_manager: The EssayCoherence instance
+        section_theme: The thematic focus for the section
+    
+    Returns:
+        str: A raw section title (will be formatted with title case later)
+    """
+    philosopher = section_theme.get('philosopher', random.choice(philosophers))
+    concept = section_theme.get('concept', coherence_manager.get_weighted_concept())
+    term = section_theme.get('term', coherence_manager.get_weighted_term())
+    
+    # More sophisticated section title templates
+    section_templates = [
+        f"{philosopher} and the Politics of {concept}",
+        f"The {random.choice(['Dialectic', 'Discourse', 'Problematic'])} of {concept} in {philosopher}'s Theory of {term}",
+        f"{concept} as {term}: {random.choice(['Reading', 'Rethinking', 'Reimagining'])} {philosopher}",
+        f"{random.choice(['Beyond', 'After', 'Against'])} {concept}: {philosopher} on {term}",
+        f"{term} and its {random.choice(['Discontents', 'Others', 'Limits'])}: {philosopher}'s {concept}",
+        f"The {random.choice(['Question', 'Problem', 'Aporia'])} of {term} in {philosopher}'s {concept}",
+        f"{philosopher}'s {concept}: {random.choice(['Toward', 'Towards', 'Beyond'])} a Theory of {term}",
+        f"{concept}/{term}: {philosopher} and the {random.choice(['Politics', 'Poetics', 'Ethics'])} of {random.choice(['Difference', 'Identity', 'Representation', 'Resistance'])}",
+        f"{term} in the Age of {concept}: {random.choice(['Reading', 'Rethinking', 'Reimagining'])} {philosopher}",
+        f"The {random.choice(['End', 'Death', 'Future', 'Return'])} of {concept}: {philosopher} and {term}"
+    ]
+    
+    title = random.choice(section_templates)
+    
+    # Record usage
+    coherence_manager.record_usage(
+        philosophers=[philosopher],
+        concepts=[concept],
+        terms=[term]
+    )
+    
+    # Return raw title (will be formatted with title case later)
+    return title

@@ -1,3 +1,9 @@
+"""
+quotes.py - A module for storing and retrieving quotes from postmodern philosophers.
+This module provides a dictionary of quotes organized by philosopher, 
+designed to support academic writing and discussions on postmodern philosophy.
+"""
+
 # Quotes dictionary: maps philosopher full names to lists of their quotes
 quotes = {
     "Jacques Derrida": [
