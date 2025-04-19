@@ -1,7 +1,6 @@
 """
 A module for generating sentence data for a postmodern essay generator.
-It contains advanced templates for sentence generation
-in generated essays.
+It contains advanced templates for sentence generation.
 This module includes templates for introductions, conclusions,
 general statements, and rhetorical questions.
 It also includes metafictional elements that reflect on the writing process itself.
