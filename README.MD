@@ -1,6 +1,6 @@
 # The Postmodern Generator
 
-Welcome to The Postmodern Generator project! This repository contains the source code for a unique text generator that produces postmodern-style content. This README file will guide you through the setup, usage, and contribution process for the project.
+Welcome to The Postmodern Generator project! This repository contains the source code for a text generator that produces postmodern-style academic essays. This README file will guide you through the setup, usage, and contribution process for the project.
 
 ## Table of Contents
 
@@ -8,10 +8,11 @@ Welcome to The Postmodern Generator project! This repository contains the source
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Roadmap](#roadmap)
 - [Contributing](#contributing)
+- [Known Issues](#known-issues)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
-- [Known Issues](#known-issues)
 
 ## Introduction
 
@@ -52,6 +53,16 @@ To generate postmodern text, use the following command:
 python main.py
 ```
 
+## Roadmap
+
+The following features and improvements are planned for future releases:
+
+- Enhanced Text Generation: Improve the linguistic and contextual relevancy to generate more coherent and contextually diverse text.
+- User Interface: Develop a web-based user interface for easier interaction with the generator.
+- Additional Datasets: Incorporate more datasets to expand the variety of generated content.
+- Configuration Options: Provide more configuration options to customize the text generation process.
+- Add option to generate in the HTML formatting system.
+
 ## Contributing
 
 Contributions to The Postmodern Generator project are welcome! To contribute, follow these steps:
@@ -71,6 +82,12 @@ Contributions to The Postmodern Generator project are welcome! To contribute, fo
     ```
 5. Create a pull request on the main repository.
 
+## Known Issues
+
+- **Redundant Phrases**: The generated text may sometimes include redundant use of the same or synonymous words and phrases back to back, which can hinder factuality and comprehension. This issue is known and is being actively worked on to improve the quality of the generated content.
+- **Overly Generic Phrasing**: Some generated text may be overly generic, which can reduce the uniqueness and impact of the content. This issue is being addressed.
+- **Excessive Categorization of Concepts & Terms**: Some words are included in the categories of both concepts and terms. A randomly called concept which also exists in the category of terms will not be italicized due to being called as a concept.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
@@ -78,19 +95,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Acknowledgements
 
 I would like to thank Andrew C. Bulhak, the original creator of The Postmodernism Generator, for the inspiration and foundational work that made this project possible.
-
-## Known Issues
-
-- **Redundant Phrases**: The generated text may sometimes include redundant use of the same or synonymous words and phrases back to back, which can hinder factuality and comprehension. This issue is known and is being actively worked on to improve the quality of the generated content.
-- **Overly Generic Phrasing**: Some generated text may be overly generic, which can reduce the uniqueness and impact of the content. This issue is being addressed.
-- **Excessive Categorization of Concepts & Terms**: Some words are included in the categories of both concepts and terms. A randomly called concept which also exists in the category of terms will not be italicized due to being called as a concept.
-
-## Roadmap
-
-The following features and improvements are planned for future releases:
-
-- Enhanced Text Generation: Improve the linguistic and contextual relevancy to generate more coherent and contextually diverse text.
-- User Interface: Develop a web-based user interface for easier interaction with the generator.
-- Additional Datasets: Incorporate more datasets to expand the variety of generated content.
-- Configuration Options: Provide more configuration options to customize the text generation process.
-- Add option to generate in the HTML formatting system.
