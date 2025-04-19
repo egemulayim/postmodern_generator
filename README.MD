@@ -19,10 +19,12 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 
 ## Features
 
-- **Text Generation**: Generate postmodern-style text with a single command.
-- **Customizable**: Adjust parameters to influence the style and complexity of the generated text.
-- **Extensible**: Easily extend the generator with new datasets, functions, and algorithms.
-- **Lightweight**: This project does not use large language models (LLMs) and is lightweight to run locally.
+- **Postmodern Text Generation**: Produces text that mimics the style of postmodern academic writing, inspired by Andrew C. Bulhak's The Postmodernism Generator.
+- **Lightweight and Efficient**: Does not rely on large language models, ensuring quick and resource-efficient text generation.
+- **Customizable Output**: Allows users to adjust parameters such as text length, complexity, and thematic focus.
+- **Extensible Design**: Easily integrate new datasets, templates, or algorithms to expand the generator's capabilities.
+- **Command-Line Interface**: Simple CLI for generating text with minimal setup.
+- **Future-Proof**: Designed with modularity in mind to support future enhancements.
 
 ## Installation
 
@@ -81,8 +83,7 @@ I would like to thank Andrew C. Bulhak, the original creator of The Postmodernis
 
 - **Redundant Phrases**: The generated text may sometimes include redundant use of the same or synonymous words and phrases back to back, which can hinder factuality and comprehension. This issue is known and is being actively worked on to improve the quality of the generated content.
 - **Overly Generic Phrasing**: Some generated text may be overly generic, which can reduce the uniqueness and impact of the content. This issue is being addressed.
-- **Excessive Categorization of Concepts & Terms**: Some words are included in both categories. A randomly called concept which also exists in the category of terms will not be italicized due to being called as a concept.
-- **Capitalization Issues**: First words of sentences and names of thinkers do not adhere to the rules of capitalization at all times.
+- **Excessive Categorization of Concepts & Terms**: Some words are included in the categories of both concepts and terms. A randomly called concept which also exists in the category of terms will not be italicized due to being called as a concept.
 
 ## Roadmap
 
@@ -92,4 +93,4 @@ The following features and improvements are planned for future releases:
 - User Interface: Develop a web-based user interface for easier interaction with the generator.
 - Additional Datasets: Incorporate more datasets to expand the variety of generated content.
 - Configuration Options: Provide more configuration options to customize the text generation process.
-- Add option to generate in HTML and Markdown formatting systems.
+- Add option to generate in the HTML formatting system.
