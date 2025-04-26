@@ -195,18 +195,22 @@ def apply_title_case(title):
         result.append(word)
         capitalize_next = False  # Reset for next word unless it's after a delimiter
     
-    # Join the words back together
+    # Join the words back together with modified delimiter handling
     formatted_title = ""
     for i, part in enumerate(result):
-        if part in [':', '/', '-', '–', '—']:
-            # No space before a delimiter, space after (unless it's the last part)
+        if part in ['/', '-', '–', '—']:  # No spaces around slashes and dashes
+            # No space before or after a slash or dash
+            formatted_title = formatted_title.rstrip()
+            formatted_title += part
+        elif part == ':':  # Colon gets space after, but not before
+            # No space before colon, space after (unless it's the last part)
             formatted_title = formatted_title.rstrip()
             formatted_title += part
             if i < len(result) - 1:
                 formatted_title += " "
         else:
-            # Regular word - add with space if not the first word
-            if i > 0 and not result[i-1] in [':', '/', '-', '–', '—']:
+            # Regular word - add with space if not the first word and previous isn't a slash or dash
+            if i > 0 and result[i-1] not in ['/', '-', '–', '—']:
                 formatted_title += " "
             formatted_title += part
     

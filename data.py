@@ -532,3 +532,402 @@ discursive_modes = [
     "fragmentation", "pastiche", "bricolage", "metafiction",
     "ontological plurality", "temporal distortion", "heteroglossia"
 ]
+
+# NEW ADDITION: Key philosophical works with accurate publication years
+philosopher_key_works = {
+    # French poststructuralists and postmodernists
+    "Jacques Derrida": [
+        ("Of Grammatology", 1976), 
+        ("Writing and Difference", 1978),
+        ("Margins of Philosophy", 1982),
+        ("Positions", 1981),
+        ("Limited Inc", 1988),
+        ("Specters of Marx", 1994),
+        ("The Gift of Death", 1995),
+        ("Archive Fever", 1996),
+        ("The Politics of Friendship", 1997),
+        ("The Animal That Therefore I Am", 2008)
+    ],
+    "Michel Foucault": [
+        ("Madness and Civilization", 1965),
+        ("The Order of Things", 1970),
+        ("The Archaeology of Knowledge", 1972),
+        ("Discipline and Punish", 1977),
+        ("The History of Sexuality, Vol. 1", 1978),
+        ("The History of Sexuality, Vol. 2", 1985),
+        ("The History of Sexuality, Vol. 3", 1986),
+        ("Power/Knowledge", 1980),
+        ("The Birth of the Clinic", 1973),
+        ("The Use of Pleasure", 1984)
+    ],
+    "Jean Baudrillard": [
+        ("Simulacra and Simulation", 1981),
+        ("The System of Objects", 1968),
+        ("For a Critique of the Political Economy of the Sign", 1972),
+        ("The Mirror of Production", 1975),
+        ("Symbolic Exchange and Death", 1976),
+        ("In the Shadow of the Silent Majorities", 1983),
+        ("America", 1986),
+        ("The Gulf War Did Not Take Place", 1991),
+        ("The Consumer Society", 1970),
+        ("The Spirit of Terrorism", 2002)
+    ],
+    "Gilles Deleuze": [
+        ("Difference and Repetition", 1968),
+        ("The Logic of Sense", 1969),
+        ("Nietzsche and Philosophy", 1962),
+        ("Bergsonism", 1966),
+        ("Expressionism in Philosophy: Spinoza", 1968),
+        ("Kafka: Toward a Minor Literature", 1975),
+        ("Foucault", 1986),
+        ("The Fold: Leibniz and the Baroque", 1988),
+        ("Cinema 1: The Movement-Image", 1983),
+        ("Cinema 2: The Time-Image", 1985)
+    ],
+    "Gilles Deleuze & Félix Guattari": [
+        ("Anti-Oedipus", 1972),
+        ("A Thousand Plateaus", 1980),
+        ("What Is Philosophy?", 1991)
+    ],
+    "Jean-François Lyotard": [
+        ("The Postmodern Condition", 1984),
+        ("The Differend", 1983),
+        ("Libidinal Economy", 1974),
+        ("The Inhuman", 1988),
+        ("Lessons on the Analytic of the Sublime", 1994),
+        ("Discourse, Figure", 2011),
+        ("Just Gaming", 1985),
+        ("Heidegger and 'the Jews'", 1990),
+        ("Postmodern Fables", 1997),
+        ("The Confession of Augustine", 2000)
+    ],
+    "Julia Kristeva": [
+        ("Revolution in Poetic Language", 1984),
+        ("Powers of Horror", 1982),
+        ("Tales of Love", 1987),
+        ("Black Sun", 1989),
+        ("Strangers to Ourselves", 1991),
+        ("Nations without Nationalism", 1993),
+        ("New Maladies of the Soul", 1995),
+        ("The Sense and Non-Sense of Revolt", 2000),
+        ("Intimate Revolt", 2002),
+        ("The Severed Head", 2012)
+    ],
+    "Judith Butler": [
+        ("Gender Trouble", 1990),
+        ("Bodies That Matter", 1993),
+        ("Excitable Speech", 1997),
+        ("The Psychic Life of Power", 1997),
+        ("Precarious Life", 2004),
+        ("Undoing Gender", 2004),
+        ("Giving an Account of Oneself", 2005),
+        ("Frames of War", 2009),
+        ("Notes Toward a Performative Theory of Assembly", 2015),
+        ("The Force of Nonviolence", 2020)
+    ],
+    "Donna Haraway": [
+        ("Primate Visions", 1989),
+        ("Simians, Cyborgs, and Women", 1991),
+        ("Modest_Witness@Second_Millennium", 1997),
+        ("The Companion Species Manifesto", 2003),
+        ("When Species Meet", 2008),
+        ("Staying with the Trouble", 2016),
+        ("Crystals, Fabrics, and Fields", 1976),
+        ("The Haraway Reader", 2004),
+        ("Manifestly Haraway", 2016),
+        ("Making Kin Not Population", 2018)
+    ],
+    "Roland Barthes": [
+        ("Writing Degree Zero", 1953),
+        ("Mythologies", 1957),
+        ("Elements of Semiology", 1964),
+        ("The Fashion System", 1967),
+        ("S/Z", 1970),
+        ("The Pleasure of the Text", 1973),
+        ("Roland Barthes by Roland Barthes", 1975),
+        ("A Lover's Discourse", 1977),
+        ("Image-Music-Text", 1977),
+        ("Camera Lucida", 1980)
+    ],
+    "Richard Rorty": [
+        ("Philosophy and the Mirror of Nature", 1979),
+        ("Consequences of Pragmatism", 1982),
+        ("Contingency, Irony, and Solidarity", 1989),
+        ("Objectivity, Relativism, and Truth", 1991),
+        ("Essays on Heidegger and Others", 1991),
+        ("Truth and Progress", 1998),
+        ("Achieving Our Country", 1998),
+        ("Philosophy and Social Hope", 1999),
+        ("Against Bosses, Against Oligarchies", 1999),
+        ("Philosophy as Cultural Politics", 2007)
+    ],
+    "Giorgio Agamben": [
+        ("Homo Sacer", 1998),
+        ("State of Exception", 2005),
+        ("The Open", 2004),
+        ("The Kingdom and the Glory", 2011),
+        ("The Highest Poverty", 2013),
+        ("The Use of Bodies", 2016),
+        ("Remnants of Auschwitz", 1999),
+        ("Infancy and History", 1993),
+        ("The Coming Community", 1993),
+        ("Potentialities", 1999)
+    ],
+    "Slavoj Žižek": [
+        ("The Sublime Object of Ideology", 1989),
+        ("Looking Awry", 1991),
+        ("Enjoy Your Symptom!", 1992),
+        ("Tarrying with the Negative", 1993),
+        ("The Metastases of Enjoyment", 1994),
+        ("The Plague of Fantasies", 1997),
+        ("The Ticklish Subject", 1999),
+        ("Welcome to the Desert of the Real", 2002),
+        ("The Puppet and the Dwarf", 2003),
+        ("Violence", 2008)
+    ],
+    "Fredric Jameson": [
+        ("Marxism and Form", 1971),
+        ("The Prison-House of Language", 1972),
+        ("The Political Unconscious", 1981),
+        ("Postmodernism, or, The Cultural Logic of Late Capitalism", 1991),
+        ("Signatures of the Visible", 1990),
+        ("The Geopolitical Aesthetic", 1992),
+        ("The Seeds of Time", 1994),
+        ("The Cultural Turn", 1998),
+        ("A Singular Modernity", 2002),
+        ("Archaeologies of the Future", 2005)
+    ],
+    "Gayatri Chakravorty Spivak": [
+        ("In Other Worlds", 1987),
+        ("The Post-Colonial Critic", 1990),
+        ("Outside in the Teaching Machine", 1993),
+        ("A Critique of Postcolonial Reason", 1999),
+        ("Death of a Discipline", 2003),
+        ("Other Asias", 2008),
+        ("An Aesthetic Education in the Era of Globalization", 2012),
+        ("Readings", 2014),
+        ("Can the Subaltern Speak?", 1988),
+        ("Nationalism and the Imagination", 2010)
+    ],
+    "Edward Said": [
+        ("Orientalism", 1978),
+        ("The Question of Palestine", 1979),
+        ("Covering Islam", 1981),
+        ("The World, the Text, and the Critic", 1983),
+        ("After the Last Sky", 1986),
+        ("Culture and Imperialism", 1993),
+        ("Representations of the Intellectual", 1994),
+        ("Out of Place", 1999),
+        ("Reflections on Exile", 2000),
+        ("Humanism and Democratic Criticism", 2004)
+    ],
+    "Homi K. Bhabha": [
+        ("The Location of Culture", 1994),
+        ("Nation and Narration", 1990),
+        ("The Right to Narrate", 2001),
+        ("Our Neighbours, Ourselves", 2011),
+        ("The New Humanities", 2013),
+        ("In the Cave of Making", 2010),
+        ("Democracy De-realized", 2003),
+        ("Cosmopolitanisms", 2001),
+        ("Aura and Agora", 2001),
+        ("The Black Savant and the Dark Princess", 1998)
+    ],
+    "Linda Hutcheon": [
+        ("Narcissistic Narrative", 1980),
+        ("A Theory of Parody", 1985),
+        ("A Poetics of Postmodernism", 1988),
+        ("The Politics of Postmodernism", 1989),
+        ("Irony's Edge", 1994),
+        ("Opera: Desire, Disease, Death", 1996),
+        ("Bodily Charm", 2000),
+        ("A Theory of Adaptation", 2006),
+        ("The Canadian Postmodern", 2012),
+        ("Rethinking Literary History", 2002)
+    ],
+    "Paul Virilio": [
+        ("Speed and Politics", 1977),
+        ("War and Cinema", 1989),
+        ("The Aesthetics of Disappearance", 1991),
+        ("The Art of the Motor", 1995),
+        ("Open Sky", 1997),
+        ("Politics of the Very Worst", 1999),
+        ("The Information Bomb", 2000),
+        ("Ground Zero", 2002),
+        ("City of Panic", 2005),
+        ("The University of Disaster", 2010)
+    ],
+    "Bell Hooks": [
+        ("Ain't I a Woman", 1981),
+        ("Feminist Theory: From Margin to Center", 1984),
+        ("Talking Back", 1989),
+        ("Yearning: Race, Gender, and Cultural Politics", 1990),
+        ("Black Looks: Race and Representation", 1992),
+        ("Teaching to Transgress", 1994),
+        ("Outlaw Culture", 1994),
+        ("Art on My Mind", 1995),
+        ("Killing Rage", 1995),
+        ("All About Love", 2000)
+    ],
+    "Michael Hardt & Antonio Negri": [
+        ("Empire", 2000),
+        ("Multitude", 2004),
+        ("Commonwealth", 2009),
+        ("Declaration", 2012),
+        ("Assembly", 2017)
+    ],
+    "Alain Badiou": [
+        ("Theory of the Subject", 1982),
+        ("Being and Event", 1988),
+        ("Ethics", 1993),
+        ("Metapolitics", 1998),
+        ("Logics of Worlds", 2006),
+        ("The Communist Hypothesis", 2010),
+        ("The Century", 2005),
+        ("In Praise of Love", 2009),
+        ("Philosophy for Militants", 2012),
+        ("Mathematics of the Transcendental", 2014)
+    ],
+    "Luce Irigaray": [
+        ("Speculum of the Other Woman", 1974),
+        ("This Sex Which Is Not One", 1977),
+        ("Marine Lover of Friedrich Nietzsche", 1980),
+        ("An Ethics of Sexual Difference", 1984),
+        ("Sexes and Genealogies", 1987),
+        ("Je, Tu, Nous", 1990),
+        ("I Love to You", 1996),
+        ("Between East and West", 1999),
+        ("The Way of Love", 2002),
+        ("Sharing the World", 2008)
+    ],
+    "Jacques Lacan": [
+        ("Écrits", 1966),
+        ("The Four Fundamental Concepts of Psychoanalysis", 1973),
+        ("The Ethics of Psychoanalysis", 1986),
+        ("The Other Side of Psychoanalysis", 2007),
+        ("On Feminine Sexuality", 1975),
+        ("The Sinthome", 2005),
+        ("My Teaching", 2005),
+        ("The Triumph of Religion", 2013),
+        ("Anxiety", 2014),
+        ("The Formations of the Unconscious", 2017)
+    ],
+    "Bruno Latour": [
+        ("Laboratory Life", 1979),
+        ("Science in Action", 1987),
+        ("We Have Never Been Modern", 1991),
+        ("The Pasteurization of France", 1988),
+        ("Aramis, or the Love of Technology", 1992),
+        ("Politics of Nature", 1999),
+        ("Reassembling the Social", 2005),
+        ("On the Modern Cult of the Factish Gods", 2009),
+        ("An Inquiry into Modes of Existence", 2013),
+        ("Facing Gaia", 2017)
+    ],
+    "Nancy Fraser": [
+        ("Unruly Practices", 1989),
+        ("Justice Interruptus", 1997),
+        ("Redistribution or Recognition?", 2003),
+        ("Scales of Justice", 2008),
+        ("Fortunes of Feminism", 2013),
+        ("Capitalism: A Conversation in Critical Theory", 2018),
+        ("The Old Is Dying and the New Cannot Be Born", 2019),
+        ("Feminism for the 99%", 2019),
+        ("Cannibal Capitalism", 2022)
+    ],
+    "Stuart Hall": [
+        ("Policing the Crisis", 1978),
+        ("The Hard Road to Renewal", 1988),
+        ("Cultural Studies 1983", 2016),
+        ("Familiar Stranger", 2017),
+        ("Selected Political Writings", 2017),
+        ("Essential Essays, Volume 1", 2018),
+        ("Essential Essays, Volume 2", 2018),
+        ("Cultural Studies", 1992)
+    ]
+}
+
+# Additional academic journals beyond what's already in publishers list
+academic_journals = [
+    "Critical Inquiry", "Cultural Studies", "Theory, Culture & Society", 
+    "Postmodern Culture", "Social Text", "New Literary History", "boundary 2", 
+    "Public Culture", "Differences", "October", "Signs", "Cultural Critique",
+    "Philosophy Today", "Continental Philosophy Review", "Philosophy & Social Criticism",
+    "Hypatia", "Radical Philosophy", "The Journal of Speculative Philosophy",
+    "PMLA", "Representations", "Modern Language Notes", "Contemporary Literature", 
+    "Diacritics", "Grey Room", "Angelaki", "Parallax", "Substance", "positions", 
+    "GLQ", "Interventions", "New Formations", "Transition", "Political Theory", 
+    "Constellations", "Theory & Event", "Contemporary Political Theory", "Telos", 
+    "Thesis Eleven", "Politics and Society", "Millennium"
+]
+
+# Title templates for generating plausible work titles
+bibliography_title_templates = [
+    # Single concept focus
+    "On {concept}", 
+    "Towards a Theory of {concept}",
+    "Rethinking {concept}",
+    "{concept} and Its Discontents",
+    "The Question of {concept}",
+    "{concept} Otherwise",
+    "{concept} Reconsidered",
+    "After {concept}",
+    "{concept} and the Politics of Difference",
+    "Reading {concept}",
+    
+    # Dual concept relations
+    "{concept} and {concept2}",
+    "Between {concept} and {concept2}",
+    "{concept} as {concept2}",
+    "From {concept} to {concept2}",
+    "{concept} Against {concept2}",
+    "{concept} Beyond {concept2}",
+    "The {concept} of {concept2}",
+    "{concept} in the Age of {concept2}",
+    
+    # Theoretical frameworks
+    "The Dialectics of {concept}",
+    "A Genealogy of {concept}",
+    "The Archaeology of {concept}",
+    "{concept}: A Critical Theory",
+    "The Rhetoric of {concept}",
+    "The Phenomenology of {concept}",
+    "{concept} and Critical Practice",
+    "Deconstructing {concept}",
+    
+    # Structural forms
+    "Essays on {concept}",
+    "{concept}: Selected Writings",
+    "Fragments of {concept}",
+    "Notes on {concept}",
+    "{adj} Reflections on {concept}",
+    "{concept}: Collected Essays",
+    "The {concept} Reader",
+    
+    # Spatial/temporal framings
+    "{concept} at the Margins",
+    "{concept} in Transition",
+    "Mapping {concept}",
+    "The Time of {concept}",
+    "Spaces of {concept}",
+    "{concept} and Its Futures",
+    "{concept} in Crisis",
+    
+    # Epistemological approach
+    "Thinking {concept}",
+    "Knowing {concept}",
+    "The Limits of {concept}",
+    "{concept} as Method",
+    "The Ethics of {concept}",
+    "The Politics of {concept}",
+    "The Aesthetics of {concept}",
+    
+    # Provocative formats
+    "Against {concept}",
+    "{concept} Interrupted",
+    "The End of {concept}",
+    "{concept} and Its Others",
+    "Unthinking {concept}",
+    "The Illusion of {concept}",
+    "{concept} as Ideology"
+]

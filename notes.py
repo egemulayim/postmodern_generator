@@ -11,6 +11,7 @@ It also provides functions to format notes and bibliography entries
 import random
 import re
 from data import philosophers, concepts, terms
+from data import philosopher_key_works, academic_journals, bibliography_title_templates, publishers
 from capitalization import ensure_proper_capitalization_with_italics, italicize_terms_in_text, apply_title_case
 
 class NoteSystem:
@@ -688,6 +689,135 @@ class NoteSystem:
         
         # Fallback to a random philosopher if we couldn't generate a unique reference
         return f"{random.choice(philosophers)} (recent work)"
+    
+    def get_authentic_work(self, philosopher_name, fallback_year=None):
+        """
+        Retrieves an authentic work for a given philosopher from the data.py resources.
+        
+        Args:
+            philosopher_name (str): Full name of the philosopher
+            fallback_year (int, optional): Year to use if no authentic work is found
+            
+        Returns:
+            tuple: (title, year, co_author or None)
+        """
+        # Try to match philosopher to our database of authentic works
+        clean_name = philosopher_name.strip()
+        
+        # Check for philosopher in our authentic works database
+        if clean_name in philosopher_key_works:
+            # Select a random authentic work
+            work_info = random.choice(philosopher_key_works[clean_name])
+            title = work_info[0]
+            year = work_info[1]
+            return (title, year, None)  # Most works don't have co-authors
+        
+        # Check for philosopher as co-author
+        for key in philosopher_key_works:
+            if " & " in key and clean_name in key:
+                work_info = random.choice(philosopher_key_works[key])
+                title = work_info[0]
+                year = work_info[1]
+                co_author = key.replace(clean_name, "").replace(" & ", "").strip()
+                return (title, year, co_author)
+        
+        # For Deleuze, check if we should use a co-authored work with Guattari
+        if clean_name == "Gilles Deleuze" and random.random() < 0.4:  # 40% chance for co-authored work
+            work_info = random.choice(philosopher_key_works["Gilles Deleuze & Félix Guattari"])
+            return (work_info[0], work_info[1], "Félix Guattari")
+        
+        # No authentic work found, generate a plausible title
+        year = fallback_year or random.randint(max(1950, 2023 - random.randint(20, 70)), min(2020, 2023 - 3))
+        
+        # Get concepts for the title
+        concept = random.choice(concepts)
+        concept2 = random.choice([c for c in concepts if c != concept])
+        
+        # Get a random adjective for title templates that need it
+        from data import adjectives
+        adj = random.choice(adjectives)
+        
+        # Choose a title template and fill it
+        template = random.choice(bibliography_title_templates)
+        title = template.format(concept=concept.capitalize(), concept2=concept2.capitalize(), adj=adj)
+        
+        return (title, year, None)
+
+    def get_varied_journal(self):
+        """Returns a varied academic journal from data.py resources."""
+        return random.choice(academic_journals)
+
+    def get_varied_publisher(self):
+        """Returns a varied academic publisher from data.py resources."""
+        return random.choice(publishers)
+
+    def get_realistic_page_range(self):
+        """Returns a realistic page range for a journal article."""
+        start_page = random.randint(1, 300)
+        page_length = random.randint(15, 45)  # Most academic articles are 15-45 pages
+        end_page = start_page + page_length
+        return f"{start_page}-{end_page}"
+
+    def get_enhanced_citation(self, philosopher_name, is_article=False, fallback_year=None):
+        """
+        Creates a more authentic citation for a philosopher's work using data from data.py.
+        
+        Args:
+            philosopher_name (str): Full name of the philosopher
+            is_article (bool): Whether this is a journal article
+            fallback_year (int, optional): Year to use if no authentic work is found
+            
+        Returns:
+            str: A properly formatted citation
+        """
+        # Get authentic work if available, or generate a plausible one
+        title_info = self.get_authentic_work(philosopher_name, fallback_year)
+        title, year, co_author = title_info
+        
+        # Format author name (Last, F.)
+        name_parts = philosopher_name.split()
+        
+        # Special case for bell hooks
+        if philosopher_name.lower() == "bell hooks":
+            author = "hooks, b."
+        elif len(name_parts) > 1:
+            author = f"{name_parts[-1]}, {name_parts[0][0]}."
+        else:
+            author = f"{name_parts[0]}."
+        
+        # Handle co-author if present
+        if co_author:
+            co_name_parts = co_author.split()
+            co_author_fmt = f"{co_name_parts[-1]}, {co_name_parts[0][0]}."
+            author_text = f"{author} & {co_author_fmt}"
+        else:
+            author_text = author
+        
+        # Build the citation
+        if is_article:
+            journal = self.get_varied_journal()
+            volume = random.randint(1, 40)
+            issue = random.randint(1, 6)
+            pages = self.get_realistic_page_range()
+                
+            return f"{author_text} ({year}). *{title}*. {journal}, {volume}({issue}), {pages}."
+        else:
+            # Book format
+            publisher = self.get_varied_publisher()    
+            return f"{author_text} ({year}). *{title}*. {publisher}."
+    
+    def add_to_bibliography(self, reference):
+        """
+        Add a reference to the bibliography without creating a note.
+        
+        Args:
+            reference (str): The full reference to add to the bibliography
+            
+        Returns:
+            None
+        """
+        if reference not in self.bibliography:
+            self.bibliography.append(reference)
     
     def generate_notes_section(self):
         """
