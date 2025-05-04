@@ -191,11 +191,14 @@ def generate_reference():
     year = random.randint(1950, 2023)
     title = generate_title()
     
-    # Format in MLA 9 style
+    # Format in MLA 9 style - careful with period handling
+    # Check if author already ends with a period
+    author_period = "" if author.endswith(".") else "."
+    
     if work_type == "book":
         publisher = random.choice(publishers)
         # MLA 9 Book format: Author. Title. Publisher, Year.
-        reference = f"{author}. {title}. {publisher}, {year}."
+        reference = f"{author}{author_period} {title}. {publisher}, {year}."
     
     elif work_type == "journal":
         journal_name = random.choice(journals)
@@ -204,7 +207,7 @@ def generate_reference():
         start_page = random.randint(1, 100)
         end_page = start_page + random.randint(10, 45)
         # MLA 9 Journal article format: Author. "Title." Journal Name, vol. Volume, no. Issue, Year, pp. Pages.
-        reference = f"{author}. \"{title}.\" {journal_name}, vol. {volume}, no. {issue}, {year}, pp. {start_page}-{end_page}."
+        reference = f"{author}{author_period} \"{title}.\" {journal_name}, vol. {volume}, no. {issue}, {year}, pp. {start_page}-{end_page}."
     
     elif work_type == "chapter":
         editor = generate_full_name()
@@ -213,7 +216,7 @@ def generate_reference():
         end_page = start_page + random.randint(10, 45)
         publisher = random.choice(publishers)
         # MLA 9 Chapter format: Author. "Chapter Title." Book Title, edited by Editor, Publisher, Year, pp. Pages.
-        reference = f"{author}. \"{title}.\" {book_title}, edited by {editor}, {publisher}, {year}, pp. {start_page}-{end_page}."
+        reference = f"{author}{author_period} \"{title}.\" {book_title}, edited by {editor}, {publisher}, {year}, pp. {start_page}-{end_page}."
     
     elif work_type == "conference":
         conference_name = random.choice(conferences)
@@ -221,6 +224,6 @@ def generate_reference():
         start_date = random.randint(1, 28)
         month = random.choice(["Jan.", "Feb.", "Mar.", "Apr.", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."])
         # MLA 9 Conference paper format: Author. "Title." Conference Name, Location, Day Month Year.
-        reference = f"{author}. \"{title}.\" {conference_name}, {location}, {start_date} {month} {year}."
+        reference = f"{author}{author_period} \"{title}.\" {conference_name}, {location}, {start_date} {month} {year}."
     
     return reference

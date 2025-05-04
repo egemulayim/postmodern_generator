@@ -1199,9 +1199,19 @@ class NoteSystem:
                 
                 # Apply three hyphens rule for subsequent works by the same author
                 if i > 0:
-                    # Replace the author part with three hyphens
-                    author_pattern = r'^([^\.]+)\.'
-                    formatted_ref = re.sub(author_pattern, '---.' , formatted_ref)
+                    # Replace the author part with three hyphens, preserving proper punctuation
+                    if "." in formatted_ref:
+                        author_end_index = formatted_ref.find(".")
+                        # Check if there's a period right at the author name boundary
+                        if author_end_index > 0:
+                            # Keep any periods that are part of initials
+                            has_period_already = formatted_ref[:author_end_index].strip().endswith(".")
+                            if has_period_already:
+                                # If author already ends with period (like an initial), replace differently
+                                formatted_ref = "---. " + formatted_ref[author_end_index+1:].strip()
+                            else:
+                                # Normal case - author doesn't end with period
+                                formatted_ref = "---. " + formatted_ref[author_end_index+1:].strip()
                 
                 # Add hanging indentation
                 lines = formatted_ref.split('\n')
@@ -1279,6 +1289,10 @@ class NoteSystem:
             rest_of_entry = entry[len(author_part)+1:].strip()
             
             # Fix extra spaces and periods in author name
+            # Special fix for middle initials: Correct patterns like "Lastname, Firstname M. . "
+            author_part = re.sub(r'([A-Z]\.)\s+\.', r'\1', author_part)
+            
+            # Fix any other spacing issues with periods
             author_part = re.sub(r'(\s*\.\s*)+', '. ', author_part.strip()).strip()
             if author_part.endswith('.'):
                 author_part = author_part[:-1]  # Remove trailing period
@@ -1316,10 +1330,13 @@ class NoteSystem:
                         if after_title.startswith('.'):
                             after_title = after_title[1:].strip()
                         
-                        return f"{author_part}. \"{title}.\" {after_title}"
+                        # Add correct period after author name
+                        author_period = "" if author_part.endswith(".") else "."
+                        return f"{author_part}{author_period} \"{title}.\" {after_title}"
                     else:
                         # Fallback if we can't find the end of the title
-                        return f"{author_part}. \"{title}.\" {rest_of_entry.split('\"', 2)[-1].strip()}"
+                        author_period = "" if author_part.endswith(".") else "."
+                        return f"{author_part}{author_period} \"{title}.\" {rest_of_entry.split('\"', 2)[-1].strip()}"
             else:  # It's a book
                 # For books, titles are not in quotes
                 title_end = rest_of_entry.find('.')
@@ -1341,12 +1358,15 @@ class NoteSystem:
                     if after_title.startswith('.'):
                         after_title = after_title[1:].strip()
                     
-                    return f"{author_part}. {title}. {after_title}"
+                    # Add correct period after author name
+                    author_period = "" if author_part.endswith(".") else "."
+                    return f"{author_part}{author_period} {title}. {after_title}"
                 else:
                     # If no period found, just use the rest as title
                     title = rest_of_entry.strip()
                     title = apply_title_case(title)
-                    return f"{author_part}. {title}."
+                    author_period = "" if author_part.endswith(".") else "."
+                    return f"{author_part}{author_period} {title}."
         
         # If we couldn't parse the entry properly, return it as is
         return entry
