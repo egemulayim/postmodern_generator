@@ -8,21 +8,20 @@ It supports different sentence types (introduction, general, conclusion)
 and handles philosopher citations, concept relationships, and term usage.
 The module integrates with the note system for coherent citations
 and maintains thematic consistency throughout the generated text.
+All citations follow MLA 9 style guidelines.
 """
 
 import random
 import string
 import re
-from citation_utils import get_citation_note
 from data import (philosophers, concepts, terms, philosopher_concepts, contexts,
-                 rhetorical_devices, discursive_modes, citation_relationships,
+                 citation_relationships,
                  philosophical_movements, first_names, last_names)
 from postmodern_sentence import (enhanced_introduction_templates, enhanced_general_templates, 
                                enhanced_conclusion_templates, metafictional_templates,
                                rhetorical_question_templates, citation_with_framing_templates,
                                philosophical_dialogue_templates)
 from quotes import quotes
-from reference import generate_reference
 
 # Quote-focused templates for enhanced sentence generation 
 quote_enhanced_templates = [
@@ -49,11 +48,11 @@ quote_dialogue_templates = [
 
 # Quote-focused templates for citations
 quote_citation_templates = [
-    "Echoing {philosopher}'s notable claim that \"{quote},\" {author} ({year}) develops an analysis of {concept} that extends beyond conventional understandings of {term}.",
-    "Building on {philosopher}'s insight that \"{quote},\" {author} ({year}) reconsiders the relationship between {concept} and {term}.",
-    "{author} ({year}) draws on {philosopher}'s formulation that \"{quote}\" to elaborate a more nuanced account of how {concept} shapes our understanding of {term}.",
-    "Taking up {philosopher}'s provocative assertion that \"{quote},\" {author} ({year}) offers a compelling reframing of {concept} in relation to {term}.",
-    "In conversation with {philosopher}'s argument that \"{quote},\" {author} ({year}) examines how {concept} operates within contemporary discourses on {term}."
+    "Echoing {philosopher}'s notable claim that \"{quote},\" {author} develops an analysis of {concept} that extends beyond conventional understandings of {term}.",
+    "Building on {philosopher}'s insight that \"{quote},\" {author} reconsiders the relationship between {concept} and {term}.",
+    "{author} draws on {philosopher}'s formulation that \"{quote}\" to elaborate a more nuanced account of how {concept} shapes our understanding of {term}.",
+    "Taking up {philosopher}'s provocative assertion that \"{quote},\" {author} offers a compelling reframing of {concept} in relation to {term}.",
+    "In conversation with {philosopher}'s argument that \"{quote},\" {author} examines how {concept} operates within contemporary discourses on {term}."
 ]
 
 # Original templates from the previous version
@@ -141,7 +140,6 @@ conclusion_templates = [
     "as we conclude, it becomes apparent that {concept} is not merely a lens for viewing {term}, but an inescapable condition of our {context}.",
     "in attempting to conclude this essay, we find ourselves caught in the very {concept} we sought to analyze, a testament to its pervasive influence."
 ]
-
 
 def match_philosopher_to_quotes(philosopher_name):
     """
@@ -604,7 +602,23 @@ def _format_quote_for_academic_style(quote, template):
 
 def _handle_quote_in_template(template, data, quote_source_field, used_quotes, 
                            used_concepts, used_terms, used_philosophers, note_system, context):
-    """Handle quotes in templates, including formatting and citations."""
+    """
+    Handle quotes in templates, including formatting and MLA citations.
+    
+    Args:
+        template (str): Template string containing {quote} placeholder
+        data (dict): Data dictionary with populated fields
+        quote_source_field (str): Field name for the quote source philosopher
+        used_quotes (set): Set of quotes already used
+        used_concepts (list): Concepts used in this sentence
+        used_terms (list): Terms used in this sentence
+        used_philosophers (list): Philosophers referenced in this sentence
+        note_system (NoteSystem): System for managing citations
+        context (dict): Context information for this sentence
+        
+    Returns:
+        str: Template with quote filled in and properly cited
+    """
     quote_source_name = data.get(quote_source_field)
     if quote_source_name:
         # Match the philosopher name to a full name in the quotes dictionary
@@ -635,55 +649,51 @@ def _handle_quote_in_template(template, data, quote_source_field, used_quotes,
                         "Gilles Deleuze": [("Difference and Repetition", 1968), ("A Thousand Plateaus", 1987, "Félix Guattari")]
                     }
                     
-                    # Choose a plausible title, either from key works or generic
-                    if full_name in key_works:
-                        work_info = random.choice(key_works[full_name])
-                        title = work_info[0]
-                        year = work_info[1]
-                        # Handle co-authors
-                        co_author = work_info[2] if len(work_info) > 2 else None
-                    else:
-                        title = random.choice([
-                            "Selected Writings", "Collected Essays", "Critical Theory",
-                            "Philosophical Investigations", f"On {random.choice(concepts).capitalize()}"
-                        ])
+                    # Choose a plausible title for this philosopher
+                    book_title = None
                     
-                    # Format the author and reference
-                    last_name = full_name.split()[-1]
-                    first_initial = full_name.split()[0][0]
-                    
-                    # Format with co-author if present
-                    if 'co_author' in locals() and co_author:
-                        co_last = co_author.split()[-1]
-                        co_first = co_author.split()[0][0]
-                        author_text = f"{last_name}, {first_initial}. & {co_last}, {co_first}."
-                    else:
-                        author_text = f"{last_name}, {first_initial}."
-                    
-                    # Create the full reference
-                    publisher = random.choice([
-                        "Harvard University Press", "Columbia University Press", 
-                        "MIT Press", "Routledge", "University of Chicago Press"
-                    ])
-                    quote_reference = f"{author_text} ({year}). *{title}*. {publisher}."
-                    
-                    # Add to bibliography without necessarily creating a footnote
-                    # Only occasionally (15%) add a note for important quotes
-                    if random.random() < 0.15:  # Only 15% of quotes get notes
-                        citation_marker = note_system.add_citation(quote_reference, {
-                            'concepts': used_concepts,
-                            'terms': used_terms,
-                            'philosophers': used_philosophers,
-                            'section': context.get('section', 'general')
-                        })
+                    # Check if philosopher has multiple works already in works_cited
+                    philosopher_has_multiple_works = False
+                    if note_system.author_work_count.get(quote_source_name, 0) > 1:
+                        philosopher_has_multiple_works = True
                         
-                        # Add the citation marker after the quote
+                    # Find existing titles for this philosopher if any
+                    existing_works = []
+                    if quote_source_name in note_system.author_works:
+                        existing_works = list(note_system.author_works[quote_source_name].keys())
+                        
+                    # Try to create a reference based on authentic works
+                    is_article = random.random() < 0.3  # 30% chance to be an article
+                    reference = note_system.get_enhanced_citation(full_name, is_article, year)
+                    
+                    # Use add_citation instead of add_to_works_cited to create notes
+                    citation = note_system.add_citation(reference, context)
+                    
+                    # Add MLA in-text citation after the quote
+                    if '"' not in template.split(formatted_quote)[1]:
+                        # If the quote is at the end of the template or not followed by quotation marks
                         if not template.endswith('.') and not template.endswith('?') and not template.endswith('!'):
-                            template += f" {citation_marker}."
+                            template = template.replace(formatted_quote, f"{formatted_quote}\" {citation}.")
+                        else:
+                            template = template.replace(formatted_quote, f"{formatted_quote}\" {citation}")
                     else:
-                        # Just add to bibliography without a note marker in the text
-                        if quote_reference not in note_system.bibliography:
-                            note_system.bibliography.append(quote_reference)
+                        # If the quote is in the middle of the sentence, find where to insert citation
+                        quote_end_index = template.find('",', template.find(formatted_quote))
+                        if quote_end_index != -1:
+                            # Insert citation before the comma after the closing quote
+                            before = template[:quote_end_index+1]  # Up to and including the closing quote
+                            after = template[quote_end_index+1:]   # Everything after the closing quote
+                            template = f"{before} {citation}{after}"
+                        else:
+                            quote_end_index = template.find('" ', template.find(formatted_quote))
+                            if quote_end_index != -1:
+                                # Insert citation before the space after the closing quote
+                                before = template[:quote_end_index+1]  # Up to and including the closing quote
+                                after = template[quote_end_index+1:]   # Everything after the closing quote
+                                template = f"{before} {citation}{after}"
+                            else:
+                                # Fallback - just add the citation at the end
+                                template = template.rstrip('.') + f" {citation}."
             else:
                 # If no unused quotes, create a generic quote
                 generic_quote = f"the relationship between {data.get('concept', 'theory')} and {data.get('term', 'practice')} is always already mediated by power"
@@ -701,7 +711,21 @@ def _handle_quote_in_template(template, data, quote_source_field, used_quotes,
 
 
 def _handle_author_citation(template, data, context, used_concepts, used_terms, used_philosophers, note_system):
-    """Handle author citations in templates, including formatting and bibliography entries."""
+    """
+    Handle author citations in templates, including formatting and bibliography entries in MLA 9 style.
+    
+    Args:
+        template (str): Template string containing author citation placeholders
+        data (dict): Data dictionary with populated fields
+        context (dict): Context information for this sentence
+        used_concepts (list): Concepts used in this sentence
+        used_terms (list): Terms used in this sentence
+        used_philosophers (list): Philosophers referenced in this sentence
+        note_system (NoteSystem): System for managing citations
+        
+    Returns:
+        str: Template with author citations formatted in MLA style
+    """
     # Create a relevant reference based on context
     reference = _generate_contextual_reference(context, used_concepts, used_terms)
     
@@ -716,27 +740,42 @@ def _handle_author_citation(template, data, context, used_concepts, used_terms, 
         data['author'] = "Smith"
         data['year'] = str(random.randint(1950, 2023))
     
+    # Extract just the last name for MLA style
+    if ',' in data['author']:
+        last_name = data['author'].split(',')[0]
+    else:
+        name_parts = data['author'].split()
+        last_name = name_parts[-1] if name_parts else "Smith"
+    
     # Add citation to note system if available
-    if note_system and '[citation]' not in template:
-        # Add reference to note system and get citation marker
-        citation_marker = note_system.add_citation(reference, {
-            'concepts': used_concepts,
-            'terms': used_terms,
-            'philosophers': used_philosophers,
-            'section': context.get('section', 'general')
-        })
+    if note_system:
+        # Use add_citation instead of add_to_works_cited to create notes
+        citation = note_system.add_citation(reference, context)
         
-        # Make sure the template includes the citation marker
-        if not template.endswith('. '):
-            template += f" {citation_marker}. "
+        # Make sure the template includes the citation
+        if not template.endswith('.'):
+            template += f" {citation}."
+        elif template.endswith('. '):
+            template = template[:-2] + f" {citation}. "
         else:
-            template = template[:-2] + f" {citation_marker}. "
+            template = template[:-1] + f" {citation}."
     
     return template
 
 
 def _format_sentence_from_template(template, data, used_concepts, used_terms):
-    """Format a sentence from a template and data dictionary, handling any missing keys."""
+    """
+    Format a sentence from a template and data dictionary, handling any missing keys.
+    
+    Args:
+        template (str): Template string with placeholders
+        data (dict): Data dictionary with values for placeholders
+        used_concepts (list): List to track concepts used
+        used_terms (list): List to track terms used
+        
+    Returns:
+        str: Formatted sentence
+    """
     try:
         sentence = template.format(**data)
     except KeyError as e:
@@ -768,24 +807,42 @@ def _format_sentence_from_template(template, data, used_concepts, used_terms):
 
 
 def _handle_citation_marker(sentence, context, used_concepts, used_terms, used_philosophers, note_system):
-    """Replace [citation] placeholders with actual citation markers."""
+    """
+    Replace [citation] placeholders with actual MLA 9 style citation markers.
+    
+    Args:
+        sentence (str): Sentence with [citation] placeholders
+        context (dict): Context information for this sentence
+        used_concepts (list): Concepts used in this sentence
+        used_terms (list): Terms used in this sentence
+        used_philosophers (list): Philosophers referenced in this sentence
+        note_system (NoteSystem): System for managing citations
+        
+    Returns:
+        str: Sentence with MLA style citations
+    """
     # Generate a contextually appropriate reference
     reference = _generate_contextual_reference(context, used_concepts, used_terms)
     
-    # Add to the note system and get citation marker
-    citation_marker = note_system.add_citation(reference, {
-        'concepts': used_concepts,
-        'terms': used_terms,
-        'philosophers': used_philosophers,
-        'section': context.get('section', 'general')
-    })
+    # Use add_citation instead of add_to_works_cited to create notes
+    citation = note_system.add_citation(reference, context)
     
     # Replace the [citation] placeholder with the actual marker
-    return sentence.replace('[citation]', citation_marker)
+    return sentence.replace('[citation]', citation)
 
 
 def _handle_legacy_citation(sentence, all_references, cited_references):
-    """Handle legacy citation format for backward compatibility."""
+    """
+    Handle legacy citation format for backward compatibility.
+    
+    Args:
+        sentence (str): Sentence with [citation] placeholders
+        all_references (list): List of all available references
+        cited_references (list): List of already cited references
+        
+    Returns:
+        str: Sentence with citation markers
+    """
     reference = random.choice(all_references)
     if reference not in cited_references:
         cited_references.append(reference)
@@ -795,7 +852,15 @@ def _handle_legacy_citation(sentence, all_references, cited_references):
 
 
 def _finalize_sentence(sentence):
-    """Finalize a sentence by cleaning whitespace and ensuring proper punctuation."""
+    """
+    Finalize a sentence by cleaning whitespace and ensuring proper punctuation.
+    
+    Args:
+        sentence (str): Raw sentence
+        
+    Returns:
+        str: Cleaned and properly punctuated sentence
+    """
     # Remove extra whitespace
     sentence = ' '.join(sentence.split())
     
@@ -804,7 +869,6 @@ def _finalize_sentence(sentence):
         sentence += '.'
     
     return sentence
-
 
 def _generate_contextual_reference(context, concepts=None, terms=None):
     """
@@ -852,8 +916,13 @@ def _generate_contextual_reference(context, concepts=None, terms=None):
     
     title = random.choice(title_templates)
     
-    # Generate author and year
-    author = random.choice(last_names) + ", " + random.choice(first_names)[0] + "."
+    # Generate author - USING FULL NAMES INSTEAD OF INITIALS
+    first_name = random.choice(first_names)
+    last_name = random.choice(last_names)
+    
+    # MLA 9 style requires full author names, not initials
+    author = f"{last_name}, {first_name}"  # Use full first name instead of just an initial
+    
     year = random.randint(1950, 2022)
     
     # Generate a synthetic reference based on the context
@@ -863,14 +932,19 @@ def _generate_contextual_reference(context, concepts=None, terms=None):
               "Routledge", "Verso Books", "University of Minnesota Press"]
     
     source = random.choice(sources)
+    
+    # Create MLA 9 style reference
     if "Press" in source:
         # Book format
-        reference = f"{author} ({year}). *{title}*. {source}."
+        # MLA 9: Last, First. Title. Publisher, Year.
+        reference = f"{author}. {title}. {source}, {year}."
     else:
         # Journal format
         volume = random.randint(1, 40)
         issue = random.randint(1, 4)
-        pages = f"{random.randint(1, 100)}-{random.randint(101, 200)}"
-        reference = f"{author} ({year}). *{title}*. {source}, {volume}({issue}), {pages}."
+        start_page = random.randint(1, 100)
+        end_page = start_page + random.randint(10, 45)
+        # MLA 9: Last, First. "Title." Journal Name, vol. Volume, no. Issue, Year, pp. Pages.
+        reference = f"{author}. \"{title}.\" {source}, vol. {volume}, no. {issue}, {year}, pp. {start_page}-{end_page}."
     
     return reference

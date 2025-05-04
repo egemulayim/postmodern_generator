@@ -20,7 +20,7 @@ philosophers = [
     "Avital Ronell", "Catherine Malabou", "Quentin Meillassoux", "Ray Brassier", "Graham Harman",
     "Elizabeth Grosz", "Achille Mbembe", "Byung-Chul Han", "Bernard Stiegler", "Lauren Berlant",
     "Wang Hui", "Dipesh Chakrabarty", "Walter Mignolo", "Sylvia Wynter", "Frantz Fanon",
-    "Bell Hooks", "Cornel West", "Angela Davis", "Audre Lorde", "Sara Ahmed",
+    "bell hooks", "Cornel West", "Angela Davis", "Audre Lorde", "Sara Ahmed",
     "Gayle Rubin", "Eve Kosofsky Sedgwick", "Michael Hardt", "Antonio Negri", "Étienne Balibar",
     "Ernesto Laclau", "Chantal Mouffe", "Nancy Fraser", "Axel Honneth", "Jürgen Habermas",
     "Kwame Anthony Appiah", "Martha Nussbaum", "Amartya Sen", "Arjun Appadurai", "Stuart Hall",
@@ -201,7 +201,7 @@ philosopher_concepts = {
     "Walter Mignolo": ["decoloniality", "border thinking", "epistemic disobedience"],
     "Sylvia Wynter": ["coloniality of power", "human being as praxis", "after man"],
     "Frantz Fanon": ["decolonization", "colonialism", "the wretched of the earth"],
-    "Bell Hooks": ["intersectionality", "feminist theory", "cultural criticism"],
+    "bell hooks": ["intersectionality", "feminist theory", "cultural criticism"],
     "Cornel West": ["prophetic pragmatism", "race matters", "democracy"],
     "Angela Davis": ["abolition", "prison-industrial complex", "social justice"],
     "Audre Lorde": ["intersectionality", "self-care", "poetry as illumination"],
@@ -757,7 +757,7 @@ philosopher_key_works = {
         ("City of Panic", 2005),
         ("The University of Disaster", 2010)
     ],
-    "Bell Hooks": [
+    "bell hooks": [
         ("Ain't I a Woman", 1981),
         ("Feminist Theory: From Margin to Center", 1984),
         ("Talking Back", 1989),

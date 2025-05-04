@@ -1,6 +1,6 @@
 # The Postmodern Generator
 
-Welcome to The Postmodern Generator project! This repository contains the source code for a text generator that produces postmodern-style academic essays. This README file will guide you through the setup, usage, and contribution process for the project.
+Welcome to The Postmodern Generator project! This repository contains the source code for a text generator that produces postmodern-style academic essays with sophisticated theoretical framing, proper citations, and thematic coherence. This README file will guide you through the setup, usage, and contribution process for the project.
 
 ## Table of Contents
 
@@ -16,16 +16,20 @@ Welcome to The Postmodern Generator project! This repository contains the source
 
 ## Introduction
 
-The Postmodern Generator is a tool designed to generate text that mimics the style of The Postmodernism Generator, which was written by Andrew C. Bulhak using the Dada Engine. It uses concepts of postmodern theory to produce content that is both coherent and stylistically complex. You can learn more about the Dada Engine [here](https://dev.null.org/dadaengine/) and see a web-based preview of Bulhak's The Postmodernism Generator [here](https://www.elsewhere.org/journal/pomo).
+The Postmodern Generator is a tool designed to generate text that mimics the style of postmodern academic writing, inspired by Andrew C. Bulhak's The Postmodernism Generator. It creates sophisticated theoretical essays complete with citations, dialectical progressions, and self-referential elements characteristic of postmodern discourse. You can learn more about the original Dada Engine [here](https://dev.null.org/dadaengine/) and see a web-based preview of Bulhak's The Postmodernism Generator [here](https://www.elsewhere.org/journal/pomo).
 
 ## Features
 
-- **Postmodern Text Generation**: Produces text that mimics the style of postmodern academic writing, inspired by Andrew C. Bulhak's The Postmodernism Generator.
-- **Lightweight and Efficient**: Does not rely on large language models, ensuring quick and resource-efficient text generation.
-- **Customizable Output**: Allows users to adjust parameters such as text length, complexity, and thematic focus.
-- **Extensible Design**: Easily integrate new datasets, templates, or algorithms to expand the generator's capabilities.
-- **Command-Line Interface**: Simple CLI for generating text with minimal setup.
-- **Future-Proof**: Designed with modularity in mind to support future enhancements.
+- **Complete Essay Generation**: Produces fully-formed academic essays with title, abstract, introduction, body sections, conclusion, and works cited
+- **Theoretical Sophistication**: Incorporates postmodern concepts, philosophers, and theoretical frameworks
+- **MLA 9 Compliant Citations**: Generates proper in-text citations and formatted works cited sections
+- **Thematic Coherence**: Maintains conceptual and thematic unity throughout the essay
+- **Dialectical Progressions**: Develops ideas through dialectical movement
+- **Metafictional Elements**: Includes self-referential passages typical of postmodern writing
+- **Academic Abstracts**: Generates sophisticated abstracts with keywords and theoretical framing
+- **Proper Formatting**: Handles capitalization, italicization, and academic conventions
+- **Reproducible Output**: Optional random seed for generating consistent results
+- **Lightweight and Efficient**: Does not rely on large language models, ensuring quick and resource-efficient text generation
 
 ## Installation
 
@@ -47,21 +51,38 @@ To install the Postmodern Generator, follow these steps:
 
 ## Usage
 
-To generate postmodern text, execute the following command in your terminal:
+To generate a postmodern essay, execute the following command in your terminal:
 
 ```bash
 python main.py
 ```
 
+To generate an essay with a specific random seed (each new essay would be generated with close-resembling reproducibility):
+
+```bash
+python main.py 42
+```
+
+The generator will output a complete academic essay including:
+- Title with theoretical framing
+- Abstract with keywords
+- Introduction with guiding questions
+- Several body sections with dialectical development
+- Conclusion with metafictional elements
+- Notes section
+- Works cited in MLA 9 format
+
 ## Roadmap
 
 The following features and improvements are planned for future releases:
 
-- Enhanced Text Generation: Improve the linguistic and contextual relevancy to generate more coherent and contextually diverse text.
-- User Interface: Develop a web-based user interface for easier interaction with the generator.
-- Additional Datasets: Incorporate more datasets to expand the variety of generated content.
-- Configuration Options: Provide more configuration options to customize the text generation process.
-- Add option to generate in the HTML formatting system.
+- **Enhanced Output Formats**: Add options to generate in HTML or LaTeX formatting
+- **Additional Citation Styles**: Support for APA, Chicago, and other academic citation formats
+- **UI Improvements**: Develop a web-based user interface for easier interaction
+- **Advanced Configuration**: More extensive options to customize output length, complexity, and thematic focus
+- **API Integration**: Build an API to allow integration with other tools and services
+- **Expanded Philosopher Database**: Add more contemporary theorists and their key concepts
+- **Improved Semantic Coherence**: Further enhance thematic unity and realistic conceptual relationships
 
 ## Contributing
 
@@ -84,10 +105,11 @@ Contributions to The Postmodern Generator project are welcome! To contribute, fo
 
 ## Known Issues
 
-- **Capitalization Issues**: First words of sentences, initials of first names, and names of thinkers/philosophers do not adhere to the rules of capitalization at all times. Occassionally, you may see a wildly capitalized first letter even when the word that contains it is not found at the beginning of a sentence. This issue is being addressed and the likelihood of it happening has decreased quite a lot with recent updates.
-- **Redundant Phrases**: The generated text may sometimes include redundant use of synonymous words and phrases back to back, which can hinder factuality and comprehension. This issue is less persistent now after various modifications to the code, although it is still actively worked on to improve the quality of the generated content.
-- **Overly Generic Phrasing**: Some generated text may be overly generic, which can reduce the uniqueness and impact of the content. This issue is being addressed, though it is less likely to happen due to recent modifications to the code.
-- **Excessive Categorization of Concepts & Terms**: Some words are included in the categories of both concepts and terms. Sometimes, a randomly called concept which also exists in the category of terms will not be italicized due to being called as a concept. This issue is being addressed.
+- **Capitalization Inconsistencies**: Occasional capitalization issues with first words of sentences, proper nouns, and philosopher names
+- **Redundant Phrases**: The generated text may sometimes include redundant use of synonymous words and phrases
+- **Terminology Classification**: Some words appear in both concepts and terms categories, leading to inconsistent italicization
+- **Citation Format Variations**: Minor inconsistencies in citation formatting might occur
+- **Thematic Coherence at Scale**: For very long essays, thematic coherence may diminish in later sections
 
 ## License
 
@@ -95,4 +117,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgements
 
-I would like to thank Andrew C. Bulhak, the original creator of The Postmodernism Generator, for the inspiration and foundational work that made this project possible.
+Special thanks to Andrew C. Bulhak, the original creator of The Postmodernism Generator, for the inspiration and foundational work that made this project possible. This project builds on that legacy to create a more sophisticated, coherent, and academically authentic text generator for postmodern discourse.

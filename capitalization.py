@@ -9,13 +9,18 @@ that should be italicized.
 import re
 from data import philosophers, concepts, italicized_terms, terms
 
-# Words that should not be capitalized in titles unless they're the first or last word
+# These are words that should be lowercase in titles when they're not the first or last word
+# Note: Words like "from", "with", "into", "over", etc. have 4+ letters 
+# and should be capitalized in academic title case as per MLA 9 guidelines
 LOWERCASE_WORDS = {
-    "a", "an", "the", "and", "but", "or", "nor", "for", "so", "yet", 
-    "to", "of", "by", "at", "from", "with", "in", "on", "upon", "as", "into",
-    "like", "over", "against", "through", "after", "during", "since", "before",
-    "between", "under", "within", "along", "following", "across", "behind",
-    "beyond", "plus", "except", "but", "up", "out", "around", "down", "off", "above"
+    # Articles
+    "a", "an", "the", 
+    # Coordinating conjunctions
+    "and", "but", "or", "nor", "for", "so", "yet",
+    # Short prepositions (fewer than 4 letters)
+    "to", "of", "by", "at", "in", "on", "as",
+    # Other short words that are typically lowercase in title case
+    "via"
 }
 
 def ensure_proper_capitalization(text, capitalize_first=True):
@@ -111,6 +116,8 @@ def ensure_proper_capitalization_with_italics(text, capitalize_first=True):
     
     return ''.join(processed_parts)
 
+# In capitalization.py, the issue with improper capitalization is in the apply_title_case function:
+
 def apply_title_case(title):
     """
     Apply academic title case to a title string, handling italicized terms properly.
@@ -168,13 +175,36 @@ def apply_title_case(title):
         # Remove any punctuation for checking against lowercase words
         clean_word = re.sub(r'[^\w\s]', '', word.lower())
         
-        # Conditions for capitalizing:
-        # 1. First word or word after a delimiter
-        # 2. Not in the lowercase list or it's the last word
-        # 3. Last word in the title
-        should_capitalize = (capitalize_next or 
-                           clean_word not in LOWERCASE_WORDS or 
-                           i == len(words) - 1)
+        # Special case for proper nouns (matching philosophers, concepts with capital letters)
+        is_proper_noun = False
+        for philosopher in philosophers:
+            if clean_word.lower() in philosopher.lower().split():
+                is_proper_noun = True
+                break
+        
+        # Special handling for title words - in reference titles, we should capitalize most words
+        # except for very small connector words when they're not the first word or last word
+        is_small_word = clean_word in LOWERCASE_WORDS
+        
+        # In academic title case, always capitalize:
+        # 1. First word of title or subtitle (after colon)
+        # 2. Last word of title
+        # 3. All nouns, pronouns, verbs, adjectives, adverbs
+        # 4. All words of four or more letters
+        
+        # Only make lowercase:
+        # - Articles (a, an, the)
+        # - Short prepositions (in, on, for, etc.)
+        # - Coordinating conjunctions (and, but, or, etc.)
+        # - 'to' in infinitives
+        
+        # But only when they're not the first or last word
+        
+        should_capitalize = (capitalize_next or  # First word or after delimiter
+                           not is_small_word or   # Not a small connector word
+                           i == len(words) - 1 or # Last word
+                           is_proper_noun or      # Proper noun
+                           len(clean_word) >= 4)  # Word is 4+ letters
         
         if should_capitalize:
             # Capitalize first letter if it's a letter
@@ -187,7 +217,6 @@ def apply_title_case(title):
                     word = word[0].upper() + word[1:]
         else:
             # Make lowercase unless it's a proper noun
-            is_proper_noun = any(philosopher.lower() in word.lower() for philosopher in philosophers)
             if not is_proper_noun:
                 if word and word[0].isalpha():
                     word = word.lower()

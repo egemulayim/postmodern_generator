@@ -177,7 +177,7 @@ quotes = {
         "War is cinema, and cinema is war.",
         "The more speed increases, the faster freedom decreases."
     ],
-    "Bell Hooks": [
+    "bell hooks": [
         "The function of art is to do more than tell it like it is - it's to imagine what is possible.",
         "No black woman writer in this culture can write 'too much'. Indeed, no woman writer can write 'too much'.",
         "If we want a beloved community, we must stand for justice.",

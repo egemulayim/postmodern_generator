@@ -5,7 +5,7 @@ This module provides a system for managing notes (footnotes) and bibliography en
 It ensures coherence between the notes, the main text, and bibliography.
 It includes functions to add citations, generate substantive notes,
 and format bibliography entries.
-It also provides functions to format notes and bibliography entries
+It also provides functions to format notes and bibliography entries according to MLA 9 style guidelines.
 """
 
 import random
@@ -14,19 +14,29 @@ from data import philosophers, concepts, terms
 from data import philosopher_key_works, academic_journals, bibliography_title_templates, publishers
 from capitalization import ensure_proper_capitalization_with_italics, italicize_terms_in_text, apply_title_case
 
+# Dictionary of authors with non-standard name formatting
+NON_STANDARD_AUTHOR_FORMATS = {
+    "bell hooks": "hooks, bell"
+}
+
 class NoteSystem:
     """
     A system for managing notes (footnotes) and bibliography entries in a postmodern essay.
     This ensures coherence between the notes, the main text, and bibliography.
+    Now implements MLA 9 style citations.
     """
     
     def __init__(self):
         """Initialize the note system."""
         self.notes = []
-        self.bibliography = []
+        self.works_cited = []  # Changed from bibliography to works_cited
         self.citation_markers = {}  # Maps reference to note number
         self.used_template_patterns = set()  # Track used template pattern types
         self.used_template_fingerprints = set()  # Track specific template structures
+        self.page_numbers = {}  # Maps reference to page number(s)
+        # Track which authors have multiple works
+        self.author_work_count = {}  # Maps author to count of their works
+        self.author_works = {}  # Maps author to dict of their works (title -> full reference)
     
     def add_citation(self, reference, context=None):
         """
@@ -38,43 +48,303 @@ class NoteSystem:
                                      (e.g., concepts, terms being discussed)
         
         Returns:
-            str: The citation marker to insert in the text
+            str: The citation marker to insert in the text in MLA 9 format
         """
-        # Extract author and year for brief in-text citation
-        author_year = self._extract_author_year(reference)
+        # Extract author, year, and title for in-text citation
+        author, year = self._extract_author_year(reference)
+        title_key = self._extract_title_sorting_key(reference)
         
-        # Add to bibliography if not already there
-        if reference not in self.bibliography:
-            self.bibliography.append(reference)
+        # Check if a similar reference already exists (avoid duplicates)
+        if not self._is_duplicate_reference(reference):
+            self.works_cited.append(reference)
+            
+            # Update author work tracking
+            if author not in self.author_work_count:
+                self.author_work_count[author] = 1
+                self.author_works[author] = {}
+            else:
+                self.author_work_count[author] += 1
+            
+            # Map this title to the full reference
+            self.author_works[author][title_key] = reference
         
-        # Check if this reference already has a citation marker
-        if reference in self.citation_markers:
-            note_number = self.citation_markers[reference]
-            return f"[^{note_number}]"
+        # Generate a page number if not already assigned
+        if reference not in self.page_numbers:
+            self.page_numbers[reference] = random.randint(1, 300)
         
-        # Create a new note with substantive commentary
-        note_number = len(self.notes) + 1
-        self.citation_markers[reference] = note_number
+        page_num = self.page_numbers[reference]
+        
+        # In MLA 9, if an author has multiple works, include short title in citation
+        # Format: (Author, "Title" Page) for articles or (Author, Title Page) for books
+        if self.author_work_count.get(author, 0) > 1:
+            # Determine if it's a book or article based on whether title is in quotes
+            is_article = '"' in reference
+            
+            # Get a shortened version of the title (first few words)
+            short_title = self._get_short_title(title_key, is_article)
+            
+            if is_article:
+                # For articles, the title is in quotes
+                mla_citation = f"({author}, \"{short_title}\" {page_num})"
+            else:
+                # For books, the title is italicized
+                mla_citation = f"({author}, {short_title} {page_num})"
+        else:
+            # If author has only one work, standard format: (Author Page)
+            mla_citation = f"({author} {page_num})"
         
         # Create a substantive note that provides commentary beyond just the citation
-        note_text = self._generate_substantive_note(reference, context, note_number)
-        self.notes.append((note_number, note_text))
+        # Only create a note if this reference hasn't been used before
+        if reference not in self.citation_markers:
+            note_number = len(self.notes) + 1
+            self.citation_markers[reference] = note_number
+            
+            # Create a substantive note that provides commentary beyond just the citation
+            note_text = self._generate_substantive_note(reference, context, note_number)
+            self.notes.append((note_number, note_text))
         
-        return f"[^{note_number}]"
+        return mla_citation
+    
+    def _get_short_title(self, title, is_article=False):
+        """
+        Create a shortened version of a title for in-text citations.
+        
+        Args:
+            title (str): The full title
+            is_article (bool): Whether this is an article (for formatting)
+            
+        Returns:
+            str: A shortened title suitable for in-text citation
+        """
+        # Clean the title
+        clean_title = title.strip()
+        
+        # Split into words
+        words = clean_title.split()
+        
+        # For very short titles, use the whole thing
+        if len(words) <= 3:
+            return clean_title
+        
+        # For longer titles, use first 3-4 significant words
+        # Skip initial articles like "The", "A", "An" in the count
+        skip_words = ["the", "a", "an", "of", "in", "on", "for", "and", "or"]
+        
+        # Get the first 3-4 significant words
+        significant_words = []
+        for word in words:
+            # Skip very common words at the beginning
+            if not significant_words and word.lower() in skip_words:
+                continue
+            significant_words.append(word)
+            if len(significant_words) >= 3:
+                break
+        
+        # Join them back together
+        short_title = " ".join(significant_words)
+        
+        # If it ends with punctuation like colon, remove it
+        short_title = re.sub(r'[:\.,;]$', '', short_title)
+        
+        return short_title
+    
+    def add_indirect_citation(self, original_author, secondary_reference, context=None):
+        """
+        Add an indirect citation using MLA 9 "qtd. in" format
+        
+        Args:
+            original_author (str): The author being quoted
+            secondary_reference (str): The full reference where the quote was found
+            context (dict, optional): Context about the citation
+            
+        Returns:
+            str: MLA 9 formatted indirect citation
+        """
+        # Make sure secondary source is in works cited
+        if secondary_reference not in self.works_cited and not self._is_duplicate_reference(secondary_reference):
+            self.works_cited.append(secondary_reference)
+            
+            # Update author work tracking
+            secondary_author, _ = self._extract_author_year(secondary_reference)
+            title_key = self._extract_title_sorting_key(secondary_reference)
+            
+            if secondary_author not in self.author_work_count:
+                self.author_work_count[secondary_author] = 1
+                self.author_works[secondary_author] = {}
+            else:
+                self.author_work_count[secondary_author] += 1
+            
+            # Map this title to the full reference
+            self.author_works[secondary_author][title_key] = secondary_reference
+        
+        # Extract author and assign page number
+        secondary_author, _ = self._extract_author_year(secondary_reference)
+        title_key = self._extract_title_sorting_key(secondary_reference)
+        
+        if secondary_reference not in self.page_numbers:
+            self.page_numbers[secondary_reference] = random.randint(1, 300)
+        
+        page_num = self.page_numbers[secondary_reference]
+        
+        # Determine if we need to include title for the secondary source
+        if self.author_work_count.get(secondary_author, 0) > 1:
+            # Get a shortened version of the title
+            is_article = '"' in secondary_reference
+            short_title = self._get_short_title(title_key, is_article)
+            
+            # Format citation based on whether it's an article or book
+            if is_article:
+                mla_citation = f"({original_author}, qtd. in {secondary_author}, \"{short_title}\" {page_num})"
+            else:
+                mla_citation = f"({original_author}, qtd. in {secondary_author}, {short_title} {page_num})"
+        else:
+            # Standard format if author has only one work
+            mla_citation = f"({original_author}, qtd. in {secondary_author} {page_num})"
+        
+        # Add substantive note if needed
+        if secondary_reference not in self.citation_markers:
+            note_number = len(self.notes) + 1
+            self.citation_markers[secondary_reference] = note_number
+            
+            note_text = self._generate_substantive_note(secondary_reference, context, note_number)
+            self.notes.append((note_number, note_text))
+        
+        return mla_citation
     
     def _extract_author_year(self, reference):
-        """Extract author and year from a reference."""
-        # Simple regex to extract author and year from typical reference format
-        match = re.match(r'^([^(]+)\(([0-9]{4})\)', reference)
-        if match:
-            author = match.group(1).strip()
-            year = match.group(2).strip()
-            # Simplify author if it has multiple names
+        """
+        Extract author and year from a reference.
+        
+        Args:
+            reference (str): The reference string
+            
+        Returns:
+            tuple: (author, year)
+        """
+        # Try extracting from standard MLA 9 journal article format
+        # Format: "Last, First. "Title." Journal, vol. Vol, no. No, Year, pp. Pages."
+        journal_match = re.match(r'^([^\.]+)\.\s*"[^"]+\."', reference)
+        if journal_match:
+            author = journal_match.group(1).strip()
+            # For MLA style, only use last name
             if ',' in author:
                 last_name = author.split(',')[0].strip()
-                return f"{last_name} ({year})"
-            return f"{author} ({year})"
-        return "Unknown author and date"
+                return last_name, "n.d."  # Year will be extracted from reference text for note
+            return author, "n.d."
+        
+        # Try extracting from MLA 9 book format
+        # Format: "Last, First. Title. Publisher, Year."
+        book_match = re.match(r'^([^\.]+)\.\s*([^\.]+)\.', reference)
+        if book_match:
+            author = book_match.group(1).strip()
+            if ',' in author:
+                last_name = author.split(',')[0].strip()
+                return last_name, "n.d."
+            return author, "n.d."
+            
+        # Try other formats (legacy fallback pattern)
+        legacy_match = re.match(r'^([^(]+)\(([0-9]{4})\)', reference)
+        if legacy_match:
+            author = legacy_match.group(1).strip()
+            year = legacy_match.group(2).strip()
+            # For MLA style, only use last name
+            if ',' in author:
+                last_name = author.split(',')[0].strip()
+                return last_name, year
+            return author, year
+            
+        # Extract just the first word as fallback (likely a last name)
+        first_word_match = re.match(r'^(\w+)', reference)
+        if first_word_match:
+            return first_word_match.group(1), "n.d."
+            
+        return "Unknown", "n.d."
+    
+    def _is_duplicate_reference(self, reference):
+        """
+        Check if a reference is a duplicate of an existing one.
+        
+        Args:
+            reference (str): The reference to check
+        
+        Returns:
+            bool: True if duplicate found, False otherwise
+        """
+        # Extract the author and title
+        author = self._extract_author_for_note(reference)
+        title = self._extract_title_sorting_key(reference)
+        
+        # Check for duplicates with same author and similar title
+        for ref in self.works_cited:
+            ref_author = self._extract_author_for_note(ref)
+            ref_title = self._extract_title_sorting_key(ref)
+            
+            # If same author and similar title, consider it a duplicate
+            if author == ref_author and self._titles_are_similar(title, ref_title):
+                return True
+                
+        return False
+    
+    def _titles_are_similar(self, title1, title2):
+        """
+        Compare two titles to determine if they are similar.
+        
+        Args:
+            title1 (str): First title
+            title2 (str): Second title
+            
+        Returns:
+            bool: True if titles are similar, False otherwise
+        """
+        # Convert to lowercase and strip punctuation
+        t1 = re.sub(r'[^\w\s]', '', title1.lower()) if title1 else ""
+        t2 = re.sub(r'[^\w\s]', '', title2.lower()) if title2 else ""
+        
+        # If either title is empty, assume not similar
+        if not t1 or not t2:
+            return False
+            
+        # If titles are identical after cleaning, they're similar
+        if t1 == t2:
+            return True
+            
+        # If one is a substring of the other, they're similar
+        if t1 in t2 or t2 in t1:
+            return True
+            
+        # If the titles share significant words, they're similar
+        words1 = set(t1.split())
+        words2 = set(t2.split())
+        common_words = words1.intersection(words2)
+        
+        # If they share more than 60% of the words, consider them similar
+        if len(words1) == 0 or len(words2) == 0:
+            return False
+        similarity_ratio = len(common_words) / max(len(words1), len(words2))
+        return similarity_ratio > 0.6
+    
+    def _extract_title_sorting_key(self, reference):
+        """
+        Extract the title from a reference for sorting.
+        
+        Args:
+            reference (str): The reference string
+            
+        Returns:
+            str: Title for sorting
+        """
+        # Try to extract the title for articles (in quotes)
+        title_match = re.search(r'"\s*([^"]+?)\s*"', reference)
+        if title_match:
+            return title_match.group(1).lower()
+        
+        # Try for books (after author and before publisher)
+        book_match = re.match(r'^[^\.]+\.\s+([^\.]+)\.', reference)
+        if book_match:
+            return book_match.group(1).lower()
+        
+        # Fallback
+        return ""
     
     def _generate_substantive_note(self, reference, context, note_number):
         """
@@ -88,16 +358,46 @@ class NoteSystem:
         Returns:
             str: The formatted note text
         """
-        # Extract author and year from reference
-        citation_info = self._extract_author_year(reference)
+        # Extract author name for the note
+        author_name = self._extract_author_for_note(reference)
         
         # Generate substantive commentary based on the citation context
         commentary = self._generate_commentary(reference, context)
         
         # Combine for a substantive note that doesn't just repeat the bibliography
-        note_text = f"{citation_info}. {commentary}"
+        note_text = f"{commentary}"
         
         return note_text
+    
+    def _extract_author_for_note(self, reference):
+        """
+        Extract author name from reference for use in note.
+        
+        Args:
+            reference (str): The reference string
+            
+        Returns:
+            str: Author name
+        """
+        # Try to match MLA 9 journal article format
+        journal_match = re.match(r'^([^\.]+)\.\s*"[^"]+\."', reference)
+        if journal_match:
+            author = journal_match.group(1).strip()
+            return author
+        
+        # Try to match MLA 9 book format
+        book_match = re.match(r'^([^\.]+)\.\s*([^\.]+)\.', reference)
+        if book_match:
+            author = book_match.group(1).strip()
+            return author
+        
+        # Legacy format fallback
+        legacy_match = re.match(r'^([^(]+)', reference)
+        if legacy_match:
+            author = legacy_match.group(1).strip()
+            return author
+        
+        return ""
     
     def _get_template_fingerprint(self, template):
         """
@@ -236,8 +536,7 @@ class NoteSystem:
     def _generate_commentary(self, reference, context):
         """Generate substantive commentary for a note based on context."""
         # Extract author from reference for use in commentary
-        author_match = re.match(r'^([^(]+)', reference)
-        author = author_match.group(1).strip() if author_match else "The author"
+        author_match = self._extract_author_for_note(reference)
         
         # Generate commentary based on available context
         if context and (context.get('concepts') or context.get('terms')):
@@ -390,19 +689,19 @@ class NoteSystem:
                 
                 # Author development templates
                 "author_development": [
-                    f"This work represents a transition in {author}'s thinking about {focus_topic}, moving from earlier concerns with {random.choice(related_topics)} toward more developed theoretical positions.",
-                    f"In {author}'s intellectual trajectory, this work marks a significant reorientation in approaching {focus_topic}, with implications for later engagements with {random.choice(related_topics)}.",
-                    f"This analysis reflects {author}'s mature position on {focus_topic}, differing from earlier works that emphasized {random.choice(related_topics)}.",
-                    f"Through this study of {focus_topic}, {author} established conceptual foundations that would inform subsequent investigations of {random.choice(related_topics)}.",
-                    f"This work captures {author}'s distinctive theoretical voice, particularly in how it negotiates the relationship between {focus_topic} and {random.choice(related_topics)}.",
-                    f"The frameworks developed here would become characteristic of {author}'s approach to both {focus_topic} and questions concerning {random.choice(related_topics)}.",
-                    f"Within {author}'s broader oeuvre, this analysis of {focus_topic} represents a pivotal development in their theoretical approach to {random.choice(related_topics)}.",
-                    f"This work demonstrates {author}'s evolving perspective on {focus_topic}, moving beyond earlier formulations to engage more directly with questions of {random.choice(related_topics)}.",
-                    f"The conceptual innovations {author} develops here regarding {focus_topic} would become central to their subsequent work on {random.choice(related_topics)}.",
-                    f"This contribution marks a decisive shift in {author}'s approach to {focus_topic}, establishing theoretical commitments that would inform later explorations of {random.choice(related_topics)}.",
-                    f"The analytical framework {author} elaborates here reflects a synthesis of earlier approaches to {focus_topic} while anticipating later work on {random.choice(related_topics)}.",
-                    f"This text reveals {author}'s methodological development, particularly in approaches to studying the relationship between {focus_topic} and {random.choice(related_topics)}.",
-                    f"Positioned within {author}'s intellectual development, this work demonstrates an increasing sophistication in addressing the complexities of {focus_topic} and its relation to {random.choice(related_topics)}.",
+                    f"This work represents a transition in the author's thinking about {focus_topic}, moving from earlier concerns with {random.choice(related_topics)} toward more developed theoretical positions.",
+                    f"In the author's intellectual trajectory, this work marks a significant reorientation in approaching {focus_topic}, with implications for later engagements with {random.choice(related_topics)}.",
+                    f"This analysis reflects the author's mature position on {focus_topic}, differing from earlier works that emphasized {random.choice(related_topics)}.",
+                    f"Through this study of {focus_topic}, the author established conceptual foundations that would inform subsequent investigations of {random.choice(related_topics)}.",
+                    f"This work captures the author's distinctive theoretical voice, particularly in how it negotiates the relationship between {focus_topic} and {random.choice(related_topics)}.",
+                    f"The frameworks developed here would become characteristic of the author's approach to both {focus_topic} and questions concerning {random.choice(related_topics)}.",
+                    f"Within the author's broader oeuvre, this analysis of {focus_topic} represents a pivotal development in their theoretical approach to {random.choice(related_topics)}.",
+                    f"This work demonstrates the author's evolving perspective on {focus_topic}, moving beyond earlier formulations to engage more directly with questions of {random.choice(related_topics)}.",
+                    f"The conceptual innovations the author develops here regarding {focus_topic} would become central to their subsequent work on {random.choice(related_topics)}.",
+                    f"This contribution marks a decisive shift in the author's approach to {focus_topic}, establishing theoretical commitments that would inform later explorations of {random.choice(related_topics)}.",
+                    f"The analytical framework elaborated here reflects a synthesis of earlier approaches to {focus_topic} while anticipating later work on {random.choice(related_topics)}.",
+                    f"This text reveals the author's methodological development, particularly in approaches to studying the relationship between {focus_topic} and {random.choice(related_topics)}.",
+                    f"Positioned within the author's intellectual development, this work demonstrates an increasing sophistication in addressing the complexities of {focus_topic} and its relation to {random.choice(related_topics)}.",
                 ],
                 
                 # Disciplinary impact templates
@@ -441,7 +740,7 @@ class NoteSystem:
                 "original": [
                     f"This work provides an important critique of {focus_topic} that challenges conventional understandings of {random.choice(related_topics)}.",
                     f"The concept of {focus_topic} differs significantly from its usage in {random.choice(philosophers)}'s framework.",
-                    f"While focusing on {focus_topic}, {author} also offers insights into the related question of {random.choice(related_topics)}.",
+                    f"While focusing on {focus_topic}, the work also offers insights into the related question of {random.choice(related_topics)}.",
                     f"For a contrasting perspective that critiques this position on {focus_topic}, see {self._get_alternative_reference(reference)}.",
                     f"This analysis of {focus_topic} represents a landmark contribution that redefined scholarly approaches to {random.choice(related_topics)}.",
                     f"The approach to {focus_topic} developed here establishes conceptual distinctions that continue to structure debates about {random.choice(related_topics)}.",
@@ -483,7 +782,7 @@ class NoteSystem:
                 "methodological": [
                     f"The methodological innovations introduced here offered alternatives to established approaches in the field.",
                     f"What distinguishes this work is its integration of previously disparate analytical frameworks.",
-                    f"{author}'s approach combines theoretical precision with contextual sensitivity in ways that merit methodological attention.",
+                    f"The approach combines theoretical precision with contextual sensitivity in ways that merit methodological attention.",
                     f"By introducing novel methodological tools, this work enabled investigations previously considered beyond disciplinary boundaries.",
                     f"The methodological framework developed here demonstrates how theoretical questions can be approached through multiple analytical lenses.",
                     f"This work exemplifies rigorous methodological pluralism, drawing from diverse theoretical traditions without reducing one to another.",
@@ -632,7 +931,7 @@ class NoteSystem:
                 # Original templates
                 "original": [
                     f"This work represents an important intervention in the field.",
-                    f"{author}'s methodological approach merits further consideration.",
+                    f"The methodological approach merits further consideration.",
                     f"For related perspectives, see also {self._get_alternative_reference(reference)}.",
                     f"This theoretical framework has been influential in subsequent scholarship.",
                     f"This argument has been contested by several scholars, most notably {random.choice(philosophers)}.",
@@ -665,7 +964,7 @@ class NoteSystem:
             return random.sample([t for t in all_topics if t != topic], min(3, len(all_topics) - 1))
             
         except ImportError:
-            # Fallback if concept_clusters not available
+            # Fallback if concept_clusters isn't available
             all_topics = concepts + terms
             return random.sample([t for t in all_topics if t != topic], min(3, len(all_topics) - 1))
     
@@ -685,21 +984,22 @@ class NoteSystem:
             
             if alt_author and alt_author != current_author:
                 # Extract and return just the citation information
-                return self._extract_author_year(alt_ref)
+                return self._extract_author_year(alt_ref)[0]
         
         # Fallback to a random philosopher if we couldn't generate a unique reference
-        return f"{random.choice(philosophers)} (recent work)"
+        return f"{random.choice(philosophers)}"
     
-    def get_authentic_work(self, philosopher_name, fallback_year=None):
+    def get_authentic_work(self, philosopher_name, is_article=False, fallback_year=None):
         """
         Retrieves an authentic work for a given philosopher from the data.py resources.
         
         Args:
             philosopher_name (str): Full name of the philosopher
+            is_article (bool): Whether to generate an article or book
             fallback_year (int, optional): Year to use if no authentic work is found
             
         Returns:
-            tuple: (title, year, co_author or None)
+            tuple: (title, year, co-author or None)
         """
         # Try to match philosopher to our database of authentic works
         clean_name = philosopher_name.strip()
@@ -710,7 +1010,8 @@ class NoteSystem:
             work_info = random.choice(philosopher_key_works[clean_name])
             title = work_info[0]
             year = work_info[1]
-            return (title, year, None)  # Most works don't have co-authors
+            co_author = work_info[2] if len(work_info) > 2 else None
+            return (title, year, co_author)
         
         # Check for philosopher as co-author
         for key in philosopher_key_works:
@@ -753,7 +1054,7 @@ class NoteSystem:
 
     def get_realistic_page_range(self):
         """Returns a realistic page range for a journal article."""
-        start_page = random.randint(1, 300)
+        start_page = random.randint(1, 100)
         page_length = random.randint(15, 45)  # Most academic articles are 15-45 pages
         end_page = start_page + page_length
         return f"{start_page}-{end_page}"
@@ -771,53 +1072,73 @@ class NoteSystem:
             str: A properly formatted citation
         """
         # Get authentic work if available, or generate a plausible one
-        title_info = self.get_authentic_work(philosopher_name, fallback_year)
+        title_info = self.get_authentic_work(philosopher_name, is_article, fallback_year)
         title, year, co_author = title_info
         
-        # Format author name (Last, F.)
+        # Format author name for MLA style (Last, First)
         name_parts = philosopher_name.split()
         
-        # Special case for bell hooks
-        if philosopher_name.lower() == "bell hooks":
-            author = "hooks, b."
+        # Check for authors with non-standard name formatting
+        if philosopher_name.lower() in NON_STANDARD_AUTHOR_FORMATS:
+            author = NON_STANDARD_AUTHOR_FORMATS[philosopher_name.lower()]
         elif len(name_parts) > 1:
-            author = f"{name_parts[-1]}, {name_parts[0][0]}."
+            author = f"{name_parts[-1]}, {' '.join(name_parts[:-1])}"
         else:
-            author = f"{name_parts[0]}."
+            author = name_parts[0]
+        
+        # Apply title case to title
+        title = apply_title_case(title)
         
         # Handle co-author if present
         if co_author:
             co_name_parts = co_author.split()
-            co_author_fmt = f"{co_name_parts[-1]}, {co_name_parts[0][0]}."
-            author_text = f"{author} & {co_author_fmt}"
+            if len(co_name_parts) > 1:
+                co_author_fmt = f"{co_name_parts[-1]}, {' '.join(co_name_parts[:-1])}"
+            else:
+                co_author_fmt = co_name_parts[0]
+            author_text = f"{author} and {co_author_fmt}"
         else:
             author_text = author
         
-        # Build the citation
+        # Build the citation in MLA format
         if is_article:
             journal = self.get_varied_journal()
             volume = random.randint(1, 40)
-            issue = random.randint(1, 6)
+            issue = random.randint(1, 4)
             pages = self.get_realistic_page_range()
                 
-            return f"{author_text} ({year}). *{title}*. {journal}, {volume}({issue}), {pages}."
+            # MLA 9 journal article format
+            return f"{author_text}. \"{title}.\" {journal}, vol. {volume}, no. {issue}, {year}, pp. {pages}."
         else:
-            # Book format
+            # MLA 9 book format
             publisher = self.get_varied_publisher()    
-            return f"{author_text} ({year}). *{title}*. {publisher}."
+            return f"{author_text}. {title}. {publisher}, {year}."
     
-    def add_to_bibliography(self, reference):
+    def add_to_works_cited(self, reference):
         """
-        Add a reference to the bibliography without creating a note.
+        Add a reference to the works cited without creating a note.
         
         Args:
-            reference (str): The full reference to add to the bibliography
+            reference (str): The full reference to add to the works cited
             
         Returns:
             None
         """
-        if reference not in self.bibliography:
-            self.bibliography.append(reference)
+        if reference not in self.works_cited and not self._is_duplicate_reference(reference):
+            self.works_cited.append(reference)
+            
+            # Update author work tracking
+            author = self._extract_author_for_note(reference)
+            title_key = self._extract_title_sorting_key(reference)
+            
+            if author not in self.author_work_count:
+                self.author_work_count[author] = 1
+                self.author_works[author] = {}
+            else:
+                self.author_work_count[author] += 1
+            
+            # Map this title to the full reference
+            self.author_works[author][title_key] = reference
     
     def generate_notes_section(self):
         """
@@ -841,23 +1162,81 @@ class NoteSystem:
         
         return notes_text
     
-    def generate_bibliography_section(self):
+    def generate_works_cited_section(self):
         """
-        Generate the complete bibliography section for the essay.
+        Generate the complete Works Cited section for the essay.
         
         Returns:
-            str: Formatted bibliography section
+            str: Formatted Works Cited section
         """
-        if not self.bibliography:
+        if not self.works_cited:
             return ""
         
-        bibliography_text = "## Bibliography\n\n"
-        for reference in self.bibliography:
-            # Format the reference with proper capitalization
-            formatted_ref = self._format_bibliography_entry(reference)
-            bibliography_text += f"{formatted_ref}\n\n"
+        works_cited_text = "## Works Cited\n\n"
         
-        return bibliography_text
+        # Group references by author
+        author_groups = {}
+        for reference in self.works_cited:
+            author_key = self._extract_author_sorting_key(reference)
+            if author_key not in author_groups:
+                author_groups[author_key] = []
+            author_groups[author_key].append(reference)
+        
+        # Sort author keys alphabetically
+        sorted_authors = sorted(author_groups.keys())
+        
+        # Process each author's works
+        for author_key in sorted_authors:
+            references = author_groups[author_key]
+            
+            # Sort this author's references by title
+            references.sort(key=lambda ref: self._extract_title_sorting_key(ref))
+            
+            # Format and add each reference
+            for i, reference in enumerate(references):
+                # Format the reference with proper MLA 9 style
+                formatted_ref = self._format_works_cited_entry(reference)
+                
+                # Apply three hyphens rule for subsequent works by the same author
+                if i > 0:
+                    # Replace the author part with three hyphens
+                    author_pattern = r'^([^\.]+)\.'
+                    formatted_ref = re.sub(author_pattern, '---.' , formatted_ref)
+                
+                # Add hanging indentation
+                lines = formatted_ref.split('\n')
+                if len(lines) > 1:
+                    for j in range(1, len(lines)):
+                        lines[j] = "    " + lines[j]  # Add 4 spaces for hanging indent
+                    formatted_ref = '\n'.join(lines)
+                
+                works_cited_text += f"{formatted_ref}\n\n"
+        
+        return works_cited_text
+
+    def _extract_author_sorting_key(self, reference):
+        """
+        Extract a key for sorting references alphabetically by author.
+        
+        Args:
+            reference (str): The reference string
+            
+        Returns:
+            str: A key for sorting
+        """
+        # Try to extract the author name
+        author_match = re.match(r'^([^\.]+)\.', reference)
+        if author_match:
+            author = author_match.group(1).strip().lower()
+            
+            # Handle special cases like "hooks, bell"
+            if author == "hooks, bell":
+                return "hooks"
+                
+            return author
+        
+        # Fallback to the beginning of the reference
+        return reference.split(' ')[0].lower()
     
     def _format_note_text(self, note_text):
         """Format a note text with proper capitalization and italicization."""
@@ -876,35 +1255,138 @@ class NoteSystem:
         
         return formatted_text
     
-    def _format_bibliography_entry(self, entry):
-        """Format a bibliography entry with proper capitalization and italicization."""
-        # Extract components for individual formatting
-        author_year_match = re.match(r'^(.*?)(\([0-9]{4}\))\.(.*)$', entry)
+    def _format_works_cited_entry(self, entry):
+        """Format a Works Cited entry with proper MLA 9 style."""
+        # Fix extra spaces and periods in author names
+        author_pattern = r'^([^\.]+)\.'
+        author_match = re.search(author_pattern, entry)
+        if author_match:
+            author_part = author_match.group(1)
+            # Fix extra spaces and periods
+            fixed_author_part = re.sub(r'\s+\.\s+', ' ', author_part)
+            # Replace in the original entry
+            entry = entry.replace(author_part, fixed_author_part)
         
-        if author_year_match:
-            author, year, rest = author_year_match.groups()
-            
-            # Format author (maintain capitalization)
-            author = ensure_proper_capitalization_with_italics(author.strip())
-            
-            # Find and format title (apply title case)
-            title_match = re.search(r'\*(.*?)\*', rest)
-            if title_match:
-                title = title_match.group(1)
-                # Apply title case to the title
-                capitalized_title = apply_title_case(title)
-                # Replace the title in the rest of the text
-                rest = rest.replace(f"*{title}*", f"*{capitalized_title}*")
-            
-            # Format the rest of the reference
-            rest = ensure_proper_capitalization_with_italics(rest)
-            
-            formatted_entry = f"{author} {year}.{rest}"
-        else:
-            # If the pattern doesn't match, apply general capitalization
-            formatted_entry = ensure_proper_capitalization_with_italics(entry)
+        # Process author names for consistency (use full names instead of initials)
+        # Let's first parse to identify the type of entry
         
-        # Apply italicization to terms
-        formatted_entry = italicize_terms_in_text(formatted_entry)
+        # Check if it's an MLA formatted book or journal article
+        mla_pattern = r'^([^\.]+)\.\s*(.*?)\.'
+        mla_match = re.match(mla_pattern, entry)
         
-        return formatted_entry
+        if mla_match:
+            author_part = mla_match.group(1).strip()
+            rest_of_entry = entry[len(author_part)+1:].strip()
+            
+            # Fix extra spaces and periods in author name
+            author_part = re.sub(r'(\s*\.\s*)+', '. ', author_part.strip()).strip()
+            if author_part.endswith('.'):
+                author_part = author_part[:-1]  # Remove trailing period
+            
+            # Convert authors with initials to full names (when not a special case like "hooks, bell")
+            if re.search(r',\s+[A-Z]\.', author_part) and not author_part.lower() == "hooks, bell":
+                # Only apply author name expansion for entries with initials
+                author_part = self._expand_author_initials(author_part)
+
+            # Check if the entry contains a title in quotes (article) or not (book)
+            if '"' in rest_of_entry:  # It's an article
+                # Extract the title from quotes
+                title_match = re.search(r'"([^"]+)"', rest_of_entry)
+                if title_match:
+                    title = title_match.group(1).strip()
+                    # Apply title case properly
+                    title = apply_title_case(title)
+                    
+                    # Remove any period at the end of the title to avoid double periods
+                    if title.endswith('.'):
+                        title = title[:-1]  # Remove trailing period
+                    
+                    # Find everything after the title
+                    after_title_index = rest_of_entry.find('"', rest_of_entry.find('"') + 1) + 1  # Find the closing quote and move past it
+                    if after_title_index > 0:
+                        after_title = rest_of_entry[after_title_index:].strip()
+                        
+                        # Check for duplicate title pattern
+                        duplicate_title_pattern = rf'^\.\s*"{re.escape(title)}\.?"'
+                        if re.match(duplicate_title_pattern, after_title):
+                            # Skip the duplicated title
+                            after_title = re.sub(duplicate_title_pattern, '', after_title).strip()
+                            
+                        # Remove leading period if present
+                        if after_title.startswith('.'):
+                            after_title = after_title[1:].strip()
+                        
+                        return f"{author_part}. \"{title}.\" {after_title}"
+                    else:
+                        # Fallback if we can't find the end of the title
+                        return f"{author_part}. \"{title}.\" {rest_of_entry.split('\"', 2)[-1].strip()}"
+            else:  # It's a book
+                # For books, titles are not in quotes
+                title_end = rest_of_entry.find('.')
+                if title_end != -1:
+                    title = rest_of_entry[:title_end].strip()
+                    # Apply title case properly
+                    title = apply_title_case(title)
+                    
+                    # Get everything after the title
+                    after_title = rest_of_entry[title_end+1:].strip()
+                    
+                    # Check for duplicate title pattern
+                    duplicate_title_pattern = rf'^{re.escape(title)}\.?'
+                    if re.match(duplicate_title_pattern, after_title):
+                        # Skip the duplicated title
+                        after_title = re.sub(duplicate_title_pattern, '', after_title).strip()
+                    
+                    # Remove leading period if present
+                    if after_title.startswith('.'):
+                        after_title = after_title[1:].strip()
+                    
+                    return f"{author_part}. {title}. {after_title}"
+                else:
+                    # If no period found, just use the rest as title
+                    title = rest_of_entry.strip()
+                    title = apply_title_case(title)
+                    return f"{author_part}. {title}."
+        
+        # If we couldn't parse the entry properly, return it as is
+        return entry
+    
+    def _expand_author_initials(self, author_part):
+        """
+        Convert author with initials to full names for consistency.
+        
+        Args:
+            author_part (str): The author part of the reference (e.g., "Smith, J.")
+            
+        Returns:
+            str: Author with expanded initials (e.g., "Smith, John")
+        """
+        # Special cases - don't process these
+        if author_part.lower() == "hooks, bell":
+            return author_part
+            
+        # Common first names for initials
+        first_name_map = {
+            'A': 'Albert', 'B': 'Benjamin', 'C': 'Catherine', 'D': 'David', 
+            'E': 'Elizabeth', 'F': 'Frederick', 'G': 'George', 'H': 'Hannah',
+            'I': 'Isaac', 'J': 'John', 'K': 'Katherine', 'L': 'Laura',
+            'M': 'Michael', 'N': 'Nicole', 'O': 'Oliver', 'P': 'Patricia',
+            'Q': 'Quincy', 'R': 'Robert', 'S': 'Sarah', 'T': 'Thomas',
+            'U': 'Ursula', 'V': 'Victoria', 'W': 'William', 'X': 'Xavier',
+            'Y': 'Yvonne', 'Z': 'Zachary'
+        }
+        
+        # Pattern for Last, Initial. format
+        pattern = r'([^,]+),\s+([A-Z])\.(\s+.*)?'
+        
+        match = re.match(pattern, author_part)
+        if match:
+            last_name = match.group(1)
+            initial = match.group(2)
+            rest = match.group(3) if match.group(3) else ""
+            
+            # Replace with full name
+            full_name = first_name_map.get(initial, initial + "name")
+            return f"{last_name}, {full_name}{rest}"
+            
+        return author_part

@@ -1,5 +1,5 @@
 """
-A module for generating sentence data for a postmodern essay generator.
+A module for storing sentence templates for the postmodern essay generator.
 It contains advanced templates for sentence generation.
 This module includes templates for introductions, conclusions,
 general statements, and rhetorical questions.
@@ -9,7 +9,7 @@ concepts, terms, and philosophers.
 The templates are categorized into different sections for easy access.
 """
 
-# Enhanced introduction templates for more variety and sophistication
+# Enhanced introduction templates with rich variation in opening phrases and structures
 enhanced_introduction_templates = [
     "This paper examines the intersection of {term} and {concept} {context}, arguing for a more nuanced understanding of their dialectical relationship.",
     "I propose to investigate {concept} through the lens of {term}, situating this analysis {context}.",
@@ -25,15 +25,35 @@ enhanced_introduction_templates = [
     "The following analysis proceeds from the assumption that {concept} constitutes both the condition of possibility and the limit of {term}.",
     "Rather than offering a definitive statement on {concept}, this investigation traces its points of convergence with {term} {context}.",
     "To speak of {term} in the age of {concept} is already to enter into a certain complicity with the very structures one seeks to critique.",
-    "As we shall see, any discussion of {term} is invariably haunted by the specter of {concept}, particularly {context}.",
-    "To invoke {adj} theory, the relationship between {concept} and {term} must be understood not as a binary opposition but as a complex negotiation {context}.",
-    "What would it mean to think {term} beyond the constraints imposed by {concept} {context}?",
+    "My argument suggests that {concept} has remained undertheorized in discussions of {term}, particularly {context}.",
+    "The question motivating this analysis concerns the extent to which {concept} might offer resources for reimagining {term} {context}.",
+    "In the pages that follow, I examine the productive tensions between {concept} and {term} as they unfold {context}.",
+    "This project situates itself at the intersection of {concept} and {term}, a theoretical borderland characterized by {context}.",
+    "The central claim of this paper is that {concept} fundamentally reconfigures our understanding of {term}, especially {context}.",
+    "This investigation begins with a seemingly simple question: How might {concept} transform our approach to {term} {context}?",
+    "Contemporary theoretical approaches to {term} have frequently neglected the crucial role of {concept}, particularly {context}.",
+    "Scholarship on {term} has yet to fully reckon with the implications of {concept}, especially {context}.",
+    "This essay intervenes in debates about {term} by foregrounding the often-overlooked dimension of {concept} {context}.",
+    "My analysis challenges conventional approaches to {term} by emphasizing its entanglement with {concept} {context}.",
+    "The relationship between {concept} and {term} demands reconsideration in light of recent developments {context}.",
     "This paper navigates the contested terrain between {concept} and {term}, seeking not resolution but a productive problematization.",
     "The text that follows maps the convergences and divergences between {concept} and {term} {context}, without presuming their reconciliation.",
-    "In an age defined by {concept}, how might we reconceptualize {term} {context}?"
+    "In an age defined by {concept}, how might we reconceptualize {term} {context}?",
+    "This analysis positions itself within ongoing conversations about {term}, specifically addressing its relationship to {concept} {context}.",
+    "The intersection of {concept} and {term} offers fertile ground for rethinking key assumptions about both, particularly {context}.",
+    "This inquiry approaches {term} through the theoretical apparatus of {concept}, revealing unexpected connections {context}.",
+    "I suggest that {term} can be productively reframed through engagement with {concept}, particularly {context}.",
+    "The theoretical framework I develop here approaches {term} through the prism of {concept}, revealing previously obscured dimensions {context}.",
+    "This study reconsiders the relationship between {concept} and {term}, moving beyond reductive binaries that have characterized previous approaches.",
+    "Current discourse on {term} tends to overlook the constitutive role of {concept}, a theoretical blindspot this paper aims to address.",
+    "By examining {term} in relation to {concept}, this paper offers a novel perspective on both, particularly {context}.",
+    "The conceptual framework developed here repositions {term} within the broader theoretical constellation of {concept}, especially {context}.",
+    "This paper argues that the relationship between {concept} and {term} is more complex and ambivalent than typically acknowledged {context}.",
+    "My investigation begins by questioning standard accounts of {term}, particularly their failure to adequately engage with {concept} {context}.",
+    "The primary contribution of this paper lies in its reconsideration of {term} through the theoretical lens of {concept} {context}."
 ]
 
-# Enhanced general templates for more sophisticated discourse
+# Enhanced general templates with diverse openings, transitions, and structures
 enhanced_general_templates = [
     "The work of {philosopher} reveals how {concept} functions as the unacknowledged framework structuring contemporary discourse on {term}.",
     "Reading {philosopher} against {other_philosopher} highlights the tension between {concept} and {other_concept} in their respective approaches to {term}.",
@@ -46,7 +66,7 @@ enhanced_general_templates = [
     "To what extent can {concept}, as {philosopher} conceptualizes it, account for the complexities of {term} {context}?",
     "Does the distinction between {concept} and {term} ultimately collapse under the weight of its own contradictions?",
     "{philosopher} argues that {concept} redefines our understanding of {term} in at least three significant ways.",
-    "Where {philosopher1} sees in {concept} a radical break with tradition, {philosopher2} identifies a certain continuity with regard to {term}.",
+    "Where {philosopher} sees in {concept} a radical break with tradition, {other_philosopher} identifies a certain continuity with regard to {term}.",
     "One might read {philosopher}'s silence on {term} not as an oversight, but as a strategic deployment of {concept} as methodological restraint.",
     "If we accept {philosopher}'s premise that {concept} is always already implicated in {term}, then certain consequences inevitably follow.",
     "The force of {philosopher}'s argument lies precisely in its refusal to resolve the productive tension between {concept} and {term}.",
@@ -54,10 +74,30 @@ enhanced_general_templates = [
     "Can we imagine a {term} that would not already be contaminated by {concept}?",
     "The preceding paragraph, in its formulation of {concept}, already presupposes the validity of {term}, thus participating in a certain circularity.",
     "At what point does {concept} cease to illuminate {term} and begin instead to obscure it?",
-    "{philosopher1} and {philosopher2} proffer divergent readings of {concept} vis-à-vis {term}."
+    "{philosopher} and {other_philosopher} proffer divergent readings of {concept} vis-à-vis {term}.",
+    "A key insight in {philosopher}'s approach to {concept} is its fundamental imbrication with the logic of {term}.",
+    "Turning to {philosopher}'s account of {concept} reveals previously unexamined dimensions of its relationship to {term}.",
+    "Significantly, {philosopher} situates {concept} within a broader constellation of theoretical concerns related to {term}.",
+    "A close reading of {philosopher}'s treatment of {concept} suggests a more ambivalent relationship to {term} than is typically acknowledged.",
+    "Throughout {philosopher}'s oeuvre, the question of {concept} repeatedly intersects with considerations of {term}.",
+    "Moving beyond {philosopher}'s explicit statements about {concept}, we can trace an implicit theory of {term} that animates their work.",
+    "Central to {philosopher}'s theoretical project is a radical rethinking of {concept} that necessarily transforms our understanding of {term}.",
+    "The theoretical apparatus developed by {philosopher} positions {concept} as both constitutive of and fundamentally irreducible to {term}.",
+    "In dialogue with {other_philosopher}, {philosopher} develops an account of {concept} that challenges conventional approaches to {term}.",
+    "What distinguishes {philosopher}'s approach to {concept} is precisely its refusal to subsume {term} under a totalizing theoretical framework.",
+    "Crucially, {philosopher} conceptualizes {concept} not as external to {term}, but as its constitutive outside.",
+    "The productive tension in {philosopher}'s work emerges from the irreducible gap between {concept} and {term}.",
+    "Against dominant interpretations, {philosopher} positions {concept} as fundamentally entangled with rather than opposed to {term}.",
+    "{philosopher}'s theoretical intervention reconfigures the relationship between {concept} and {term} in ways that exceed binary oppositions.",
+    "A careful consideration of {philosopher}'s methodological approach reveals the complex interplay between {concept} and {term} that structures their analysis.",
+    "Perhaps unexpectedly, {philosopher}'s account of {concept} provides valuable resources for rethinking contemporary approaches to {term}.",
+    "The significance of {philosopher}'s contribution lies in their reframing of the relationship between {concept} and {term}.",
+    "Implicit in {philosopher}'s critique of {concept} is a more affirmative engagement with {term}.",
+    "Following {philosopher}'s analytical framework, we might reconsider {term} as fundamentally implicated in rather than opposed to {concept}.",
+    "The theoretical project undertaken by {philosopher} necessitates a radical reconsideration of {concept} and its relationship to {term}."
 ]
 
-# Enhanced conclusion templates for sophisticated closings
+# Enhanced conclusion templates with varied closing phrases and structures
 enhanced_conclusion_templates = [
     "In lieu of a traditional conclusion, this paper affirms the productive undecidability at the heart of any encounter between {concept} and {term}.",
     "What emerges from this investigation is not a definitive account of {concept}, but a recognition of its irreducible entanglement with {term} {context}.",
@@ -76,10 +116,27 @@ enhanced_conclusion_templates = [
     "To the extent that this analysis has succeeded, it has done so by refusing the false choice between {concept} and {term}, revealing instead their mutual constitution.",
     "What remains to be thought, beyond the scope of this paper, is how the dialectic between {concept} and {term} might inform future theoretical interventions {context}.",
     "The politics of {concept} and {term} that this paper has traced suggests not a program but an ethos of critical engagement {context}.",
-    "In the final analysis, what matters is not whether {concept} or {term} has priority, but how their dialectical interplay shapes our theoretical horizons."
+    "In the final analysis, what matters is not whether {concept} or {term} has priority, but how their dialectical interplay shapes our theoretical horizons.",
+    "Rather than offering closure, this paper invites further exploration of the productive tensions between {concept} and {term} {context}.",
+    "The preceding discussion suggests that the relationship between {concept} and {term} is more complex and ambivalent than typically acknowledged {context}.",
+    "Having traced the contours of {concept} and its relationship to {term}, we might now reframe the initial question that motivated this inquiry.",
+    "My analysis demonstrates not the incompatibility of {concept} and {term}, but their fundamental interdependence {context}.",
+    "Moving forward, theoretical approaches to {term} must reckon with its entanglement with {concept}, particularly {context}.",
+    "The contribution of this paper lies in its reconfiguration of the relationship between {concept} and {term}, opening new avenues for theoretical inquiry.",
+    "This investigation suggests that the binary opposition between {concept} and {term} fails to capture the complexity of their relationship {context}.",
+    "If anything has become clear through this analysis, it is that {concept} and {term} cannot be understood in isolation from one another {context}.",
+    "This paper has attempted to articulate a more nuanced understanding of the relationship between {concept} and {term}, one that acknowledges both their differences and their interconnections.",
+    "The implications of this analysis extend beyond {concept} and {term} to broader questions about theoretical practice {context}.",
+    "My hope is that this reconsideration of the relationship between {concept} and {term} will contribute to ongoing conversations about both {context}.",
+    "While acknowledging the limited scope of this investigation, I suggest that it offers a provisional framework for rethinking the relationship between {concept} and {term} {context}.",
+    "This inquiry into {concept} and {term} raises as many questions as it answers, pointing toward fruitful directions for future research {context}.",
+    "The theoretical framework developed here might be productively extended to other domains where {concept} and {term} intersect {context}.",
+    "My analysis suggests that the conventional opposition between {concept} and {term} obscures more than it illuminates {context}.",
+    "The relationship between {concept} and {term} will continue to evolve, necessitating ongoing critical engagement with both {context}.",
+    "This paper represents not an endpoint but a contribution to an ongoing conversation about {concept} and {term} {context}."
 ]
 
-# Metafictional templates that reflect on the writing process itself
+# Expanded and varied metafictional templates
 metafictional_templates = [
     "This essay, in its exploration of {term}, finds itself entangled in the very {concept} it seeks to unpack.",
     "The act of writing about {concept} inevitably entangles the author in the same discursive practices that {term} critiques.",
@@ -95,10 +152,25 @@ metafictional_templates = [
     "This analysis of {term}, despite its aspirations to critical rigor, remains complicit with the very {concept} it seeks to deconstruct.",
     "The reflexive awareness that this very essay exemplifies the {concept} it describes does not exempt it from the operations of {term}, but rather intensifies them.",
     "As this paper unfolds, it becomes increasingly apparent that its investigation of {term} is itself structured by the logic of {concept}.",
-    "While ostensibly addressing {term}, this text performs the very {concept} it purports to analyze."
+    "While ostensibly addressing {term}, this text performs the very {concept} it purports to analyze.",
+    "The theoretical framework employed here is necessarily implicated in the structures of {concept} it attempts to analyze in relation to {term}.",
+    "This text performs the very tensions between {concept} and {term} it describes.",
+    "My discussion of {term} paradoxically reinforces the very {concept} it aims to critique.",
+    "To write about {concept} is already to participate in the economy of {term} one seeks to interrogate.",
+    "The critical position articulated here cannot stand outside the {concept} it addresses, being always already implicated in {term}.",
+    "This essay's attempt to theorize {term} is itself caught within the web of {concept} it describes.",
+    "Methodologically, this investigation participates in the very {concept} it purports to analyze in relation to {term}.",
+    "The author acknowledges the impossibility of standing outside the {concept} being described in relation to {term}.",
+    "In theorizing {term}, this analysis participates in the economy of {concept} it seeks to interrogate.",
+    "Even as we critique {concept}, we cannot escape its structuring effects on our analysis of {term}.",
+    "The position from which this critique of {concept} in relation to {term} emerges is itself implicated in both.",
+    "This investigation, even as it aspires to critical distance, remains ensnared in the very {concept} and {term} it examines.",
+    "The reflexivity required to analyze {concept} inevitably implicates this text in the economy of {term} it has attempted to critique.",
+    "This theoretical intervention cannot escape its own implication in the {concept} and {term} it aims to interrogate.",
+    "Our critical stance toward {concept} remains complicit with the very {term} it purports to question."
 ]
 
-# Templates for rhetorical questions that engage the reader
+# Expanded rhetorical question templates
 rhetorical_question_templates = [
     "What would it mean to think {term} beyond the constraints imposed by {concept}?",
     "To what extent can {concept}, as {philosopher} conceptualizes it, account for the complexities of {term}?",
@@ -112,12 +184,27 @@ rhetorical_question_templates = [
     "Might there be a way to think {concept} and {term} together without reducing one to the other?",
     "What are the political stakes of distinguishing between {concept} and {term} in the manner proposed by {philosopher}?",
     "How does {philosopher}'s understanding of {concept} transform our approach to questions of {term}?",
-    "To what extent does the debate between {philosopher1} and {philosopher2} regarding {concept} advance our understanding of {term}?",
+    "To what extent does the debate between {philosopher} and {other_philosopher} regarding {concept} advance our understanding of {term}?",
     "Is it possible to develop an account of {term} that does not presuppose the validity of {concept}?",
-    "What would {philosopher} say about contemporary manifestations of {concept} in relation to {term}?"
+    "What would {philosopher} say about contemporary manifestations of {concept} in relation to {term}?",
+    "How might we articulate the relationship between {concept} and {term} without reverting to reductive binaries?",
+    "Where in {philosopher}'s account of {concept} do we find resources for rethinking {term}?",
+    "Does our understanding of {term} change fundamentally if we approach it through the lens of {concept}?",
+    "What happens to our conception of {term} when we place it in conversation with {philosopher}'s theory of {concept}?",
+    "If {concept} and {term} are mutually constitutive, as {philosopher} suggests, what are the implications for our theoretical practice?",
+    "How do we account for the persistence of {term} in the face of {philosopher}'s critique of {concept}?",
+    "What theoretical resources does {philosopher}'s account of {concept} offer for reimagining {term}?",
+    "In what ways does the conventional opposition between {concept} and {term} obscure their interdependence?",
+    "How might {philosopher}'s approach to {concept} transform our understanding of {term}?",
+    "What would it mean to think {term} and {concept} together, rather than as opposing terms?",
+    "To what extent is {term} always already implicated in the very {concept} it purports to transcend?",
+    "How might we navigate the tension between {concept} and {term} without resolving it prematurely?",
+    "Does the relationship between {concept} and {term} require us to rethink fundamental categories of analysis?",
+    "What methodological challenges emerge when we attempt to theorize the relationship between {concept} and {term}?",
+    "Can we develop an account of {concept} that does justice to the complexities of {term}?"
 ]
 
-# Templates that incorporate citations with framing commentary
+# Expanded citation templates with more varied framing language
 citation_with_framing_templates = [
     "As {author} ({year}) demonstrates in a different context, any consideration of {concept} must account for its relationship to {term}.",
     "{author} ({year}) provides a compelling framework for understanding the relationship between {concept} and {term}.",
@@ -133,10 +220,25 @@ citation_with_framing_templates = [
     "In conversation with {author}'s ({year}) work on {concept}, this paper explores its relevance for theorizing {term}.",
     "Although not explicitly addressed by {author} ({year}), the question of {term} is implicit throughout their analysis of {concept}.",
     "{author}'s ({year}) rethinking of {concept} suggests new avenues for investigating {term}.",
-    "{author}'s ({year}) historically situated account of {concept} provides crucial context for contemporary discussions of {term}."
+    "{author}'s ({year}) historically situated account of {concept} provides crucial context for contemporary discussions of {term}.",
+    "Scholars like {author} ({year}) have reframed debates about {concept} in ways that illuminate its relationship to {term}.",
+    "A key insight from {author}'s ({year}) work concerns how {concept} shapes and is shaped by {term}.",
+    "According to {author} ({year}), any adequate theory of {concept} must account for its entanglement with {term}.",
+    "The framework developed by {author} ({year}) highlights the mutual constitution of {concept} and {term}.",
+    "{author}'s ({year}) study reveals previously unexamined dimensions of the relationship between {concept} and {term}.",
+    "In their influential analysis, {author} ({year}) demonstrates how {concept} operates within the broader context of {term}.",
+    "As {author} ({year}) persuasively argues, conventional approaches to {concept} often overlook its relationship to {term}.",
+    "A significant contribution of {author}'s ({year}) work is its reconfiguration of the relationship between {concept} and {term}.",
+    "The methodological approach developed by {author} ({year}) offers new ways of theorizing the intersection of {concept} and {term}.",
+    "{author}'s ({year}) critical intervention challenges standard accounts of the relationship between {concept} and {term}.",
+    "Through careful analysis, {author} ({year}) reveals the complex interplay between {concept} and {term}.",
+    "{author}'s ({year}) theoretical framework provides valuable resources for rethinking {concept} in relation to {term}.",
+    "A central insight of {author}'s ({year}) work is the recognition that {concept} and {term} cannot be understood in isolation from one another.",
+    "As demonstrated by {author} ({year}), conventional distinctions between {concept} and {term} often obscure their interdependence.",
+    "The scholarly conversation initiated by {author} ({year}) continues to shape how we understand the relationship between {concept} and {term}."
 ]
 
-# Templates that stage a dialogue between philosophers
+# Expanded philosophical dialogue templates
 philosophical_dialogue_templates = [
     "Where {philosopher1} sees in {concept} a radical break with tradition, {philosopher2} identifies a certain continuity with regard to {term}.",
     "While {philosopher1} emphasizes the role of {concept} in structuring {term}, {philosopher2} focuses on their mutual constitution.",
@@ -152,10 +254,25 @@ philosophical_dialogue_templates = [
     "The debate between {philosopher1} and {philosopher2} regarding {concept} has profound implications for how we conceptualize {term}.",
     "{philosopher1}'s notion of {concept} can be productively juxtaposed with {philosopher2}'s account of {term}.",
     "For {philosopher1}, the relationship between {concept} and {term} is one of mutual constitution; for {philosopher2}, it is marked by insurmountable tension.",
-    "In contrast to {philosopher1}, who sees {concept} as foundational to {term}, {philosopher2} emphasizes their irreducible difference."
+    "In contrast to {philosopher1}, who sees {concept} as foundational to {term}, {philosopher2} emphasizes their irreducible difference.",
+    "The theoretical divergence between {philosopher1} and {philosopher2} concerning {concept} reveals the contested status of {term}.",
+    "A comparative reading of {philosopher1} and {philosopher2} illuminates the complex relationship between {concept} and {term}.",
+    "What {philosopher1} celebrates as the radical potential of {concept}, {philosopher2} critiques as its limitation in relation to {term}.",
+    "The methodological differences between {philosopher1} and {philosopher2} shape their respective approaches to {concept} and {term}.",
+    "While {philosopher1} locates the significance of {concept} in its relationship to {term}, {philosopher2} finds it elsewhere entirely.",
+    "The productive tension between {philosopher1}'s and {philosopher2}'s accounts reveals the multidimensional character of both {concept} and {term}.",
+    "Through their divergent approaches to {concept}, {philosopher1} and {philosopher2} highlight different aspects of {term}.",
+    "Despite their theoretical differences, both {philosopher1} and {philosopher2} recognize the centrality of {concept} to any adequate theory of {term}.",
+    "The theoretical dialogue between {philosopher1} and {philosopher2} opens new perspectives on the relationship between {concept} and {term}.",
+    "Although {philosopher1} and {philosopher2} disagree about the nature of {concept}, their analyses converge in recognizing its importance for understanding {term}.",
+    "Where {philosopher1} finds in {concept} a resource for rethinking {term}, {philosopher2} identifies its limitations.",
+    "The respective projects of {philosopher1} and {philosopher2} approach {concept} through different methodological frameworks, yielding divergent accounts of {term}.",
+    "By putting {philosopher1} and {philosopher2} in conversation, we gain a more nuanced understanding of how {concept} relates to {term}.",
+    "The theoretical contributions of {philosopher1} and {philosopher2} represent complementary rather than opposing approaches to understanding {concept} and {term}.",
+    "Through their different theoretical lenses, {philosopher1} and {philosopher2} illuminate distinct but interconnected aspects of {concept} and {term}."
 ]
 
-# Quote-focused templates for enhanced sentence generation 
+# Updated quote-focused templates with varied attribution language
 quote_enhanced_templates = [
     "As {philosopher} writes, \"{quote},\" which fundamentally reconfigures our understanding of {concept} in relation to {term}.",
     "In a characteristic formulation, {philosopher} argues that \"{quote},\" thus reframing debates about {concept} and {term}.",
@@ -166,23 +283,68 @@ quote_enhanced_templates = [
     "Consider {philosopher}'s influential formulation: \"{quote}\" - a statement that resituates {concept} within the broader discourse on {term}.",
     "{philosopher}'s insight that \"{quote}\" reveals the underlying tension between {concept} and {term} that structures much contemporary theory.",
     "The force of {philosopher}'s claim that \"{quote}\" derives from its radical rethinking of the relationship between {concept} and {term}.",
-    "For {philosopher}, the realization that \"{quote}\" marks a decisive shift in how we conceptualize the interplay of {concept} and {term}."
+    "For {philosopher}, the realization that \"{quote}\" marks a decisive shift in how we conceptualize the interplay of {concept} and {term}.",
+    "In a pivotal passage, {philosopher} notes that \"{quote},\" thereby establishing a crucial connection between {concept} and {term}.",
+    "{philosopher}'s oft-cited observation that \"{quote}\" illuminates dimensions of {concept} previously obscured in discussions of {term}.",
+    "The theoretical implications of {philosopher}'s statement that \"{quote}\" extend well beyond {concept} to encompass {term} as well.",
+    "Through the lens of {philosopher}'s assertion that \"{quote},\" we can reexamine the relationship between {concept} and {term}.",
+    "Taking seriously {philosopher}'s claim that \"{quote}\" requires us to reconsider conventional approaches to both {concept} and {term}.",
+    "In perhaps their most influential formulation, {philosopher} suggests that \"{quote},\" a statement that reconfigures the relationship between {concept} and {term}.",
+    "The conceptual breakthrough in {philosopher}'s work occurs in the recognition that \"{quote},\" fundamentally altering our understanding of {concept} in relation to {term}.",
+    "{philosopher}'s theoretical intervention begins with the observation that \"{quote},\" establishing a framework for rethinking {concept} and {term}.",
+    "A close reading of {philosopher}'s statement that \"{quote}\" reveals its far-reaching implications for how we understand {concept} and {term}.",
+    "The theoretical power of {philosopher}'s claim that \"{quote}\" lies in how it repositions {concept} in relation to {term}.",
+    "When {philosopher} observes that \"{quote},\" they provide a conceptual framework that transforms our understanding of {concept} and {term}.",
+    "Through their formulation that \"{quote},\" {philosopher} establishes a theoretical position that reconfigures the relationship between {concept} and {term}.",
+    "Reflecting on {philosopher}'s insight that \"{quote}\" opens new avenues for thinking about {concept} in relation to {term}.",
+    "In their analysis of {concept}, {philosopher} provocatively suggests that \"{quote},\" with significant implications for how we understand {term}.",
+    "The critical move in {philosopher}'s approach occurs in the assertion that \"{quote},\" fundamentally altering the relationship between {concept} and {term}."
 ]
 
-# Quote-focused templates for philosophical dialogues
+# Updated quote dialogue templates with varied framing
 quote_dialogue_templates = [
     "Where {philosopher1} contends that \"{quote},\" {philosopher2} emphasizes the ways in which {concept} reconfigures our understanding of {term}.",
     "Although {philosopher1} famously argued that \"{quote},\" {philosopher2} offers a contrasting approach to {concept} that transforms how we engage with {term}.",
     "Reading {philosopher1}'s claim that \"{quote}\" against {philosopher2}'s work reveals the complex dialectic between {concept} and {term}.",
     "{philosopher1}'s assertion that \"{quote}\" can be productively contrasted with {philosopher2}'s approach to {concept} vis-à-vis {term}.",
-    "While {philosopher1} maintained that \"{quote},\" {philosopher2} developed an account of {concept} that fundamentally reimagines its relationship to {term}."
+    "While {philosopher1} maintained that \"{quote},\" {philosopher2} developed an account of {concept} that fundamentally reimagines its relationship to {term}.",
+    "The tension between {philosopher1}'s observation that \"{quote}\" and {philosopher2}'s theorization of {concept} illuminates the complexity of {term}.",
+    "Despite {philosopher1}'s insistence that \"{quote},\" {philosopher2} argues for a different understanding of {concept} and its relationship to {term}.",
+    "{philosopher1}'s claim that \"{quote}\" stands in productive tension with {philosopher2}'s account of how {concept} shapes {term}.",
+    "Whereas {philosopher1} famously stated that \"{quote},\" {philosopher2} approaches {concept} through a different theoretical framework in relation to {term}.",
+    "The apparent contradiction between {philosopher1}'s assertion that \"{quote}\" and {philosopher2}'s analysis of {concept} reveals the multidimensional nature of {term}.",
+    "When placed alongside {philosopher2}'s work on {concept}, {philosopher1}'s claim that \"{quote}\" gains new significance for understanding {term}.",
+    "The theoretical divergence between {philosopher1}'s statement that \"{quote}\" and {philosopher2}'s approach to {concept} highlights different aspects of {term}.",
+    "In contrast to {philosopher1}'s position that \"{quote},\" {philosopher2} develops an account of {concept} that foregrounds its relationship to {term}.",
+    "By juxtaposing {philosopher1}'s assertion that \"{quote}\" with {philosopher2}'s work, we gain insight into the complex relationship between {concept} and {term}.",
+    "The dialogue between {philosopher1}'s claim that \"{quote}\" and {philosopher2}'s theoretical framework illuminates the contested nature of both {concept} and {term}.",
+    "Where {philosopher1} argues that \"{quote},\" {philosopher2} identifies a different relationship between {concept} and {term}.",
+    "Through the lens of {philosopher2}'s work, {philosopher1}'s statement that \"{quote}\" reveals unexpected dimensions of {concept} and {term}.",
+    "The productive tension between {philosopher1}'s observation that \"{quote}\" and {philosopher2}'s approach to {concept} enables a rethinking of {term}.",
+    "Although seemingly at odds, {philosopher1}'s claim that \"{quote}\" and {philosopher2}'s theorization of {concept} offer complementary perspectives on {term}.",
+    "The methodological differences between {philosopher1}'s assertion that \"{quote}\" and {philosopher2}'s work shape their respective approaches to {concept} and {term}."
 ]
 
-# Quote-focused templates for citations
+# Updated quote citation templates with varied framing
 quote_citation_templates = [
-    "Echoing {philosopher}'s notable claim that \"{quote},\" {author} ({year}) develops an analysis of {concept} that extends beyond conventional understandings of {term}.",
-    "Building on {philosopher}'s insight that \"{quote},\" {author} ({year}) reconsiders the relationship between {concept} and {term}.",
-    "{author} ({year}) draws on {philosopher}'s formulation that \"{quote}\" to elaborate a more nuanced account of how {concept} shapes our understanding of {term}.",
-    "Taking up {philosopher}'s provocative assertion that \"{quote},\" {author} ({year}) offers a compelling reframing of {concept} in relation to {term}.",
-    "In conversation with {philosopher}'s argument that \"{quote},\" {author} ({year}) examines how {concept} operates within contemporary discourses on {term}."
+    "Echoing {philosopher}'s notable claim that \"{quote},\" {author} develops an analysis of {concept} that extends beyond conventional understandings of {term}.",
+    "Building on {philosopher}'s insight that \"{quote},\" {author} reconsiders the relationship between {concept} and {term}.",
+    "{author} draws on {philosopher}'s formulation that \"{quote}\" to elaborate a more nuanced account of how {concept} shapes our understanding of {term}.",
+    "Taking up {philosopher}'s provocative assertion that \"{quote},\" {author} offers a compelling reframing of {concept} in relation to {term}.",
+    "In conversation with {philosopher}'s argument that \"{quote},\" {author} examines how {concept} operates within contemporary discourses on {term}.",
+    "Responding to {philosopher}'s observation that \"{quote},\" {author} explores the implications for how we conceptualize {concept} in relation to {term}.",
+    "{author}'s analysis extends {philosopher}'s claim that \"{quote}\" by examining its consequences for understanding {concept} and {term}.",
+    "Developing {philosopher}'s suggestion that \"{quote},\" {author} articulates a framework for rethinking {concept} in relation to {term}.",
+    "Through engagement with {philosopher}'s formulation that \"{quote},\" {author} reconfigures conventional approaches to {concept} and {term}.",
+    "The theoretical foundation for {author}'s approach can be found in {philosopher}'s observation that \"{quote},\" which transforms how we understand {concept} and {term}.",
+    "{author}'s methodological approach builds upon {philosopher}'s insight that \"{quote},\" applying it to questions of {concept} and {term}.",
+    "Citing {philosopher}'s influential statement that \"{quote},\" {author} develops an analysis that repositions {concept} in relation to {term}.",
+    "In an extension of {philosopher}'s argument that \"{quote},\" {author} explores the complex relationship between {concept} and {term}.",
+    "Following {philosopher}'s lead in suggesting that \"{quote},\" {author} examines the implications for theoretical approaches to {concept} and {term}.",
+    "Inspired by {philosopher}'s insight that \"{quote},\" {author} pursues a line of inquiry that reconfigures our understanding of {concept} and {term}.",
+    "With reference to {philosopher}'s claim that \"{quote},\" {author} develops a theoretical framework that illuminates the relationship between {concept} and {term}.",
+    "Motivated by {philosopher}'s observation that \"{quote},\" {author} undertakes an investigation into the interconnections between {concept} and {term}.",
+    "{author}'s theoretical intervention begins from {philosopher}'s provocative statement that \"{quote},\" extending its implications for {concept} and {term}.",
+    "Guided by {philosopher}'s formulation that \"{quote},\" {author} articulates a position that transforms our understanding of {concept} in relation to {term}.",
+    "In dialogue with {philosopher}'s assertion that \"{quote},\" {author} explores dimensions of {concept} previously overlooked in discussions of {term}."
 ]

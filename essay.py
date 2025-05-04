@@ -1,20 +1,19 @@
 """
 A module for coherent essay structure and generation.
 This module generates a full essay with coherent sections,
-properly formatted citations, and a bibliography.
+properly formatted citations, and a works cited section.
 It includes functions for generating titles, sections, and
 abstracts, as well as managing notes and references.
 It also ensures proper capitalization and formatting
 of headings and terms.
+The citation system follows MLA 9 style guidelines.
 """
 
 import random
-from collections import Counter
 import metafiction
 from coherence import EssayCoherence
 from paragraph import generate_paragraph
-from data import philosophers, concepts, italicized_terms, terms, contexts, adjectives
-from citation_utils import get_citation_note
+from data import philosophers, concepts
 from reference import generate_reference
 from capitalization import (
     ensure_proper_capitalization_with_italics, 
@@ -171,17 +170,18 @@ def generate_essay():
     essay_parts.append("## Conclusion\n\n")
     essay_parts.append(conclusion_text + "\n\n")
 
-    # Generate notes and bibliography sections
+    # Generate Works Cited and Notes sections
     notes_section = note_system.generate_notes_section()
-    bibliography_section = note_system.generate_bibliography_section()
+    works_cited_section = note_system.generate_works_cited_section()
+
     
-    # Add notes and bibliography to the essay
+    # Add Notes first, then Works Cited - per MLA 9 guidelines
     if notes_section:
         essay_parts.append(notes_section)
-    
-    if bibliography_section:
-        essay_parts.append(bibliography_section)
 
+    if works_cited_section:
+        essay_parts.append(works_cited_section)
+    
     # Combine all parts into the essay text
     essay_text = ''.join(essay_parts)
     

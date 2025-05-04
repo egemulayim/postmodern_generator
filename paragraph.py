@@ -11,10 +11,11 @@ of sentences and proper nouns, as well as a function to generate
 metafictional elements for self-referential commentary.
 The generated paragraphs are intended to reflect the complexity and depth
 of postmodern academic writing, while also adhering to conventional
-academic standards.
+academic standards and MLA 9 citation formatting.
 """
 
 import random
+import re
 from collections import Counter
 from sentence import generate_sentence
 from data import philosophers, concepts, terms, philosopher_concepts, rhetorical_devices, discursive_modes
@@ -76,6 +77,7 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
                       note_system=None, context=None):
     """
     Generate a paragraph by selecting sentences from a pool, ensuring a central theme for coherence.
+    Uses MLA 9 citation style for all citations.
 
     Args:
         template_type (str): Type of paragraph ('introduction', 'general', or 'conclusion')
@@ -236,6 +238,10 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
     # Combine sentences into paragraph
     paragraph_str = ' '.join(paragraph_sentences)
     
+    # Handle [citation] placeholders with MLA 9 style citations
+    if '[citation]' in paragraph_str:
+        paragraph_str = _handle_mla_citation(paragraph_str, cited_references, note_system, all_references, context)
+    
     # Add meta-references or rhetorical devices based on paragraph type
     if template_type == 'introduction' and random.random() < 0.3:
         # Add a meta-reference about the paper's structure
@@ -262,3 +268,120 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
     paragraph_str = ensure_proper_capitalization(paragraph_str)
 
     return paragraph_str, used_concepts_in_paragraph, used_terms_in_paragraph
+
+def _handle_mla_citation(paragraph_str, cited_references, note_system, all_references, context=None):
+    """
+    Handle [citation] placeholders in paragraph text with MLA 9 style citations.
+    
+    Args:
+        paragraph_str (str): Original paragraph with [citation] placeholders
+        cited_references (list): List of already cited references (legacy)
+        note_system (NoteSystem): The note system for managing citations and works cited
+        all_references (list): List of all available references
+        context (dict, optional): Context information about the paragraph
+        
+    Returns:
+        str: The paragraph with proper MLA citations
+    """
+    # If no [citation] markers, return as is
+    if "[citation]" not in paragraph_str:
+        return paragraph_str
+    
+    # Count how many citations we need
+    num_citations = paragraph_str.count("[citation]")
+    
+    # For each [citation] placeholder, replace with MLA style citation
+    for _ in range(num_citations):
+        if note_system:
+            # If we have a note system, use it
+            reference = random.choice(all_references)
+            
+            # Use add_citation instead of add_to_works_cited to create notes
+            citation = note_system.add_citation(reference, context)
+            
+            # Replace with MLA style citation
+            paragraph_str = paragraph_str.replace("[citation]", citation, 1)
+        else:
+            # Legacy handling
+            reference = random.choice(all_references)
+            if reference not in cited_references:
+                cited_references.append(reference)
+            
+            # Generate a footnote number
+            number = cited_references.index(reference) + 1
+            footnote = f"[^{number}]"
+            paragraph_str = paragraph_str.replace("[citation]", footnote, 1)
+    
+    return paragraph_str
+
+def _generate_mla_citation(reference, note_system):
+    """
+    Generate an MLA 9 style citation for a reference.
+    
+    Args:
+        reference (str): The reference string
+        note_system (NoteSystem): System for managing citations
+        
+    Returns:
+        tuple: (MLA citation string, page number)
+    """
+    # Extract author information
+    author_match = re.match(r'^([^(]+)', reference)
+    if author_match:
+        author = author_match.group(1).strip()
+        # Get the last name for MLA style
+        if ',' in author:
+            last_name = author.split(',')[0].strip()
+        else:
+            name_parts = author.split()
+            last_name = name_parts[-1] if name_parts else "Smith"
+    else:
+        last_name = "Smith"
+    
+    # Use add_citation to create notes
+    citation = note_system.add_citation(reference, None)
+    
+    # Get the page number from the citation
+    page_num = note_system.page_numbers.get(reference, random.randint(1, 300))
+    
+    return citation, page_num
+
+def generate_section(heading, num_paragraphs, references, note_system=None):
+    """
+    Generate a complete section with heading and paragraphs.
+    
+    Args:
+        heading (str): The section heading
+        num_paragraphs (int): Number of paragraphs to generate
+        references (list): References for citations
+        note_system (NoteSystem, optional): System for managing citations
+        
+    Returns:
+        list: List of section parts (heading and paragraphs)
+    """
+    section_parts = [(f"## {heading}\n\n", None)]
+    
+    # Create context for this section
+    section_context = {
+        'section': heading.lower(),
+        'concepts': set(),
+        'terms': set()
+    }
+    
+    # Generate paragraphs for this section
+    for i in range(num_paragraphs):
+        # Update context with concepts and terms from previous paragraphs
+        paragraph_text, paragraph_concepts, paragraph_terms = generate_paragraph(
+            "general", random.randint(2, 4), references, 
+            note_system=note_system, context=section_context
+        )
+        
+        # Update section context with new concepts and terms
+        section_context['concepts'].update(paragraph_concepts)
+        section_context['terms'].update(paragraph_terms)
+        
+        # Add paragraph to section
+        section_parts.append((paragraph_text, None))
+        section_parts.append(("\n\n", None))
+    
+    return section_parts
