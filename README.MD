@@ -57,7 +57,7 @@ To generate a postmodern essay, execute the following command in your terminal:
 python main.py
 ```
 
-To generate an essay with a specific random seed (for reproducibility, each new essay generated with the same seed retains the content of previously generated essays, but alters the cited works in the bibliography section):
+To generate an essay with a specific random seed (for reproducibility, each new essay generated with the same seed retains the exact same content but alters the cited works in the bibliography section due to the related code being executed separately than the body of the text, which causes an irrelevancy and is actually an unwanted feature that will be removed in future updates):
 
 ```bash
 python main.py 42
