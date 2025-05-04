@@ -77,7 +77,7 @@ The generator will output a complete academic essay including:
 The following features and improvements are planned for future releases:
 
 - **Enhanced Output Formats**: Add options to generate in HTML or LaTeX formatting
-- **Additional Citation Styles**: Support for APA, Chicago, and other academic citation formats
+- **Additional Citation Styles**: Support for APA, Chicago, and possibly other academic citation formats
 - **UI Improvements**: Develop a web-based user interface for easier interaction
 - **Advanced Configuration**: More extensive options to customize output length, complexity, and thematic focus
 - **API Integration**: Build an API to allow integration with other tools and services
