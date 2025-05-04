@@ -20,7 +20,7 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 
 ## Features
 
-- **Complete Essay Generation**: Produces fully-formed academic essays with title, abstract, introduction, body sections, conclusion, and works cited
+- **Complete Essay Generation**: Produces fully-formed academic essays with title, abstract, introduction, body sections, conclusion, notes, and works cited sections
 - **Theoretical Sophistication**: Incorporates postmodern concepts, philosophers, and theoretical frameworks
 - **MLA 9 Compliant Citations**: Generates proper in-text citations and formatted works cited sections
 - **Thematic Coherence**: Maintains conceptual and thematic unity throughout the essay
