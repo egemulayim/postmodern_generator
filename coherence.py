@@ -86,6 +86,31 @@ class EssayCoherence:
         for philosopher in self.primary_philosophers:
             self.philosopher_weights[philosopher] = 3
     
+    def prioritize_title_themes(self, title_themes):
+            """
+            Prioritize themes from the title for stronger coherence.
+            
+            Args:
+                title_themes (dict): Dictionary of title themes
+            """
+            # Highly weight primary concepts from title
+            for concept in title_themes['primary_concepts']:
+                self.concept_weights[concept] = 10  # Higher weight for title concepts
+                if concept not in self.primary_concepts:
+                    self.primary_concepts.append(concept)
+            
+            # Highly weight primary terms from title
+            for term in title_themes['primary_terms']:
+                self.term_weights[term] = 10  # Higher weight for title terms
+                if term not in self.primary_terms:
+                    self.primary_terms.append(term)
+            
+            # Include related concepts with medium weight
+            for concept in title_themes['related_concepts']:
+                self.concept_weights[concept] = 8  # Medium weight for related concepts
+                if concept not in self.primary_concepts and len(self.primary_concepts) < 5:
+                    self.primary_concepts.append(concept)
+
     def _build_concept_relationships(self):
         """Build a graph of related concepts based on philosopher associations."""
         relationships = defaultdict(set)

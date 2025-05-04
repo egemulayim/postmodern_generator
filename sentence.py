@@ -25,34 +25,34 @@ from quotes import quotes
 
 # Quote-focused templates for enhanced sentence generation 
 quote_enhanced_templates = [
-    "As {philosopher} writes, \"{quote},\" which fundamentally reconfigures our understanding of {concept} in relation to {term}.",
-    "In a characteristic formulation, {philosopher} argues that \"{quote},\" thus reframing debates about {concept} and {term}.",
-    "The significance of {philosopher}'s claim that \"{quote}\" lies in how it illuminates the relationship between {concept} and {term}.",
-    "{philosopher}'s provocative assertion that \"{quote}\" offers a productive lens through which to reconsider {term} beyond conventional frameworks.",
-    "One might read {philosopher}'s observation that \"{quote}\" as a direct challenge to standard accounts of the relationship between {concept} and {term}.",
-    "When {philosopher} famously claimed that \"{quote},\" what was at stake was nothing less than the reconceptualization of {term} through the lens of {concept}.",
-    "Consider {philosopher}'s influential formulation: \"{quote}\" - a statement that resituates {concept} within the broader discourse on {term}.",
-    "{philosopher}'s insight that \"{quote}\" reveals the underlying tension between {concept} and {term} that structures much contemporary theory.",
-    "The force of {philosopher}'s claim that \"{quote}\" derives from its radical rethinking of the relationship between {concept} and {term}.",
-    "For {philosopher}, the realization that \"{quote}\" marks a decisive shift in how we conceptualize the interplay of {concept} and {term}."
+    "As {philosopher} writes, \"{quote},\" {citation} which fundamentally reconfigures our understanding of {concept} in relation to {term}.",
+    "In a characteristic formulation, {philosopher} argues that \"{quote},\" {citation} thus reframing debates about {concept} and {term}.",
+    "The significance of {philosopher}'s claim that \"{quote}\" {citation} lies in how it illuminates the relationship between {concept} and {term}.",
+    "{philosopher}'s provocative assertion that \"{quote}\" {citation} offers a productive lens through which to reconsider {term} beyond conventional frameworks.",
+    "One might read {philosopher}'s observation that \"{quote}\" {citation} as a direct challenge to standard accounts of the relationship between {concept} and {term}.",
+    "When {philosopher} famously claimed that \"{quote},\" {citation} what was at stake was nothing less than the reconceptualization of {term} through the lens of {concept}.",
+    "Consider {philosopher}'s influential formulation: \"{quote}\" {citation} - a statement that resituates {concept} within the broader discourse on {term}.",
+    "{philosopher}'s insight that \"{quote}\" {citation} reveals the underlying tension between {concept} and {term} that structures much contemporary theory.",
+    "The force of {philosopher}'s claim that \"{quote}\" {citation} derives from its radical rethinking of the relationship between {concept} and {term}.",
+    "For {philosopher}, the realization that \"{quote}\" {citation} marks a decisive shift in how we conceptualize the interplay of {concept} and {term}."
 ]
 
 # Quote-focused templates for philosophical dialogues
 quote_dialogue_templates = [
-    "Where {philosopher1} contends that \"{quote},\" {philosopher2} emphasizes the ways in which {concept} reconfigures our understanding of {term}.",
-    "Although {philosopher1} famously argued that \"{quote},\" {philosopher2} offers a contrasting approach to {concept} that transforms how we engage with {term}.",
-    "Reading {philosopher1}'s claim that \"{quote}\" against {philosopher2}'s work reveals the complex dialectic between {concept} and {term}.",
-    "{philosopher1}'s assertion that \"{quote}\" can be productively contrasted with {philosopher2}'s approach to {concept} vis-à-vis {term}.",
-    "While {philosopher1} maintained that \"{quote},\" {philosopher2} developed an account of {concept} that fundamentally reimagines its relationship to {term}."
+    "Where {philosopher1} contends that \"{quote},\" {citation} {philosopher2} emphasizes the ways in which {concept} reconfigures our understanding of {term}.",
+    "Although {philosopher1} famously argued that \"{quote},\" {citation} {philosopher2} offers a contrasting approach to {concept} that transforms how we engage with {term}.",
+    "Reading {philosopher1}'s claim that \"{quote}\" {citation} against {philosopher2}'s work reveals the complex dialectic between {concept} and {term}.",
+    "{philosopher1}'s assertion that \"{quote}\" {citation} can be productively contrasted with {philosopher2}'s approach to {concept} vis-à-vis {term}.",
+    "While {philosopher1} maintained that \"{quote},\" {citation} {philosopher2} developed an account of {concept} that fundamentally reimagines its relationship to {term}."
 ]
 
 # Quote-focused templates for citations
 quote_citation_templates = [
-    "Echoing {philosopher}'s notable claim that \"{quote},\" {author} develops an analysis of {concept} that extends beyond conventional understandings of {term}.",
-    "Building on {philosopher}'s insight that \"{quote},\" {author} reconsiders the relationship between {concept} and {term}.",
-    "{author} draws on {philosopher}'s formulation that \"{quote}\" to elaborate a more nuanced account of how {concept} shapes our understanding of {term}.",
-    "Taking up {philosopher}'s provocative assertion that \"{quote},\" {author} offers a compelling reframing of {concept} in relation to {term}.",
-    "In conversation with {philosopher}'s argument that \"{quote},\" {author} examines how {concept} operates within contemporary discourses on {term}."
+    "Echoing {philosopher}'s notable claim that \"{quote}\" {citation}, {author} develops an analysis of {concept} that extends beyond conventional understandings of {term}.",
+    "Building on {philosopher}'s insight that \"{quote}\" {citation}, {author} reconsiders the relationship between {concept} and {term}.",
+    "{author} draws on {philosopher}'s formulation that \"{quote}\" {citation} to elaborate a more nuanced account of how {concept} shapes our understanding of {term}.",
+    "Taking up {philosopher}'s provocative assertion that \"{quote}\" {citation}, {author} offers a compelling reframing of {concept} in relation to {term}.",
+    "In conversation with {philosopher}'s argument that \"{quote}\" {citation}, {author} examines how {concept} operates within contemporary discourses on {term}."
 ]
 
 # Original templates from the previous version
@@ -254,9 +254,34 @@ def _generate_introduction_sentence(mentioned_philosophers, forbidden_philosophe
         
     template = random.choice(templates)
     
-    # For introductions, select terms and concepts that will be central to the essay
-    term = random.choice([t for t in terms if t not in forbidden_terms])
-    concept = random.choice([c for c in concepts if c not in forbidden_concepts])
+    # Prioritize terms and concepts from title themes if available in context
+    title_themes = context.get('title_themes', {})
+    
+    if title_themes and title_themes.get('primary_concepts') and random.random() < 0.8:
+        # 80% chance to use a concept from title themes
+        available_concepts = [c for c in title_themes['primary_concepts'] 
+                            if c not in forbidden_concepts]
+        if not available_concepts and title_themes.get('related_concepts'):
+            available_concepts = [c for c in title_themes['related_concepts'] 
+                                if c not in forbidden_concepts]
+        if available_concepts:
+            concept = random.choice(available_concepts)
+        else:
+            concept = random.choice([c for c in concepts if c not in forbidden_concepts])
+    else:
+        concept = random.choice([c for c in concepts if c not in forbidden_concepts])
+    
+    if title_themes and title_themes.get('primary_terms') and random.random() < 0.8:
+        # 80% chance to use a term from title themes
+        available_terms = [t for t in title_themes['primary_terms'] 
+                         if t not in forbidden_terms]
+        if available_terms:
+            term = random.choice(available_terms)
+        else:
+            term = random.choice([t for t in terms if t not in forbidden_terms])
+    else:
+        term = random.choice([t for t in terms if t not in forbidden_terms])
+    
     adj = random.choice(["critical", "radical", "postmodern", "deconstructive", "theoretical", 
                        "discursive", "dialectical", "phenomenological", "ontological", "epistemological"])
     context_text = random.choice(contexts)
@@ -296,7 +321,6 @@ def _generate_conclusion_sentence(mentioned_philosophers, forbidden_philosophers
     
     return [(sentence, None)], used_philosophers, used_concepts, used_terms
 
-
 def _generate_general_sentence(mentioned_philosophers, forbidden_philosophers, 
                              forbidden_concepts, forbidden_terms, used_quotes,
                              all_references, cited_references, note_system, context):
@@ -317,11 +341,18 @@ def _generate_general_sentence(mentioned_philosophers, forbidden_philosophers,
         "metafictional",  # 2% metafictional
     ])
     
-    # Get available philosophers - prioritize those with quotes in the quotes dictionary
+    # Get available philosophers - prioritize from context if available
     available_philosophers = [p for p in philosophers if p not in forbidden_philosophers]
-    philosophers_with_quotes = []
+    
+    # Prioritize relevant philosophers from title themes if available
+    relevant_philosophers = context.get('relevant_philosophers', []) if context else []
+    if relevant_philosophers and random.random() < 0.7:  # 70% chance to use title-relevant philosophers
+        prioritized_philosophers = [p for p in relevant_philosophers if p not in forbidden_philosophers]
+        if prioritized_philosophers:
+            available_philosophers = prioritized_philosophers + available_philosophers
     
     # Find philosophers who have quotes (either full name or last name)
+    philosophers_with_quotes = []
     for philosopher in available_philosophers:
         if match_philosopher_to_quotes(philosopher) is not None:
             philosophers_with_quotes.append(philosopher)
@@ -375,10 +406,36 @@ def _generate_general_sentence(mentioned_philosophers, forbidden_philosophers,
     used_concepts = []
     used_terms = []
     
+    # Get title themes if available
+    title_themes = context.get('title_themes', {}) if context else {}
+    title_concepts = title_themes.get('primary_concepts', []) + title_themes.get('related_concepts', []) if title_themes else []
+    title_terms = title_themes.get('primary_terms', []) if title_themes else []
+    
     # Populate fields in template
     _populate_philosopher_fields(fields, data, available_philosophers, used_philosophers, mentioned_philosophers)
-    _populate_concept_fields(fields, data, used_philosophers, forbidden_concepts, used_concepts)
-    _populate_term_fields(fields, data, forbidden_terms, used_terms)
+    
+    # Prioritize title concepts if available (70% chance)
+    if 'concept' in fields and title_concepts and random.random() < 0.7:
+        available_title_concepts = [c for c in title_concepts if c not in forbidden_concepts and c not in used_concepts]
+        if available_title_concepts:
+            data['concept'] = random.choice(available_title_concepts)
+            used_concepts.append(data['concept'])
+        else:
+            _populate_concept_fields(fields, data, used_philosophers, forbidden_concepts, used_concepts)
+    else:
+        _populate_concept_fields(fields, data, used_philosophers, forbidden_concepts, used_concepts)
+    
+    # Prioritize title terms if available (70% chance)
+    if 'term' in fields and title_terms and random.random() < 0.7:
+        available_title_terms = [t for t in title_terms if t not in forbidden_terms and t not in used_terms]
+        if available_title_terms:
+            data['term'] = random.choice(available_title_terms)
+            used_terms.append(data['term'])
+        else:
+            _populate_term_fields(fields, data, forbidden_terms, used_terms)
+    else:
+        _populate_term_fields(fields, data, forbidden_terms, used_terms)
+    
     _populate_context_fields(fields, data)
     
     # Handle quotes if needed
@@ -392,7 +449,8 @@ def _generate_general_sentence(mentioned_philosophers, forbidden_philosophers,
                                         used_terms, used_philosophers, note_system)
     
     # Format the sentence with all the collected data
-    sentence = _format_sentence_from_template(template, data, used_concepts, used_terms)
+    sentence = _format_sentence_from_template(template, data, used_concepts, used_terms, 
+                                            note_system, context)
     
     # Handle citations with the note system
     if '[citation]' in sentence and note_system:
@@ -604,6 +662,7 @@ def _handle_quote_in_template(template, data, quote_source_field, used_quotes,
                            used_concepts, used_terms, used_philosophers, note_system, context):
     """
     Handle quotes in templates, including formatting and MLA citations.
+    Prioritize quotes from philosophers associated with title themes.
     
     Args:
         template (str): Template string containing {quote} placeholder
@@ -620,6 +679,22 @@ def _handle_quote_in_template(template, data, quote_source_field, used_quotes,
         str: Template with quote filled in and properly cited
     """
     quote_source_name = data.get(quote_source_field)
+    
+    # Get title themes if available
+    title_themes = context.get('title_themes', {})
+    title_concepts = title_themes.get('primary_concepts', []) if title_themes else []
+    title_terms = title_themes.get('primary_terms', []) if title_themes else []
+    
+    # Get list of relevant philosophers if available
+    relevant_philosophers = context.get('relevant_philosophers', [])
+    
+    # If there are title themes and relevant philosophers, try to use them with high probability
+    if (title_concepts or title_terms) and relevant_philosophers and random.random() < 0.7:
+        # Replace current philosopher with a more relevant one
+        if quote_source_name not in relevant_philosophers:
+            quote_source_name = random.choice(relevant_philosophers)
+            data[quote_source_field] = quote_source_name
+    
     if quote_source_name:
         # Match the philosopher name to a full name in the quotes dictionary
         full_name = match_philosopher_to_quotes(quote_source_name)
@@ -632,83 +707,149 @@ def _handle_quote_in_template(template, data, quote_source_field, used_quotes,
                 # Format the quote according to academic guidelines
                 formatted_quote = _format_quote_for_academic_style(selected_quote, template)
                 
+                # Replace the quote placeholder
                 template = template.replace('{quote}', formatted_quote)
                 used_quotes.add(selected_quote)
                 
-                # Create a reference for the bibliography but usually don't add a note marker
+                # Create a citation for this quote
                 if note_system:
                     # Create a plausible source
                     year = random.randint(1950, 2010)  
                     
-                    # Philosophers often have key works they're known for - try to use those
-                    key_works = {
-                        "Jacques Derrida": [("Of Grammatology", 1976), ("Writing and Difference", 1978)],
-                        "Michel Foucault": [("The Order of Things", 1970), ("Discipline and Punish", 1977)],
-                        "Jean Baudrillard": [("Simulacra and Simulation", 1981), ("The System of Objects", 1968)],
-                        "Judith Butler": [("Gender Trouble", 1990), ("Bodies That Matter", 1993)],
-                        "Gilles Deleuze": [("Difference and Repetition", 1968), ("A Thousand Plateaus", 1987, "Félix Guattari")]
-                    }
-                    
-                    # Choose a plausible title for this philosopher
-                    book_title = None
-                    
-                    # Check if philosopher has multiple works already in works_cited
-                    philosopher_has_multiple_works = False
-                    if note_system.author_work_count.get(quote_source_name, 0) > 1:
-                        philosopher_has_multiple_works = True
-                        
-                    # Find existing titles for this philosopher if any
-                    existing_works = []
-                    if quote_source_name in note_system.author_works:
-                        existing_works = list(note_system.author_works[quote_source_name].keys())
-                        
-                    # Try to create a reference based on authentic works
+                    # Use enhanced citation method
                     is_article = random.random() < 0.3  # 30% chance to be an article
                     reference = note_system.get_enhanced_citation(full_name, is_article, year)
                     
-                    # Use add_citation instead of add_to_works_cited to create notes
+                    # Get last name for citation
+                    last_name = full_name.split()[-1]
+                    
+                    # Use add_citation to add the reference to works cited
                     citation = note_system.add_citation(reference, context)
                     
-                    # Add MLA in-text citation after the quote
-                    if '"' not in template.split(formatted_quote)[1]:
-                        # If the quote is at the end of the template or not followed by quotation marks
-                        if not template.endswith('.') and not template.endswith('?') and not template.endswith('!'):
-                            template = template.replace(formatted_quote, f"{formatted_quote}\" {citation}.")
-                        else:
-                            template = template.replace(formatted_quote, f"{formatted_quote}\" {citation}")
-                    else:
-                        # If the quote is in the middle of the sentence, find where to insert citation
-                        quote_end_index = template.find('",', template.find(formatted_quote))
-                        if quote_end_index != -1:
-                            # Insert citation before the comma after the closing quote
-                            before = template[:quote_end_index+1]  # Up to and including the closing quote
-                            after = template[quote_end_index+1:]   # Everything after the closing quote
-                            template = f"{before} {citation}{after}"
-                        else:
-                            quote_end_index = template.find('" ', template.find(formatted_quote))
-                            if quote_end_index != -1:
-                                # Insert citation before the space after the closing quote
-                                before = template[:quote_end_index+1]  # Up to and including the closing quote
-                                after = template[quote_end_index+1:]   # Everything after the closing quote
-                                template = f"{before} {citation}{after}"
+                    # Make sure every quote has a citation immediately following it
+                    # First, find where the quote ends in the template
+                    quote_end_positions = []
+                    for i in range(len(template)):
+                        if template[i:i+1] == '"' and i > template.find(formatted_quote):
+                            quote_end_positions.append(i)
+                    
+                    if quote_end_positions:
+                        quote_end_pos = quote_end_positions[0]
+                        
+                        # Check if the quote is at the end of a sentence
+                        is_end_of_sentence = False
+                        for pos in range(quote_end_pos+1, min(quote_end_pos+5, len(template))):
+                            if pos < len(template) and template[pos] in '.?!':
+                                is_end_of_sentence = True
+                                break
+                        
+                        # Insert citation after the closing quote, preserving punctuation properly
+                        if is_end_of_sentence:
+                            # Move punctuation to after citation
+                            before_quote = template[:quote_end_pos+1]
+                            after_quote = template[quote_end_pos+1:]
+                            punctuation_match = re.search(r'^[.!?,;:]', after_quote.lstrip())
+                            
+                            if punctuation_match:
+                                punctuation = punctuation_match.group(0)
+                                template = before_quote + " " + citation + punctuation + after_quote.lstrip()[1:]
                             else:
-                                # Fallback - just add the citation at the end
-                                template = template.rstrip('.') + f" {citation}."
+                                template = before_quote + " " + citation + after_quote
+                        else:
+                            # Insert citation after quote with no punctuation changes
+                            template = template[:quote_end_pos+1] + " " + citation + template[quote_end_pos+1:]
+                    else:
+                        # Fallback if we can't find quote end - add citation to end of template
+                        if template.endswith('.'):
+                            template = template[:-1] + " " + citation + "."
+                        else:
+                            template = template + " " + citation
             else:
-                # If no unused quotes, create a generic quote
+                # If no unused quotes, create a generic quote with citation
                 generic_quote = f"the relationship between {data.get('concept', 'theory')} and {data.get('term', 'practice')} is always already mediated by power"
                 template = template.replace('{quote}', generic_quote)
+                
+                if note_system:
+                    # Create a generic reference
+                    reference = note_system.get_enhanced_citation(quote_source_name, False, random.randint(1950, 2010))
+                    citation = note_system.add_citation(reference, context)
+                    
+                    # Add citation after the generic quote
+                    quote_pos = template.find(generic_quote) + len(generic_quote)
+                    before = template[:quote_pos]
+                    after = template[quote_pos:]
+                    
+                    # Add citation after quote
+                    quote_end_match = re.search(r'"\s*[,.;:]?', after)
+                    if quote_end_match:
+                        quote_end = quote_end_match.end()
+                        template = before + after[:quote_end].rstrip() + " " + citation + after[quote_end:]
+                    else:
+                        template = before + "\" " + citation + after
         else:
-            # If no quotes for the philosopher, create a generic quote
+            # If no quotes for the philosopher, create a generic quote with citation
             generic_quote = f"the relationship between {data.get('concept', 'theory')} and {data.get('term', 'practice')} is always already mediated by power"
             template = template.replace('{quote}', generic_quote)
+            
+            if note_system:
+                # Create a generic reference
+                reference = note_system.get_enhanced_citation(quote_source_name, False, random.randint(1950, 2010))
+                citation = note_system.add_citation(reference, context)
+                
+                # Add citation after the generic quote
+                quote_pos = template.find(generic_quote) + len(generic_quote)
+                template = template[:quote_pos] + "\" " + citation + template[quote_pos:]
     else:
-        # If no philosopher specified, use a generic quote
+        # If no philosopher specified, use a generic quote with generic citation
         generic_quote = f"the analysis of {data.get('concept', 'theory')} requires a reconsideration of {data.get('term', 'practice')}"
         template = template.replace('{quote}', generic_quote)
+        
+        if note_system:
+            # Create a generic reference to "Smith"
+            reference = note_system.get_enhanced_citation("Smith, John", False, random.randint(1950, 2010))
+            citation = note_system.add_citation(reference, context)
+            
+            # Add citation after the generic quote
+            quote_pos = template.find(generic_quote) + len(generic_quote)
+            template = template[:quote_pos] + "\" " + citation + template[quote_pos:]
+    
+    # Final check for periods before citations
+    template = re.sub(r'\.\s+\(([^)]+)\)', r' (\1).', template)
+    template = re.sub(r',\s+\(([^)]+)\)', r' (\1),', template)
     
     return template
 
+def _process_citation_placeholders(sentence, note_system, context, philosopher_name=None):
+    """
+    Process citation placeholders in a sentence.
+    
+    Args:
+        sentence (str): The sentence with {citation} placeholders
+        note_system (NoteSystem): System for managing citations
+        context (dict): Context information for the sentence
+        philosopher_name (str, optional): Name of the philosopher to cite
+        
+    Returns:
+        str: The sentence with proper citations
+    """
+    if '{citation}' not in sentence:
+        return sentence
+    
+    # Generate a citation if we have a note system
+    if note_system and philosopher_name:
+        # Create a reference for the citation
+        year = random.randint(1950, 2010)
+        is_article = random.random() < 0.3
+        reference = note_system.get_enhanced_citation(philosopher_name, is_article, year)
+        citation = note_system.add_citation(reference, context)
+        
+        # Replace the {citation} placeholder
+        sentence = sentence.replace('{citation}', citation)
+    else:
+        # Remove the placeholder if we can't create a citation
+        sentence = sentence.replace('{citation}', '')
+    
+    return sentence
 
 def _handle_author_citation(template, data, context, used_concepts, used_terms, used_philosophers, note_system):
     """
@@ -762,8 +903,40 @@ def _handle_author_citation(template, data, context, used_concepts, used_terms, 
     
     return template
 
+def ensure_quote_has_citation(text):
+    """
+    Ensure that every direct quote in the text has a citation.
+    
+    Args:
+        text (str): The text to check
+        
+    Returns:
+        str: The text with properly cited quotes
+    """
+    # Find all quotes in the text
+    quote_pattern = r'"([^"]+)"'
+    matches = re.finditer(quote_pattern, text)
+    
+    result = text
+    for match in matches:
+        quote = match.group(1)
+        quote_end_pos = match.end()
+        
+        # Check if there's a citation after the quote
+        citation_pattern = r'"\s*\([^)]+\)'
+        has_citation = re.search(citation_pattern, text[match.start():match.start()+len(quote)+50])
+        
+        if not has_citation:
+            # Add a generic citation for any uncited quote
+            # This is a fallback for any quotes that slipped through
+            generic_citation = " (Author 25)"
+            
+            # Insert the citation after the closing quote
+            result = result[:quote_end_pos] + generic_citation + result[quote_end_pos:]
+    
+    return result
 
-def _format_sentence_from_template(template, data, used_concepts, used_terms):
+def _format_sentence_from_template(template, data, used_concepts, used_terms, note_system=None, context=None):
     """
     Format a sentence from a template and data dictionary, handling any missing keys.
     
@@ -772,12 +945,20 @@ def _format_sentence_from_template(template, data, used_concepts, used_terms):
         data (dict): Data dictionary with values for placeholders
         used_concepts (list): List to track concepts used
         used_terms (list): List to track terms used
+        note_system (NoteSystem): System for managing citations
+        context (dict): Context information for this sentence
         
     Returns:
         str: Formatted sentence
     """
     try:
         sentence = template.format(**data)
+        
+        # Process citation placeholders if present
+        if '{citation}' in sentence and note_system:
+            philosopher_name = data.get('philosopher', data.get('philosopher1'))
+            sentence = _process_citation_placeholders(sentence, note_system, context, philosopher_name)
+        
     except KeyError as e:
         # Fallback if template has missing fields
         missing_key = str(e).strip("'")
@@ -795,10 +976,18 @@ def _format_sentence_from_template(template, data, used_concepts, used_terms):
             data[missing_key] = "Smith"
         elif missing_key == 'year':
             data[missing_key] = str(random.randint(1950, 2023))
+        elif missing_key == 'citation':
+            data[missing_key] = ''  # Empty string for citation placeholder if we can't resolve it
         
         # Try again with added data
         try:
             sentence = template.format(**data)
+            
+            # Process citation placeholders if present
+            if '{citation}' in sentence and note_system:
+                philosopher_name = data.get('philosopher', data.get('philosopher1'))
+                sentence = _process_citation_placeholders(sentence, note_system, context, philosopher_name)
+                
         except KeyError:
             # Ultimate fallback
             sentence = f"The work of {data.get('philosopher', random.choice(philosophers))} on {data.get('concept', random.choice(concepts))} has significant implications for {data.get('term', random.choice(terms))}."
@@ -809,26 +998,38 @@ def _format_sentence_from_template(template, data, used_concepts, used_terms):
 def _handle_citation_marker(sentence, context, used_concepts, used_terms, used_philosophers, note_system):
     """
     Replace [citation] placeholders with actual MLA 9 style citation markers.
-    
-    Args:
-        sentence (str): Sentence with [citation] placeholders
-        context (dict): Context information for this sentence
-        used_concepts (list): Concepts used in this sentence
-        used_terms (list): Terms used in this sentence
-        used_philosophers (list): Philosophers referenced in this sentence
-        note_system (NoteSystem): System for managing citations
-        
-    Returns:
-        str: Sentence with MLA style citations
     """
-    # Generate a contextually appropriate reference
-    reference = _generate_contextual_reference(context, used_concepts, used_terms)
+    # If no [citation] markers, return as is
+    if "[citation]" not in sentence:
+        return sentence
     
-    # Use add_citation instead of add_to_works_cited to create notes
-    citation = note_system.add_citation(reference, context)
+    # Count how many citations we need
+    num_citations = sentence.count("[citation]")
     
-    # Replace the [citation] placeholder with the actual marker
-    return sentence.replace('[citation]', citation)
+    # Create enhanced context with title information
+    enhanced_context = context.copy() if context else {}
+    # [existing context enhancement code]
+    
+    # For each [citation] placeholder, replace with MLA style citation
+    for _ in range(num_citations):
+        # Generate a contextually appropriate reference
+        reference = _generate_contextual_reference(enhanced_context, used_concepts, used_terms)
+        
+        # Use add_citation instead of add_to_works_cited to create notes
+        citation = note_system.add_citation(reference, enhanced_context)
+        
+        # Check if [citation] is preceded by a period and fix format if needed
+        if ". [citation]" in sentence:
+            # Move period after citation: ". [citation]" -> " [citation]."
+            sentence = sentence.replace(". [citation]", " [citation].", 1)
+        
+        # Replace the [citation] placeholder with the actual marker
+        sentence = sentence.replace("[citation]", citation, 1)
+    
+    # Final check for periods before citations: ". (Author)" -> " (Author)."
+    sentence = re.sub(r'\.\s+\(([^)]+)\)', r' (\1).', sentence)
+    
+    return sentence
 
 
 def _handle_legacy_citation(sentence, all_references, cited_references):

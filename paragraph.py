@@ -20,6 +20,7 @@ from collections import Counter
 from sentence import generate_sentence
 from data import philosophers, concepts, terms, philosopher_concepts, rhetorical_devices, discursive_modes
 from capitalization import ensure_proper_capitalization
+from sentence import ensure_quote_has_citation
 
 # Enhanced list of transitional expressions for academic writing
 transitional_expressions = [
@@ -267,6 +268,9 @@ def generate_paragraph(template_type, num_sentences, references, forbidden_philo
     # Final capitalization check for the entire paragraph
     paragraph_str = ensure_proper_capitalization(paragraph_str)
 
+    # Final check for quotes without citations
+    paragraph_str = ensure_quote_has_citation(paragraph_str)
+
     return paragraph_str, used_concepts_in_paragraph, used_terms_in_paragraph
 
 def _handle_mla_citation(paragraph_str, cited_references, note_system, all_references, context=None):
@@ -314,37 +318,6 @@ def _handle_mla_citation(paragraph_str, cited_references, note_system, all_refer
     
     return paragraph_str
 
-def _generate_mla_citation(reference, note_system):
-    """
-    Generate an MLA 9 style citation for a reference.
-    
-    Args:
-        reference (str): The reference string
-        note_system (NoteSystem): System for managing citations
-        
-    Returns:
-        tuple: (MLA citation string, page number)
-    """
-    # Extract author information
-    author_match = re.match(r'^([^(]+)', reference)
-    if author_match:
-        author = author_match.group(1).strip()
-        # Get the last name for MLA style
-        if ',' in author:
-            last_name = author.split(',')[0].strip()
-        else:
-            name_parts = author.split()
-            last_name = name_parts[-1] if name_parts else "Smith"
-    else:
-        last_name = "Smith"
-    
-    # Use add_citation to create notes
-    citation = note_system.add_citation(reference, None)
-    
-    # Get the page number from the citation
-    page_num = note_system.page_numbers.get(reference, random.randint(1, 300))
-    
-    return citation, page_num
 
 def generate_section(heading, num_paragraphs, references, note_system=None):
     """

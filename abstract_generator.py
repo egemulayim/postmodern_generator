@@ -11,24 +11,72 @@ import random
 import metafiction
 from data import philosophers, concepts, terms, contexts, philosopher_concepts
 
-def generate_enhanced_abstract(coherence_manager):
+def find_relevant_philosophers(concepts, terms, philosopher_concepts):
+    """
+    Find philosophers most associated with given concepts and terms.
+    
+    Args:
+        concepts (list): List of concepts to match
+        terms (list): List of terms to match
+        philosopher_concepts (dict): Dictionary mapping philosophers to their concepts
+        
+    Returns:
+        list: Philosophers most relevant to the given concepts and terms
+    """
+    relevant_philosophers = []
+    
+    # Find philosophers associated with concepts
+    for concept in concepts:
+        for philosopher, philo_concepts in philosopher_concepts.items():
+            if concept in philo_concepts:
+                relevant_philosophers.append(philosopher)
+    
+    # If we found relevant philosophers, return them, otherwise return empty list
+    if relevant_philosophers:
+        return list(set(relevant_philosophers))  # Deduplicate
+    else:
+        return []
+
+def generate_enhanced_abstract(coherence_manager, title_themes=None):
     """
     Generate a comprehensive academic abstract with keywords.
     
     Args:
         coherence_manager: The EssayCoherence instance to use for theme management
-    
+        title_themes (dict, optional): Dictionary of themes from the title
+        
     Returns:
         str: A formatted abstract section including keywords
     """
-    # Get primary themes for consistency
-    abstract_concept = coherence_manager.get_weighted_concept()
-    abstract_term = coherence_manager.get_weighted_term()
+    # Use title themes for consistency if provided
+    if title_themes and title_themes['primary_concepts']:
+        abstract_concept = title_themes['primary_concepts'][0]
+    else:
+        abstract_concept = coherence_manager.get_weighted_concept()
+        
+    if title_themes and title_themes['primary_terms']:
+        abstract_term = title_themes['primary_terms'][0]
+    else:
+        abstract_term = coherence_manager.get_weighted_term()
+    
+    # Get primary philosophers for consistency
     primary_philosophers = [p for p in coherence_manager.primary_philosophers if p]
     if not primary_philosophers:  # Fallback if empty
         primary_philosophers = random.sample(philosophers, 2)
     
-    # Theoretical framing paragraph
+    # Find philosophers most associated with title themes
+    if title_themes:
+        relevant_philosophers = find_relevant_philosophers(
+            title_themes['primary_concepts'] + title_themes['related_concepts'],
+            title_themes['primary_terms'],
+            philosopher_concepts
+        )
+        
+        # If we found relevant philosophers, prioritize them
+        if relevant_philosophers:
+            primary_philosophers = relevant_philosophers[:2] if len(relevant_philosophers) >= 2 else relevant_philosophers
+    
+    # Theoretical framing paragraph explicitly mentioning title themes
     theoretical_framing = (
         f"This paper explores the relationship between {abstract_concept} and {abstract_term}, "
         f"arguing that their dialectical interplay reveals deeper structures of meaning. "
@@ -57,24 +105,67 @@ def generate_enhanced_abstract(coherence_manager):
         f"{metafiction.generate_metafictional_element()}"
     )
     
-    # Collect potential keywords (prefer primary concepts and terms, then used ones, then random)
-    potential_keywords = []
-    potential_keywords.extend(coherence_manager.primary_concepts)
-    potential_keywords.extend(coherence_manager.primary_terms)
-    potential_keywords.extend([abstract_concept, abstract_term])
+    # Enhanced keyword selection with contextual relevance
+    # Create a dictionary to count occurrences of concepts and terms in the abstract
+    keyword_occurrences = {}
     
-    # Ensure we have enough keywords
-    while len(potential_keywords) < 7:  # Get more than we need for variety
-        random_term = random.choice(concepts + terms)
-        if random_term not in potential_keywords:
-            potential_keywords.append(random_term)
+    # Count occurrences of concepts in the abstract text
+    abstract_text = theoretical_framing + methodology + significance
+    for concept in concepts:
+        occurrences = abstract_text.lower().count(concept.lower())
+        if occurrences > 0:
+            keyword_occurrences[concept] = occurrences
     
-    # Shuffle and select 5 unique keywords
-    random.shuffle(potential_keywords)
-    selected_keywords = []
-    for keyword in potential_keywords:
-        if keyword not in selected_keywords and len(selected_keywords) < 5:
-            selected_keywords.append(keyword)
+    # Count occurrences of terms in the abstract text
+    for term in terms:
+        occurrences = abstract_text.lower().count(term.lower())
+        if occurrences > 0:
+            keyword_occurrences[term] = occurrences
+    
+    # Ensure primary concepts and terms are included
+    for concept in coherence_manager.primary_concepts:
+        if concept not in keyword_occurrences:
+            keyword_occurrences[concept] = 1
+    
+    for term in coherence_manager.primary_terms:
+        if term not in keyword_occurrences:
+            keyword_occurrences[term] = 1
+    
+    # Add the main abstract concept and term with high weight
+    keyword_occurrences[abstract_concept] = keyword_occurrences.get(abstract_concept, 0) + 3
+    keyword_occurrences[abstract_term] = keyword_occurrences.get(abstract_term, 0) + 3
+    
+    # Prioritize title themes if provided
+    if title_themes:
+        for concept in title_themes['primary_concepts']:
+            if concept in keyword_occurrences:
+                keyword_occurrences[concept] += 2
+            else:
+                keyword_occurrences[concept] = 2
+                
+        for term in title_themes['primary_terms']:
+            if term in keyword_occurrences:
+                keyword_occurrences[term] += 2
+            else:
+                keyword_occurrences[term] = 2
+                
+        for concept in title_themes.get('related_concepts', []):
+            if concept in keyword_occurrences:
+                keyword_occurrences[concept] += 1
+            else:
+                keyword_occurrences[concept] = 1
+    
+    # Sort keywords by occurrence count (higher is more relevant)
+    sorted_keywords = sorted(keyword_occurrences.items(), key=lambda x: x[1], reverse=True)
+    
+    # Take top 5 keywords
+    selected_keywords = [keyword for keyword, _ in sorted_keywords[:5]]
+    
+    # Ensure we have at least 5 keywords (add random ones if needed)
+    if len(selected_keywords) < 5:
+        available_keywords = [k for k in concepts + terms if k not in selected_keywords]
+        additional_keywords = random.sample(available_keywords, min(5 - len(selected_keywords), len(available_keywords)))
+        selected_keywords.extend(additional_keywords)
     
     # Format keywords section
     keywords_section = "**Keywords:** " + ", ".join(selected_keywords)

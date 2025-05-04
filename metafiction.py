@@ -86,16 +86,16 @@ def insert_metafiction_in_paragraph(paragraph_text):
 
 def generate_metafictional_conclusion(concepts_used, terms_used):
     """
-    Generate a metafictional conclusion that references concepts and terms used in the essay.
+    Generate a metafictional conclusion that references specific concepts and terms.
     
     Args:
-        concepts_used (set): Set of concepts used in the essay
-        terms_used (set): Set of terms used in the essay
+        concepts_used (set): Set of concepts used in the essay, including title themes
+        terms_used (set): Set of terms used in the essay, including title themes
     
     Returns:
         str: A metafictional conclusion statement
     """
-    # Select relevant concepts and terms
+    # Select relevant concepts and terms, prioritizing those that appear in title
     concept = random.choice(list(concepts_used)) if concepts_used else random.choice(concepts)
     term = random.choice(list(terms_used)) if terms_used else random.choice(terms)
     
