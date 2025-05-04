@@ -16,7 +16,7 @@ Welcome to The Postmodern Generator project! This repository contains the source
 
 ## Introduction
 
-The Postmodern Generator is a tool designed to generate text that mimics the style of postmodern academic writing, inspired by the Dada Engine run The Postmodernism Generator, made by Andrew C. Bulhak. It creates sophisticated theoretical essays complete with citations, dialectical progressions, and self-referential elements characteristic of postmodern discourse. You can learn more about the original Dada Engine [here](https://dev.null.org/dadaengine/) and see a web-based preview of Bulhak's The Postmodernism Generator [here](https://www.elsewhere.org/journal/pomo).
+The Postmodern Generator is a tool designed to generate text that mimics the style of postmodern academic writing. It creates sophisticated theoretical essays complete with citations, dialectical progressions, and self-referential elements characteristic of postmodern discourse. This project is inspired by the Dada Engine run The Postmodernism Generator that was developed by Andrew C. Bulhak. You can learn more about the original Dada Engine [here](https://dev.null.org/dadaengine/) and see a web-based preview of Bulhak's The Postmodernism Generator [here](https://www.elsewhere.org/journal/pomo).
 
 ## Features
 
