@@ -107,9 +107,9 @@ Contributions to The Postmodern Generator project are welcome! To contribute, fo
 
 - **Capitalization Inconsistencies**: Occasional capitalization issues with first words of sentences, proper nouns, and philosopher names
 - **Redundant Phrases**: The generated text may sometimes include redundant use of synonymous words and phrases
-- **Terminology Classification**: Some words appear in both concepts and terms categories, leading to inconsistent italicization
+- **Terminology Classification**: Some words appear in both concepts and terms categories, which may lead to inconsistent italicization
 - **Citation Format Variations**: Minor inconsistencies in citation formatting might occur
-- **Citation Discrepancies**: Minor discrepancies in-text citation might occur, where quotes are attributed to authors properly but may not be consistently cited with relevant paranthetical citation information
+- **Citation Discrepancies**: Minor discrepancies in in-text citations might occur, where quotes are attributed to authors properly but may not be consistently cited with relevant paranthetical citation information
 - **Thematic Coherence at Scale**: For very long essays, thematic coherence may diminish in later sections
 
 ## License
