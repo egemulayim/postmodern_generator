@@ -1,6 +1,6 @@
 # The Postmodern Generator
 
-Welcome to The Postmodern Generator project! This repository contains the source code for a text generator that produces postmodern-style academic essays with sophisticated theoretical framing, proper citations, and thematic coherence. This README file will guide you through the setup, usage, and contribution process for the project.
+Welcome to The Postmodern Generator project. This repository contains the source code for a text generator that produces postmodern-style academic essays with theoretical framing, proper citations, and thematic coherence. This README file will guide you through the setup, usage, and contribution process for the project.
 
 ## Table of Contents
 
@@ -18,12 +18,12 @@ Welcome to The Postmodern Generator project! This repository contains the source
 
 ## Introduction
 
-The Postmodern Generator is a tool designed to generate text that mimics the style of postmodern academic writing. It creates sophisticated theoretical essays complete with citations, dialectical progressions, and self-referential elements characteristic of postmodern discourse. This project is inspired by the Dada Engine run The Postmodernism Generator that was developed by Andrew C. Bulhak. You can learn more about the original Dada Engine [here](https://dev.null.org/dadaengine/) and see a web-based preview of Bulhak's The Postmodernism Generator [here](https://www.elsewhere.org/journal/pomo).
+The Postmodern Generator is a tool designed to generate text that mimics the style of postmodern academic writing. It creates theoretical essays complete with citations, dialectical progressions, and self-referential elements characteristic of postmodern discourse. This project is inspired by the Dada Engine run The Postmodernism Generator that was developed by Andrew C. Bulhak. You can learn more about the original Dada Engine [here](https://dev.null.org/dadaengine/) and see a web-based preview of Bulhak's The Postmodernism Generator [here](https://www.elsewhere.org/journal/pomo).
 
 ## Features
 
 - **Complete Essay Generation**: Produces fully-formed academic essays with title, abstract, introduction, body sections, conclusion, notes, and works cited sections
-- **Thematic Coherence System**: Advanced clustering system with 11 predefined themes for sophisticated theoretical focus
+- **Thematic Coherence System**: Advanced clustering system with 11 predefined themes for theoretical focus
 - **Theme-Based Generation**: Choose from specialized themes like "Digital Subjectivity," "Decoloniality and Postcolonial Studies," or "Speculative Realism"
 - **Interactive Theme Selection**: User-friendly interface for selecting specific themes or random generation
 - **Enhanced Command-Line Interface**: Professional CLI with seed and theme arguments for reproducible and targeted output
@@ -31,23 +31,23 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 - **MLA 9 Compliant Citations**: Generates proper in-text citations and formatted works cited sections
 - **Dialectical Progressions**: Develops ideas through dialectical movement across essay sections
 - **Metafictional Elements**: Includes self-referential passages typical of postmodern writing
-- **Academic Abstracts**: Generates sophisticated abstracts with keywords and theoretical framing
+- **Academic Abstracts**: Generates abstracts with keywords and theoretical framing
 - **Proper Formatting**: Handles capitalization, italicization, and academic conventions
 - **Reproducible Output**: Flexible seed input (specific integer or random) for generating consistent or varied results
 - **Lightweight and Efficient**: Does not rely on large language models, ensuring quick and resource-efficient text generation
 - **Markdown Export**: Save generated essays as `.md` files with comprehensive metadata including seed, theme, and generation timestamp
-- **JSON-Based Data Architecture**: Robust, extensible knowledge base with sophisticated error handling
+- **JSON-Based Data Architecture**: Robust, extensible knowledge base with advanced error handling
 
 ## Recent Changes (v0.1.0)
 
-This version introduces a fundamental architectural overhaul with a new JSON-based data system and sophisticated thematic clustering. Key improvements include:
+This version introduces a fundamental architectural overhaul with a new JSON-based data system and thematic clustering. Key improvements include:
 
 - **Data Architecture Overhaul**: Complete migration from Python modules to JSON-based data management with `data.json` and `json_data_provider.py`
-- **Thematic Clustering System**: Introduction of 11 sophisticated thematic clusters for targeted essay generation
+- **Thematic Clustering System**: Introduction of 11 thematic clusters for targeted essay generation
 - **Enhanced Command-Line Interface**: Professional CLI with argparse, theme selection, and export functionality
 - **Markdown Export System**: Complete export functionality with essay metadata and file management
 - **Improved Code Organization**: Centralized data access, better error handling, and reduced code duplication
-- **Enhanced Academic Authenticity**: Expanded philosopher-concept relationships and more sophisticated template variety
+- **Enhanced Academic Authenticity**: Expanded philosopher-concept relationships and more template variety
 - **Dependencies Cleanup**: Removed unnecessary dependencies for improved efficiency
 
 ## Installation
@@ -110,7 +110,7 @@ The generator produces a complete academic essay including:
 - **Title** with theoretical framing
 - **Abstract** with keywords and theoretical context
 - **Introduction** with guiding questions and framework establishment
-- **Body Sections** with dialectical development and sophisticated argumentation
+- **Body Sections** with dialectical development and argumentation
 - **Conclusion** with metafictional elements and theoretical synthesis
 - **Notes** section with substantive academic commentary
 - **Works Cited** in MLA 9 format
