@@ -11,6 +11,12 @@ import re  # Added import for regex pattern matching
 notes = []
 note_counter = 1
 
+def reset_citation_globals():
+    """Reset global variables for citation generation."""
+    global notes, note_counter
+    notes = []
+    note_counter = 1
+
 def get_citation_note(reference):
     """
     Generate a citation note in a more academic format.
@@ -85,39 +91,42 @@ def get_indirect_citation(original_author, secondary_author, page=None):
     else:
         return f"({original_author}, qtd. in {secondary_author})"
 
-def get_ibid_citation(page_number=None):
-    """
-    Generate an 'ibid' citation, used when citing the same source again immediately.
-    Note: MLA 9 does not use ibid., but this is maintained for compatibility.
-    In MLA, you would repeat the author's name in subsequent citations.
-    
-    Args:
-        page_number (str, optional): Page number for the citation
-        
-    Returns:
-        str: Citation for repeated source
-    """
-    if page_number:
-        return f"({page_number})"  # In MLA, just use the page number if author is clear from context
-    return ""  # Empty if no page number - should be avoided
+# Functions like get_ibid_citation and get_op_cit_citation are deprecated in MLA 9
+# and can be removed or commented out if not used for other purposes.
 
-def get_op_cit_citation(author, page_number=None):
-    """
-    Generate an 'op. cit.' citation, used when citing a source that has been
-    cited before, but not immediately preceding.
-    Note: MLA 9 does not use "op. cit." - it always repeats the author name
-    
-    Args:
-        author (str): Author last name
-        page_number (str, optional): Page number for the citation
-        
-    Returns:
-        str: MLA format citation
-    """
-    # In MLA, just use the regular author-page format for all citations
-    if page_number:
-        return f"({author} {page_number})"
-    return f"({author})"
+# def get_ibid_citation(page_number=None):
+#     """
+#     Generate an 'ibid' citation, used when citing the same source again immediately.
+#     Note: MLA 9 does not use ibid., but this is maintained for compatibility.
+#     In MLA, you would repeat the author's name in subsequent citations.
+#     
+#     Args:
+#         page_number (str, optional): Page number for the citation
+#         
+#     Returns:
+#         str: Citation for repeated source
+#     """
+#     if page_number:
+#         return f"({page_number})"  # In MLA, just use the page number if author is clear from context
+#     return ""  # Empty if no page number - should be avoided
+
+# def get_op_cit_citation(author, page_number=None):
+#     """
+#     Generate an 'op. cit.' citation, used when citing a source that has been
+#     cited before, but not immediately preceding.
+#     Note: MLA 9 does not use "op. cit." - it always repeats the author name
+#     
+#     Args:
+#         author (str): Author last name
+#         page_number (str, optional): Page number for the citation
+#         
+#     Returns:
+#         str: MLA format citation
+#     """
+#     # In MLA, just use the regular author-page format for all citations
+#     if page_number:
+#         return f"({author} {page_number})"
+#     return f"({author})"
 
 def get_cf_citation(author, year, page=None):
     """
@@ -210,7 +219,9 @@ def format_mla_reference(reference):
                         return f"{author} {title}. {publisher}"
     
     # If we couldn't parse it, return as is
-    return reference
+    # return reference
+    # Simplified fallback for unparsable references:
+    return "[Reference information could not be parsed]"
 
 def get_citation_with_pages(author, year, start_page, end_page=None):
     """

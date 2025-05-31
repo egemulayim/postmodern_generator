@@ -7,25 +7,14 @@ that should be italicized.
 """
 
 import re
-from data import philosophers, concepts, italicized_terms, terms
+from json_data_provider import philosophers, concepts, italicized_terms, terms, LOWERCASE_WORDS, NAME_SUFFIXES, PROPER_NOUNS
 
-# These are words that should be lowercase in titles when they're not the first or last word
-# Note: Words like "from", "with", "into", "over", etc. have 4+ letters 
-# and should be capitalized in academic title case as per MLA 9 guidelines
-LOWERCASE_WORDS = {
-    # Articles
-    "a", "an", "the", 
-    # Coordinating conjunctions
-    "and", "but", "or", "nor", "for", "so", "yet",
-    # Short prepositions (fewer than 4 letters)
-    "to", "of", "by", "at", "in", "on", "as",
-    # Other short words that are typically lowercase in title case
-    "via"
-}
+LOWERCASE_AUTHORS = ["bell hooks"] # Add other authors if needed
 
 def ensure_proper_capitalization(text, capitalize_first=True):
     """
     Ensure proper capitalization of philosopher names and sentence beginnings.
+    Handles special lowercase names like "bell hooks".
     
     Args:
         text (str): The text to process
@@ -37,8 +26,21 @@ def ensure_proper_capitalization(text, capitalize_first=True):
     if not text:
         return text
     
+    # Handle specific lowercase authors first to prevent them from being capitalized by the general logic
+    for lc_author in LOWERCASE_AUTHORS:
+        # Case-insensitive replacement to ensure it's always lowercase
+        # For "hooks, bell", we need to match "hooks, bell" specifically at the start for Works Cited.
+        # For general text, "bell hooks" is more common.
+        # The current re.sub will lowercase all occurrences of "bell hooks".
+        # We need to be careful if the author's name is part of another word, hence \b (word boundary).
+        text = re.sub(r'\b' + re.escape(lc_author) + r'\b', lc_author, text, flags=re.IGNORECASE)
+        # Specifically for "hooks, bell" at the start of a line (common in bibliography)
+        text = re.sub(r'^(hooks, bell)\b', "hooks, bell", text, flags=re.IGNORECASE)
+
     # Capitalize philosopher names first
     for philosopher in philosophers:
+        if philosopher.lower() in LOWERCASE_AUTHORS: # Skip if it's a special lowercase author
+            continue
         # Ensure we match whole words only and handle partial names (last names)
         full_name_pattern = r'\b' + re.escape(philosopher.lower()) + r'\b'
         text = re.sub(full_name_pattern, philosopher, text, flags=re.IGNORECASE)
@@ -49,17 +51,36 @@ def ensure_proper_capitalization(text, capitalize_first=True):
             last_name = name_parts[-1]
             last_name_pattern = r'\b' + re.escape(last_name.lower()) + r'\b'
             text = re.sub(last_name_pattern, last_name, text, flags=re.IGNORECASE)
+
+    # Capitalize other proper nouns
+    for proper_noun in PROPER_NOUNS:
+        # Ensure we match whole words only
+        # Proper nouns in the list should be in their correct case already
+        pn_pattern = r'\b' + re.escape(proper_noun) + r'\b' 
+        # We use a lambda for replacement to ensure we replace with the exact case from PROPER_NOUNS list
+        # This is important if a proper noun might appear in various incorrect cases in the raw text.
+        text = re.sub(pn_pattern, lambda match: proper_noun, text, flags=re.IGNORECASE)
     
-    # Handle special suffixes like "Jr." that should always be capitalized
-    suffixes = ["Jr.", "Sr.", "III", "IV", "V", "VI"]
-    for suffix in suffixes:
+    # Handle special suffixes that should always be capitalized
+    for suffix in NAME_SUFFIXES:
         suffix_pattern = r'\b' + re.escape(suffix.lower()) + r'\b'
         text = re.sub(suffix_pattern, suffix, text, flags=re.IGNORECASE)
     
     # Only handle sentence capitalization if requested
     if capitalize_first:
-        # Capitalize first letter of the text
-        if text and text[0].isalpha():
+        # Check if the text starts with a lowercase author string like "hooks, bell"
+        # If so, don't capitalize the very first letter of the whole string.
+        # Sentence capitalization will still apply later if needed.
+        do_not_capitalize_first_char = False
+        for lc_author_biblio_form in ["hooks, bell"]: # Add other biblio forms if needed
+            if text.lower().startswith(lc_author_biblio_form):
+                # Ensure the beginning is exactly as specified, in lowercase
+                text = lc_author_biblio_form + text[len(lc_author_biblio_form):]
+                do_not_capitalize_first_char = True
+                break
+        
+        # Capitalize first letter of the text unless it's a special lowercase author start
+        if not do_not_capitalize_first_char and text and text[0].isalpha():
             text = text[0].upper() + text[1:]
         
         # Capitalize beginning of sentences, but be careful about initials
@@ -181,6 +202,17 @@ def apply_title_case(title):
             if clean_word.lower() in philosopher.lower().split():
                 is_proper_noun = True
                 break
+        # Check against the PROPER_NOUNS list as well
+        if not is_proper_noun:
+            # We check the clean_word (lowercase, no punctuation) against a lowercased version of proper nouns
+            # This makes the matching more robust against minor variations or if the proper noun itself contains punctuation
+            # (though PROPER_NOUNS list should ideally have clean entries).
+            for pn in PROPER_NOUNS:
+                # Simple check: if clean_word is part of a proper noun (e.g. "kantian" in "Kantian Ethics")
+                # or if the proper noun is exactly the clean_word
+                if clean_word in pn.lower().split() or clean_word == pn.lower():
+                    is_proper_noun = True
+                    break
         
         # Special handling for title words - in reference titles, we should capitalize most words
         # except for very small connector words when they're not the first word or last word
@@ -200,11 +232,16 @@ def apply_title_case(title):
         
         # But only when they're not the first or last word
         
-        should_capitalize = (capitalize_next or  # First word or after delimiter
-                           not is_small_word or   # Not a small connector word
-                           i == len(words) - 1 or # Last word
-                           is_proper_noun or      # Proper noun
-                           len(clean_word) >= 4)  # Word is 4+ letters
+        # Check for special lowercase authors
+        if word.lower() in LOWERCASE_AUTHORS:
+            should_capitalize = False
+            word = word.lower() # Ensure it is lowercase
+        else:
+            should_capitalize = (capitalize_next or  # First word or after delimiter
+                               not is_small_word or   # Not a small connector word
+                               i == len(words) - 1 or # Last word
+                               is_proper_noun or      # Proper noun
+                               len(clean_word) >= 4)  # Word is 4+ letters
         
         if should_capitalize:
             # Capitalize first letter if it's a letter

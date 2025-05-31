@@ -17,10 +17,17 @@ for generating essays, abstracts, and citations.
 """
 
 import random
-from data import concepts, terms, philosophers
+import re
+from json_data_provider import (
+    concepts, terms, philosophers, 
+    METAFICTIONAL_TEMPLATES, METAFICTIONAL_CONCLUSIONS,
+    thematic_clusters # Added for theme-specific metafiction
+)
+# It's generally better to pass coherence_manager as an argument if it's used extensively
+# from coherence import EssayCoherence # Avoid direct import if passing as arg
 
-def generate_metafictional_element():
-    """Generate a metafictional element for use in abstracts or introductions."""
+def generate_metafictional_element(theme_key=None, coherence_manager=None):
+    """Generate a metafictional element, potentially themed, for use in abstracts or introductions."""
     templates = [
         "It bears asking whether this line of reasoning merely reproduces existing paradigms.",
         "This analysis acknowledges its own complicity in the very discourses it critiques.",
@@ -34,82 +41,136 @@ def generate_metafictional_element():
         "Such an approach raises questions about the possibility of critical distance in theoretical discourse."
     ]
     
-    return random.choice(templates)
+    # Theme-specific additions (could be expanded in data.py)
+    if theme_key and theme_key in thematic_clusters:
+        theme_data = thematic_clusters[theme_key]
+        if theme_key == "Technology, Media, and Culture":
+            templates.append("This textual analysis ironically attempts to grasp a digitally saturated, post-literate condition.")
+        elif theme_key == "Power and Knowledge":
+            templates.append("The very act of articulating this critique of power is itself a discursive move within a field of power.")
+        elif theme_key == "Decoloniality and Postcolonial Studies":
+            templates.append("Can this analysis, framed within Western academic discourse, truly decenter dominant epistemologies?")
 
-def insert_metafiction_in_paragraph(paragraph_text):
-    """Insert a metafictional element into an existing paragraph appropriately."""
-    # Don't add metafiction if the paragraph already contains it
+    chosen_template = random.choice(templates)
+
+    # If coherence_manager is available, try to make it more specific
+    if coherence_manager:
+        # These are placeholders for more specific concept/term selection if template uses them
+        # The generic templates above mostly don't, but future ones might.
+        mf_concept = coherence_manager.get_weighted_concept()
+        mf_term = coherence_manager.get_weighted_term(exclude={mf_concept})
+        # Example of how a more complex template *could* be formatted:
+        # if "{concept}" in chosen_template: chosen_template = chosen_template.format(concept=mf_concept, term=mf_term)
+
+    return chosen_template
+
+def insert_metafiction_in_paragraph(paragraph_text, theme_key=None, coherence_manager=None):
+    """Insert a metafictional element into an existing paragraph appropriately, considering theme."""
     metafictional_indicators = [
         "this essay", "this text", "this paper", "this analysis", 
         "in writing", "the author", "inevitably", "implicated", 
-        "complicit", "paradox", "entangled", "self-reflexive"
+        "complicit", "paradox", "entangled", "self-reflexive",
+        # Added from generate_metafictional_element to avoid double-dipping
+        "reproduces existing paradigms", "discourses it critiques", "economy of academic knowledge production",
+        "logic it seeks to critique", "theoretical tools to critique", "systems under examination"
     ]
     
     if any(indicator in paragraph_text.lower() for indicator in metafictional_indicators):
         return paragraph_text
     
-    # Different types of metafictional elements to insert
-    metafictional_templates = [
-        "The reflexive awareness that {concept} both enables and delimits this analysis does not escape the author.",
-        "This paragraph, in its attempt to elucidate {term}, inevitably falls into the trap of {concept}.",
-        "As we examine {concept}, we become implicated in the very {term} we seek to critique.",
-        "Writing about {concept} and {term} necessarily involves a certain disciplinary complicity.",
-        "This text, in attempting to analyze {term}, becomes yet another instance of academic {concept}.",
-        "The author acknowledges the impossibility of standing outside the {concept} being described.",
-        "In theorizing {term}, this analysis participates in the economy of {concept} it seeks to interrogate.",
-        "{philosopher} might note that this very paragraph performs the logic of {concept} it describes.",
-        "Even as we critique {concept}, we cannot escape its structuring effects on our analysis of {term}.",
-        "This attempt to theorize {term} is itself caught within the web of {concept}."
-    ]
-    
     # Select a random concept, term, and philosopher to populate the template
-    concept = random.choice(concepts)
-    term = random.choice([t for t in terms if t != concept])
-    philosopher = random.choice(philosophers)
-    
-    metafictional_text = random.choice(metafictional_templates).format(
-        concept=concept,
-        term=term,
-        philosopher=philosopher
-    )
-    
-    # Add the metafictional element at an appropriate place
-    sentences = paragraph_text.split(". ")
-    if len(sentences) <= 2:
-        # For short paragraphs, add at the end
-        return paragraph_text + " " + metafictional_text + "."
-    else:
-        # For longer paragraphs, insert at a reasonable position
-        insert_position = random.randint(len(sentences) // 2, len(sentences) - 1)
-        sentences.insert(insert_position, metafictional_text)
-        return ". ".join(sentences)
+    # Prioritize from theme if coherence_manager and theme are available
+    mf_concept = random.choice(concepts)
+    mf_term = random.choice([t for t in terms if t != mf_concept])
+    mf_philosopher = random.choice(philosophers)
 
-def generate_metafictional_conclusion(concepts_used, terms_used):
+    if coherence_manager:
+        mf_concept = coherence_manager.get_weighted_concept()
+        mf_term = coherence_manager.get_weighted_term(exclude={mf_concept})
+        mf_philosopher = coherence_manager.get_weighted_philosopher()
+        if coherence_manager.active_theme_key: # Further bias if theme is active
+            theme_data = coherence_manager.active_theme_data
+            if theme_data.get('key_concepts') and random.random() < 0.7:
+                mf_concept = random.choice(theme_data['key_concepts'])
+            if theme_data.get('relevant_terms') and random.random() < 0.7:
+                mf_term = random.choice([t for t in theme_data['relevant_terms'] if t != mf_concept])
+            if theme_data.get('core_philosophers') and random.random() < 0.7:
+                mf_philosopher = random.choice(theme_data['core_philosophers'])
+    
+    # Use METAFICTIONAL_TEMPLATES from data.py
+    # We could also add theme-specific templates here if desired
+    metafictional_text_template = random.choice(METAFICTIONAL_TEMPLATES)
+    try:
+        metafictional_text = metafictional_text_template.format(
+            concept=mf_concept,
+            term=mf_term,
+            philosopher=mf_philosopher
+        )
+    except KeyError: # If template doesn't use all keys, or uses different ones
+        # Fallback for simpler templates or if formatting fails
+        metafictional_text = "This text self-consciously reflects on its own discursive construction."
+        if "{concept}" in metafictional_text_template: # Attempt partial format
+            try: metafictional_text = metafictional_text_template.format(concept=mf_concept, term=random.choice(terms), philosopher=random.choice(philosophers))
+            except: pass # Ignore if still fails
+
+    if paragraph_text.endswith('.'):
+        paragraph_text = paragraph_text[:-1]
+
+    sentences = re.split(r'(?<=[.?!])\s+(?=[A-Z])|(?<=[.?!])$\s*', paragraph_text.strip())
+    sentences = [s.strip() for s in sentences if s.strip()]
+
+    if not sentences:
+         return metafictional_text
+
+    if len(sentences) <= 1:
+        if sentences and not sentences[-1].endswith(tuple('.!?')):
+            return sentences[-1] + ". " + metafictional_text
+        elif sentences:
+            return sentences[-1] + " " + metafictional_text
+        else:
+            return metafictional_text
+    else:
+        insert_position = random.randint(len(sentences) // 2, len(sentences) - 1)
+        if not sentences[insert_position -1].endswith(tuple('.!?')):
+            sentences[insert_position -1] += '.'
+        sentences.insert(insert_position, metafictional_text)
+        return " ".join(sentences)
+
+def generate_metafictional_conclusion(concepts_used, terms_used, theme_key=None, coherence_manager=None):
     """
-    Generate a metafictional conclusion that references specific concepts and terms.
-    
+    Generate a metafictional conclusion, potentially themed.
     Args:
-        concepts_used (set): Set of concepts used in the essay, including title themes
-        terms_used (set): Set of terms used in the essay, including title themes
-    
+        concepts_used (set): Set of concepts used in the essay.
+        terms_used (set): Set of terms used in the essay.
+        theme_key (str, optional): The active theme key.
+        coherence_manager (EssayCoherence, optional): The coherence manager instance.
     Returns:
         str: A metafictional conclusion statement
     """
-    # Select relevant concepts and terms, prioritizing those that appear in title
-    concept = random.choice(list(concepts_used)) if concepts_used else random.choice(concepts)
-    term = random.choice(list(terms_used)) if terms_used else random.choice(terms)
+    mf_concept = random.choice(list(concepts_used)) if concepts_used else random.choice(concepts)
+    mf_term = random.choice(list(terms_used)) if terms_used else random.choice(terms)
+
+    if coherence_manager:
+        mf_concept = coherence_manager.get_weighted_concept(exclude=terms_used if terms_used else None)
+        mf_term = coherence_manager.get_weighted_term(exclude=concepts_used.union({mf_concept}) if concepts_used else {mf_concept})
+        if coherence_manager.active_theme_key:
+            theme_data = coherence_manager.active_theme_data
+            if theme_data.get('key_concepts') and random.random() < 0.8:
+                potential_concepts = [c for c in theme_data['key_concepts'] if c in concepts_used]
+                if potential_concepts: mf_concept = random.choice(potential_concepts)
+            if theme_data.get('relevant_terms') and random.random() < 0.8:
+                potential_terms = [t for t in theme_data['relevant_terms'] if t in terms_used and t != mf_concept]
+                if potential_terms: mf_term = random.choice(potential_terms)
     
-    conclusion_templates = [
-        f"In attempting to conclude this essay, we find ourselves caught in the very {concept} we sought to analyze, a testament to its pervasive influence.",
-        f"This essay, in its attempt to map {concept}, has perhaps only succeeded in demonstrating the complexity and elusiveness of {term}.",
-        f"The intertextuality of this analysis reflects the inherent complexity of the relationship between {concept} and {term}.",
-        f"If there is a conclusion to be drawn from our examination of {term}, it is perhaps that {concept} continues to resist theoretical closure.",
-        f"As this paper draws to a close—a closure that is always provisional—we are left not with answers about {concept} and {term}, but with more refined questions.",
-        f"The paradox, of course, is that in critiquing {concept}, this essay has enacted the very {term} it has sought to problematize.",
-        f"To conclude, if such a gesture is possible, is to acknowledge that any engagement with {concept} necessarily participates in the very {term} it seeks to elucidate.",
-        f"What emerges from this investigation is not a definitive account of {concept}, but a recognition of its irreducible entanglement with {term}.",
-        f"The reflexivity required to analyze {concept} inevitably implicates this text in the economy of {term} it has attempted to critique.",
-        f"Perhaps the most significant insight to emerge from this analysis is the recognition that {concept} and {term} remain sites of productive undecidability."
-    ]
+    # Fallback if mf_term became same as mf_concept due to limited themed choices
+    if mf_concept == mf_term:
+        mf_term = random.choice([t for t in (list(terms_used) if terms_used else terms) if t != mf_concept] or terms)
+
+    # Use the imported templates from data.py
+    # Consider adding theme-specific conclusion templates to data.py
+    conclusion_template = random.choice(METAFICTIONAL_CONCLUSIONS)
     
-    return random.choice(conclusion_templates)
+    try:
+        return conclusion_template.format(concept=mf_concept, term=mf_term)
+    except KeyError: # Fallback if formatting fails
+        return f"Ultimately, the very attempt to delineate {mf_concept} from {mf_term} underscores the constructed nature of this theoretical endeavor."

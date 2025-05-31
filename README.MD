@@ -28,8 +28,9 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 - **Metafictional Elements**: Includes self-referential passages typical of postmodern writing
 - **Academic Abstracts**: Generates sophisticated abstracts with keywords and theoretical framing
 - **Proper Formatting**: Handles capitalization, italicization, and academic conventions
-- **Reproducible Output**: Optional random seed for generating consistent results
+- **Reproducible Output**: Flexible seed input (specific integer or random via Enter key) for generating consistent or varied results. The actual seed used (even if random) is recorded.
 - **Lightweight and Efficient**: Does not rely on large language models, ensuring quick and resource-efficient text generation
+- **Markdown Export**: Option to save generated essays as `.md` files in an `essays/` directory, with accurate seed and clean theme information in the metadata.
 
 ## Installation
 
@@ -57,11 +58,34 @@ To generate a postmodern essay, execute the following command in your terminal:
 python main.py
 ```
 
-To generate an essay with a specific random seed (for reproducibility, each new essay generated with the same seed retains the exact same content but alters the cited works in the bibliography section due to the related code being executed separately than the body of the text, which causes an irrelevancy and is actually an unwanted feature that will be removed in future updates):
+When running the script, you will first be prompted for a random seed:
+- You can enter a specific integer as a seed. This allows for reproducability.
+- Alternatively, simply press Enter to use a randomly generated seed.
 
-```bash
-python main.py 42
-```
+Next, you will be presented with a list of available themes:
+- Enter `0` to have a theme randomly selected for you.
+- Enter the corresponding number (starting from `1`) to choose a specific theme from the list.
+
+### Command-Line Arguments
+
+You can also specify the seed and theme directly via command-line arguments using named options:
+
+- To use a specific seed (e.g., 42) and be prompted for the theme:
+  ```bash
+  python main.py --seed 42
+  ```
+- To use a specific theme (e.g., "Power and Knowledge") with a randomly generated seed (ensure the theme key is one of the available themes and use quotes if it contains spaces):
+  ```bash
+  python main.py --theme "Power and Knowledge"
+  ```
+- To use a specific seed (e.g., 42) and a specific theme (e.g., "Power and Knowledge"):
+  ```bash
+  python main.py --seed 42 --theme "Power and Knowledge"
+  ```
+
+If no arguments are provided, the script will guide you through interactive selection for both seed and theme.
+If only `--seed` is provided, you will be interactively prompted for the theme.
+If only `--theme` is provided, a random seed will be used, and you will not be prompted for a seed.
 
 The generator will output a complete academic essay including:
 - Title with theoretical framing
@@ -71,6 +95,8 @@ The generator will output a complete academic essay including:
 - Conclusion with metafictional elements
 - Notes section
 - Works cited in MLA 9 format
+
+When prompted, you can choose to export the generated essay as a `.md` file. These files will be saved in an `essays/` directory within the project root. The exported metadata will accurately reflect the seed used (displaying the value of both user-specified and randomly generated seeds), present clear theme information, and include a timestamp of when the essay was generated.
 
 ## Roadmap
 
@@ -107,9 +133,9 @@ Contributions to The Postmodern Generator project are welcome! To contribute, fo
 
 - **Capitalization Inconsistencies**: Occasional capitalization issues with first words of sentences, proper nouns, and philosopher names
 - **Redundant Phrases**: The generated text may sometimes include redundant use of synonymous words and phrases
-- **Terminology Classification**: Some words appear in both concepts and terms categories, which may lead to inconsistent italicization
+- **Terminology Classification**: Some words appear in both concepts and terms categories, leading to inconsistent italicization
 - **Citation Format Variations**: Minor inconsistencies in citation formatting might occur
-- **Citation Discrepancies**: Minor discrepancies in in-text citations might occur, where quotes are attributed to authors properly but may not be consistently cited with relevant paranthetical citation information
+- **Citation Discrepancies**: Minor discrepancies in-text citation might occur, where quotes are attributed to authors properly but may not be consistently cited with relevant paranthetical citation information
 - **Thematic Coherence at Scale**: For very long essays, thematic coherence may diminish in later sections
 
 ## License
@@ -118,4 +144,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgements
 
-Special thanks to Andrew C. Bulhak, the creator of The Postmodernism Generator, for the inspiration and foundational work that made this project possible. This project builds on that legacy to create a more sophisticated, coherent, and academically authentic text generator for postmodern discourse.
+Special thanks to Andrew C. Bulhak, the original creator of The Postmodernism Generator, for the inspiration and foundational work that made this project possible. This project builds on that legacy to create a more sophisticated, coherent, and academically authentic text generator for postmodern discourse.
