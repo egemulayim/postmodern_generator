@@ -33,8 +33,11 @@ dist/
 coverage.xml
 *.coveragerc
 
-# Virtual environment
+# Environment
 venv/
+.venv
+.env
+env/
 
 # Log files
 *.log
@@ -48,5 +51,5 @@ venv/
 # System files
 .DS_Store
 
-# Environment files
-.env
+# Essays
+essays/
