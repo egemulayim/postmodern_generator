@@ -28,7 +28,7 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 - **Interactive Theme Selection**: User-friendly interface for selecting specific themes or random generation
 - **Enhanced Command-Line Interface**: Professional CLI with seed and theme arguments for reproducible and targeted output
 - **Theoretical Sophistication**: Incorporates postmodern concepts, philosophers, and theoretical frameworks with authentic relationships
-- **MLA 9 Compliant Citations**: Generates proper in-text citations and formatted works cited sections
+- **MLA 9 Compliant Citations**: Generates proper in-text citations, endnotes, and formatted works cited sections
 - **Dialectical Progressions**: Develops ideas through dialectical movement across essay sections
 - **Metafictional Elements**: Includes self-referential passages typical of postmodern writing
 - **Academic Abstracts**: Generates abstracts with keywords and theoretical framing

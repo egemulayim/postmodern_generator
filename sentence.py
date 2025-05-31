@@ -905,7 +905,8 @@ def _handle_quote_in_template(data, quote_source_field, used_quotes,
 
     if reference_for_quote and note_system:
         # The add_citation method returns the citation string e.g., (Author Page)
-        data['citation_for_quote'] = note_system.add_citation(reference_for_quote, context)
+        # Pass is_quote_citation=True to ensure parenthetical citation for quotes.
+        data['citation_for_quote'] = note_system.add_citation(reference_for_quote, context, is_quote_citation=True)
     else:
         # Fallback if no reference could be made for the quote
         data['citation_for_quote'] = "(Author XX)" # Generic placeholder if all else fails

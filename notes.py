@@ -56,10 +56,11 @@ class NoteSystem:
         self.recently_used_note_templates = [] # Reset for new essay
         self.recently_used_formatted_commentaries = [] # Reset for new essay
     
-    def add_citation(self, reference, context=None):
+    def add_citation(self, reference, context=None, is_quote_citation=False):
         """
-        Add a citation. If it's the first substantive mention, a footnote marker [^N] is returned.
-        Otherwise, a standard MLA parenthetical citation (Author Page) is returned.
+        Add a citation.
+        If is_quote_citation is True, always returns a parenthetical citation.
+        If is_quote_citation is False (default), creates a substantive footnote and returns a marker [^N].
         """
         full_author_name = self._extract_author_for_note(reference)
         in_text_author = self._get_author_for_in_text_citation(full_author_name)
@@ -81,31 +82,51 @@ class NoteSystem:
         page_num = self.page_numbers[reference]
         
         citation_to_embed_in_text = ""
-        if reference not in self.citation_markers:
-            note_number = len(self.notes) + 1
-            self.citation_markers[reference] = note_number
-            
-            commentary = self._generate_substantive_note(reference, context, note_number)
-            self.notes.append((note_number, commentary, reference))
-            citation_to_embed_in_text = f"[^{note_number}]"
-        else:
+
+        if is_quote_citation:
+            # Always generate parenthetical citation for quotes
             current_author_work_count = self.author_work_count.get(full_author_name, 0)
-            if current_author_work_count > 1:
-                is_article = bool(re.search(r'\"\s*[^\"]+?\s*\"', reference))
-                short_title = self._get_short_title(title_key, is_article)
+            if current_author_work_count > 1 and title_key: # Ensure title_key is not None
+                # Check if reference is an article to apply correct title formatting
+                is_article_ref = bool(re.search(r'\"\s*[^\"]+?\s*\"', reference)) 
+                short_title = self._get_short_title(title_key, is_article_ref)
                 display_short_title = apply_title_case(short_title)
-                if is_article:
+                if is_article_ref:
                     citation_to_embed_in_text = f"({in_text_author}, \"{display_short_title}\" {page_num})"
                 else:
                     citation_to_embed_in_text = f"({in_text_author}, *{display_short_title}* {page_num})"
             else:
                 citation_to_embed_in_text = f"({in_text_author} {page_num})"
+            
+            # Ensure the reference exists for the note generation if it's the first time it's seen,
+            # even if we are not creating a footnote *marker* for this specific quote.
+            # This ensures _generate_substantive_note can still be called if other parts of the code expect a note to exist.
+            if reference not in self.citation_markers:
+                note_number = len(self.notes) + 1
+                self.citation_markers[reference] = note_number # Mark as "seen" for footnote purposes
+                # We generate a commentary, but it won't be directly tied to this quote's in-text citation.
+                # This is for cases where a general note about the work might still be desired later.
+                commentary = self._generate_substantive_note(reference, context, note_number)
+                self.notes.append((note_number, commentary, reference))
+
+        else: # This is for general commentary notes, not direct quote citations
+            note_number = len(self.notes) + 1
+            # For general notes, we always create a new note entry, even if the reference has been cited before.
+            # This allows multiple distinct commentaries pointing to the same work.
+            # However, the citation_markers will still point to the *first* note for that reference.
+            if reference not in self.citation_markers:
+                 self.citation_markers[reference] = note_number
+            
+            commentary = self._generate_substantive_note(reference, context, note_number)
+            self.notes.append((note_number, commentary, reference))
+            citation_to_embed_in_text = f"[^{note_number}]"
         
         return citation_to_embed_in_text
     
     def _get_short_title(self, title, is_article=False):
         """
         Create a shortened version of a title for in-text citations.
+        Handles subtitles by prioritizing the main title (before a colon).
         
         Args:
             title (str): The full title
@@ -115,6 +136,13 @@ class NoteSystem:
             str: A shortened title suitable for in-text citation
         """
         clean_title = title.strip()
+
+        # Handle subtitles: if a colon is present, use the part before it as the main title for shortening.
+        if ":" in clean_title:
+            main_title_part = clean_title.split(":", 1)[0].strip()
+            # Check if the main title part is substantial enough
+            if len(main_title_part.split()) > 0:
+                clean_title = main_title_part
         
         words = clean_title.split()
         
@@ -489,7 +517,7 @@ class NoteSystem:
                 f"This work's reception shows the widespread influence of {ct_auth}'s ideas on {f_topic}, particularly within discussions of {r_topic}."
             ],
             "general_academic_comment": [
-                f"See also the related discussion of {f_topic} by {an_phil} in their work on {r_topic}, which offers a complementary perspective found in this reference.",
+                f"{an_phil} also offers a complementary perspective on {f_topic} in their work on {r_topic}, which is touched upon in the cited reference.",
                 f"The development of {ct_auth}'s thought on {f_topic} is evident here, especially when considering their engagement with {r_topic} and the contrasting views of {an_phil}.",
                 f"This reference by {ct_auth} provides further essential context on {f_topic} and its intrinsic connection to {r_topic}, a point also touched upon by {an_phil}.",
                 f"This work is illustrative of a broader trend in analyzing {f_topic}, also seen in {an_phil}'s critical examinations of {r_topic} and its contemporary manifestations.",
