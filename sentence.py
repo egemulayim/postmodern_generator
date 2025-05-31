@@ -774,29 +774,44 @@ def _format_quote_for_academic_style(quote, template):
     Returns:
         str: Properly formatted quote
     """
+    if not quote: # Added check for empty quote
+        return quote
+
     # Check if the quote is mid-sentence (not at the end of the template)
     is_mid_sentence = False
     
     # Look for patterns that indicate the quote is mid-sentence
     mid_sentence_indicators = [
-        '"{quote}," ', '"{quote}" ', '"{quote}—', '"{quote}" which',
-        '"{quote}" in', '"{quote}" that', '"{quote}" thus', '"{quote}" offering'
+        '\"{quote},\" ', '\"{quote}\" ', '\"{quote}—', '\"{quote}\" which',
+        '\"{quote}\" in', '\"{quote}\" that', '\"{quote}\" thus', '\"{quote}\" offering'
     ]
     for indicator in mid_sentence_indicators:
-        if indicator in template:
+        if isinstance(template, str) and indicator in template: # Ensure template is a string
             is_mid_sentence = True
             break
     
-    # If the quote ends with a period and is in the middle of a sentence, remove the period
-    if is_mid_sentence and quote and quote.endswith('.'):
-        quote = quote[:-1]
-    
-    # For other punctuation (comma, semicolon, etc.), only remove if template adds identical punctuation
-    elif quote and quote[-1] in ',;:!?':
-        # Check if the template adds punctuation after the quote
-        if '"{quote},' in template or '"{quote};"' in template or '"{quote}:"' in template or '"{quote}!"' in template or '"{quote}?"' in template:
+    # Revised punctuation handling for MLA style
+    # If quote ends with '?' or '!', keep it.
+    if quote.endswith('?') or quote.endswith('!'):
+        pass # Keep these punctuation marks as they are part of the quote's specific meaning
+    # Else if quote ends with '.', and it's mid-sentence, remove the period.
+    # The sentence-final period will be added after citation by _finalize_sentence 
+    # or if the quote itself is the end of the sentence.
+    elif quote.endswith('.'):
+        if is_mid_sentence: # Only remove period if it's a mid-sentence quote
             quote = quote[:-1]
-    
+        # If it ends with a period and is NOT mid_sentence, we keep the period for now.
+        # _finalize_sentence will then decide if an additional period after citation is needed.
+
+    # Handle comma: if quote ends with comma.
+    elif quote.endswith(','):
+        # If template adds a comma right after {quote} (e.g., "{quote}, and..."), 
+        # and the quote itself ends in a comma, remove quote's comma to avoid doubling.
+        if is_mid_sentence and isinstance(template, str) and ('\"{quote},\" ' in template or '\"{quote},\"' in template):
+            quote = quote[:-1]
+        # else: keep the quote's original comma (e.g. for mid-sentence claims like the Baudrillard example)
+        pass
+
     # Handle lowercase bracketed first letter for quotes after "that", "which", etc.
     lowercase_indicators = ['that "{quote}', 'which "{quote}', 'in which "{quote}', 'through which "{quote}']
     needs_lowercase = any(indicator in template for indicator in lowercase_indicators)
@@ -937,8 +952,12 @@ def _process_citation_placeholders(sentence, note_system, context, philosopher_n
             reference = note_system.get_enhanced_citation(name_to_cite, is_article, year)
             citation_text_to_insert = note_system.add_citation(reference, context)
         else:
-            citation_text_to_insert = '(Generic Citation)' # Fallback if no note_system
+            citation_text_to_insert = '' # Fallback if no note_system, changed from '(Generic Citation)'
     
+        # Ensure citation_text_to_insert is not empty
+        if not citation_text_to_insert:
+            citation_text_to_insert = "(General Citation Placeholder)" # Robust fallback
+
     sentence = sentence.replace('{citation}', citation_text_to_insert)
     return sentence
 
@@ -1061,9 +1080,9 @@ def _handle_citation_marker(sentence, context, used_concepts, used_terms, used_p
         if ref_str and note_system:
             # Pass the generated reference string to add_citation
             citation_text = note_system.add_citation(ref_str, context=context)
-            sentence = sentence.replace("[citation]", citation_text, 1)
+            sentence = sentence.replace("[citation]", citation_text or "[Citation Placeholder]", 1)
         else:
-            sentence = sentence.replace("[citation]", "", 1) # Remove placeholder if no citation generated
+            sentence = sentence.replace("[citation]", "[Citation Placeholder]", 1) # Remove placeholder if no citation generated
     return sentence
 
 
@@ -1093,7 +1112,10 @@ def _clean_double_prepositions(sentence):
 
 def _finalize_sentence(sentence):
     """
-    Finalize a sentence by cleaning whitespace and ensuring proper punctuation.
+    Finalize a sentence by cleaning whitespace and ensuring proper punctuation (MLA style).
+    Periods go AFTER parenthetical citations, e.g., "end of quote" (Author Page).
+    Question marks or exclamation points that are part of the quote remain inside the quote,
+    and the sentence then also gets a period after the citation, e.g., "end of quote?" (Author Page).
     """
     # Remove extra whitespace
     sentence = ' '.join(sentence.split())
@@ -1101,10 +1123,56 @@ def _finalize_sentence(sentence):
     # Clean double prepositions
     sentence = _clean_double_prepositions(sentence)
     
-    # Ensure sentence ends with proper punctuation
-    if not sentence.endswith('.') and not sentence.endswith('?') and not sentence.endswith('!'):
-        sentence += '.'
+    if not sentence:
+        return "." # Return a period if sentence is empty after cleaning.
+
+    # Regex to check if the sentence ends with a typical parenthetical citation
+    # e.g., (Author XX), (Author, qtd. in Other XX), (Qtd. in Author XX)
+    ends_with_citation_regex = r'\s*\([^)]+\)$'
     
+    # Check if sentence (before potential final punctuation) ends with a citation
+    has_citation_at_end = bool(re.search(ends_with_citation_regex, sentence))
+
+    # Check for existing sentence-ending punctuation *before* a potential citation
+    # This looks for quote-ending punctuation like "Quote?" (Citation) or "Quote." (Citation)
+    # Corrected to look for punctuation *immediately* before the citation pattern if it exists.
+    pre_citation_punctuation_match = None
+    if has_citation_at_end:
+        # Find where the citation starts to check character before it
+        citation_match = re.search(ends_with_citation_regex, sentence)
+        if citation_match:
+            char_before_citation = sentence[:citation_match.start()].rstrip()[-1:]
+            if char_before_citation in '.?!':
+                pre_citation_punctuation_match = char_before_citation
+    
+    # Determine if the sentence *already* ends with a period, question mark, or exclamation point *at the very end*.
+    already_punctuated_at_very_end = sentence.endswith('.') or sentence.endswith('?') or sentence.endswith('!')
+
+    if has_citation_at_end:
+        # Case 1: Sentence ends with a citation.
+        # MLA: Period always goes AFTER the citation, unless the sentence is a question/exclamation overall.
+        # If the quote itself ended in ? or !, that punctuation stays *inside* the quote, and a period is still added after the citation.
+        # Example: "Is this a question?" (Author Page).
+        # Example: "This is a statement." (Author Page).
+
+        # If the character immediately before the citation was a period, it should have been removed by _format_quote_for_academic_style (if mid-sentence).
+        # Or it might be the end of a non-quoted part of the sentence before a final citation.
+        # We strip any period immediately before the citation, as the final period will be added after.
+        citation_start_index = sentence.rfind('(') # Simple way to find approx start of citation
+        if citation_start_index > 0 and sentence[citation_start_index-1] == '.':
+            # Check if this period is preceded by a quote mark. If so, _format_quote_for_academic_style should handle it.
+            # This is more for cases like "...stated clearly. (Author Page)" -> "...stated clearly (Author Page)."
+            if not (sentence[citation_start_index-2] in '\"\''): # if not part of a quote ending in period
+                 sentence = sentence[:citation_start_index-1] + sentence[citation_start_index:]
+                 sentence = sentence.strip() # clean up potential double space
+
+        if not already_punctuated_at_very_end: # Add a period if not already ending with ?, !, or .
+             sentence += '.'
+    
+    else: # Case 2: Sentence does NOT end with a citation.
+        if not already_punctuated_at_very_end:
+            sentence += '.'
+            
     return sentence
 
 def _generate_contextual_reference(context, concepts=None, terms=None, philosopher_name=None, coherence_manager=None):
@@ -1265,7 +1333,7 @@ def ensure_quote_has_citation(text):
         if not citation_found:
             # This placeholder indicates a potential issue in primary citation logic.
             # A more robust solution would integrate with NoteSystem here.
-            generic_citation = " (CITATION_NEEDED)" 
+            generic_citation = "" # Changed from " (CITATION_NEEDED)"
             result_parts.append(generic_citation)
         
         last_pos = quote_end_pos

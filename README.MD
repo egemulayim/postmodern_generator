@@ -6,7 +6,7 @@ Welcome to The Postmodern Generator project. This repository contains the source
 
 - [Introduction](#introduction)
 - [Features](#features)
-- [Recent Changes (v0.1.0)](#recent-changes-v010)
+- [Recent Changes (v0.1.1)](#recent-changes-v011)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Thematic Clusters](#thematic-clusters)
@@ -38,7 +38,17 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 - **Markdown Export**: Save generated essays as `.md` files with comprehensive metadata including seed, theme, and generation timestamp
 - **JSON-Based Data Architecture**: Robust, extensible knowledge base with advanced error handling
 
-## Recent Changes (v0.1.0)
+## Recent Changes (v0.1.1)
+
+Version 0.1.1 focuses on enhancing the robustness and accuracy of the citation system. Key improvements include:
+
+- **Enhanced Citation Generation**: Significantly improved fallback mechanisms in `reference.py` and `notes.py` to prevent empty or incomplete bibliographic entries and in-text citations. This ensures that all generated citations are plausible and complete.
+- **MLA Punctuation Refinements**: Updated logic in `sentence.py` for precise adherence to MLA 9 style for punctuation within quotes and for sentence-ending punctuation following parenthetical citations.
+- **Overall Stability**: These changes contribute to a more reliable and academically sound output from the generator.
+
+## Previous Changes
+
+### v0.1.0
 
 This version introduces a fundamental architectural overhaul with a new JSON-based data system and thematic clustering. Key improvements include:
 
@@ -184,7 +194,7 @@ Contributions to The Postmodern Generator project are welcome! To contribute, fo
 
 ## Known Issues
 
-- **Citation Discrepancies**: Minor inconsistencies in in-text citations may occur where quotes are properly attributed but parenthetical citations may not always align perfectly
+- **Citation Discrepancies**: While significantly improved, minor edge cases in complex in-text citation scenarios (e.g. deeply nested quotes or highly specific source types not yet fully modeled) might occasionally arise, though overall robustness and MLA adherence for common academic use cases are high.
 - **Thematic Coherence at Scale**: For very long essays, thematic coherence may diminish in later sections
 - **Template Repetition**: With extensive use, some template patterns may repeat, though the system actively manages variety
 

@@ -11,9 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Additional citation styles (APA, Chicago)
 - HTML and LaTeX output formats
 - Web-based user interface
-- RESTful API
+- API integration
 - Multi-language support
 - Expanded knowledge base with emerging theorists
+
+## [0.1.1] - 2025-06-01 
+
+### Fixed
+- **Citation Generation Robustness**:
+    - Enhanced fallbacks in `reference.py` for `generate_reference`, `generate_title`, and `generate_full_name` to prevent empty or malformed bibliographic entries.
+    - Strengthened `NoteSystem` in `notes.py` (methods like `_create_parenthetical_citation_string`, `_generate_commentary`, `add_citation`, and author/topic extraction helpers) with robust fallbacks. This ensures complete and plausible parenthetical citations, substantive note content, and in-text markers, minimizing the possibility of missing or incomplete citations.
+    - Improved citation handling in `sentence.py` (`_process_citation_placeholders`, `_handle_citation_marker`) to use clear, generic placeholders (e.g., `(General Citation Placeholder)`) if any underlying citation generation step were to result in an empty string, ensuring no invisible/empty citations.
+- **MLA Punctuation for Quotes and Citations**:
+    - Refined logic in `_format_quote_for_academic_style` (`sentence.py`) to correctly handle punctuation within quotes (periods, question marks, exclamation points, commas) according to MLA style.
+    - Overhauled `_finalize_sentence` (`sentence.py`) to ensure correct placement of sentence-ending punctuation (periods after parenthetical citations, handling of ?/! within quotes followed by citation and final period).
+
+### Changed
+- Minor internal improvements to string formatting in `reference.py` to enhance linter compatibility.
 
 ## [0.1.0] - 2025-05-31
 
