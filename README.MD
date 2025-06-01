@@ -10,7 +10,6 @@ Welcome to The Postmodern Generator project. This repository contains the source
 - [Previous Changes](#previous-changes)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Available Themes](#available-themes)
 - [Thematic Clusters](#thematic-clusters)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
@@ -129,29 +128,13 @@ python main.py --theme "Digital Subjectivity"
 python main.py --seed 42 --theme "Power and Knowledge"
 ```
 
+Available themes can be found in the [Thematic Clusters](#thematic-clusters) section.
+
 **Argument behavior:**
 - If no arguments are provided: Interactive selection for both seed and theme
 - If only `--seed` is provided: Interactive theme selection with specified seed
 - If only `--theme` is provided: Random seed with specified theme
 - If both provided: Direct generation with specified parameters
-
-## Available Themes
-
-The generator currently supports the following thematic clusters:
-
-- Power and Knowledge
-- Identity and Subjectivity
-- Postmodernity and Critique of Metanarratives
-- Technology, Media, and Culture
-- Decoloniality and Postcolonial Studies
-- Affect, Materiality, and the Posthuman
-- Critical Pedagogy and Liberatory Education
-- Speculative Realism and Object-Oriented Ontology
-- Psychoanalysis and Culture
-- Feminist Epistemologies and Standpoint Theory
-- Digital Subjectivity
-
-Each theme is designed to produce essays with a distinct theoretical focus, drawing on relevant philosophers, concepts, and terminology.
 
 ### Generated Output
 
