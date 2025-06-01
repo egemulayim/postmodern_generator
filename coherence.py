@@ -14,7 +14,8 @@ from json_data_provider import (
     philosopher_concepts, quotes,
     bibliography_title_templates, academic_journals, academic_vocab, thematic_clusters,
     oppositional_pairs, philosopher_key_works,
-    citation_relationships, philosophical_movements
+    citation_relationships, philosophical_movements,
+    concept_relation_details
 )
 
 # Placeholder definitions for variables previously imported but not found in data.py
@@ -209,30 +210,69 @@ class EssayCoherence:
         # For now, primarily focusing on concepts and terms from title.
 
     def _build_concept_relationships(self):
-        """Build a graph of related concepts based on philosopher associations and thematic_clusters."""
-        relationships = defaultdict(set)
+        """Build a graph of related concepts with strength and type, including explicit typed relations."""
+        relationships = defaultdict(lambda: defaultdict(lambda: {"strength": 0, "type": "related"}))
         
-        # From philosopher_concepts
-        for philo_concepts_list in self.philosopher_concepts.values(): # Use self.philosopher_concepts
+        # 1. From philosopher_concepts (co-occurrence)
+        for philo_concepts_list in self.philosopher_concepts.values():
             for i in range(len(philo_concepts_list)):
                 for j in range(i + 1, len(philo_concepts_list)):
                     c1, c2 = philo_concepts_list[i], philo_concepts_list[j]
-                    relationships[c1].add(c2)
-                    relationships[c2].add(c1)
+                    if c1 in self.concepts and c2 in self.concepts:
+                        relationships[c1][c2]["strength"] += 1
+                        relationships[c2][c1]["strength"] += 1
         
-        # From thematic_clusters (imported from data.py)
-        for theme_name, theme_data in thematic_clusters.items():
-            cluster_concepts_list = theme_data.get('key_concepts', [])
-            # Also consider relevant_terms if they are also in the main concepts list
-            cluster_concepts_list.extend([term for term in theme_data.get('relevant_terms', []) if term in concepts])
-            unique_cluster_concepts = list(set(cluster_concepts_list))
+        # 2. From thematic_clusters (co-occurrence in themes)
+        for theme_data in thematic_clusters.values():
+            core_concepts = [c for c in theme_data.get('key_concepts', []) if c in self.concepts]
+            relevant_terms_as_concepts = [t for t in theme_data.get('relevant_terms', []) if t in self.concepts]
+            all_theme_related_concepts = list(set(core_concepts + relevant_terms_as_concepts))
+            for i in range(len(all_theme_related_concepts)):
+                for j in range(i + 1, len(all_theme_related_concepts)):
+                    c1, c2 = all_theme_related_concepts[i], all_theme_related_concepts[j]
+                    boost = 1
+                    if c1 in core_concepts and c2 in core_concepts: boost = 3
+                    elif c1 in core_concepts or c2 in core_concepts: boost = 2
+                    relationships[c1][c2]["strength"] += boost
+                    relationships[c2][c1]["strength"] += boost
 
-            for i in range(len(unique_cluster_concepts)):
-                for j in range(i + 1, len(unique_cluster_concepts)):
-                    c1, c2 = unique_cluster_concepts[i], unique_cluster_concepts[j]
-                    if c1 in concepts and c2 in concepts: # Ensure they are actual concepts
-                        relationships[c1].add(c2)
-                        relationships[c2].add(c1)
+        # 3. From oppositional_pairs (explicit opposition)
+        for c1, c2 in oppositional_pairs:
+            if c1 in self.concepts and c2 in self.concepts:
+                relationships[c1][c2]["type"] = "oppositional"
+                relationships[c1][c2]["strength"] += 5 
+                relationships[c2][c1]["type"] = "oppositional"
+                relationships[c2][c1]["strength"] += 5
+
+        # 4. From concept_relation_details (explicit typed relationships from data.json)
+        for relation in concept_relation_details: # Assumes concept_relation_details is imported
+            c1 = relation.get("concept1")
+            c2 = relation.get("concept2")
+            rel_type = relation.get("relation_type")
+            strength_mod = relation.get("strength_modifier", 0)
+            if c1 in self.concepts and c2 in self.concepts and rel_type:
+                # Apply the primary relationship
+                relationships[c1][c2]["type"] = rel_type
+                relationships[c1][c2]["strength"] += strength_mod
+                
+                # Attempt to define an inverse relationship type if not explicitly provided
+                # This is heuristic and can be expanded.
+                inverse_type = None
+                if rel_type.startswith("is_") and "_by" not in rel_type and "_of" not in rel_type and "_for" not in rel_type:
+                    inverse_type = rel_type[3:] # e.g., "is_critiqued_by" -> "critiqued"
+                elif "_by" in rel_type:
+                    inverse_type = rel_type.replace("_by", "s") # e.g., "is_critiqued_by" -> "critiques"
+                elif rel_type.endswith("s"): # e.g., critiques
+                    inverse_type = "is_" + rel_type[:-1] + "ed_by" # critiques -> is_critiqued_by
+                # Add more sophisticated inverse type mapping as needed
+
+                if inverse_type: # If an inverse type could be determined or was predefined for symmetry
+                    relationships[c2][c1]["type"] = inverse_type
+                    relationships[c2][c1]["strength"] += strength_mod # Apply strength modifier symmetrically
+                else: # If no obvious inverse, mark as generically related but still apply strength
+                    if relationships[c2][c1]["type"] == "related": # Only overwrite if it's still generic
+                         relationships[c2][c1]["type"] = "related_to_typed" # Mark as related due to an explicit typed relation from c1
+                    relationships[c2][c1]["strength"] += strength_mod
         return relationships
     
     def record_usage(self, concepts=None, terms=None, philosophers=None):
@@ -304,171 +344,213 @@ class EssayCoherence:
         return self._get_weighted_items(self.terms, self.term_weights, exclude, theme_terms, subset=subset)
     
     def get_weighted_philosopher(self, exclude=None, subset=None):
-        """Get a philosopher weighted by previous usage and primary themes, with thematic boost."""
-        theme_philosophers = self.active_theme_data.get('core_philosophers', []) if self.active_theme_key else []
-        selected_philosopher = self._get_weighted_items(self.philosophers, self.philosopher_weights, exclude, theme_philosophers, subset=subset)
-
-        # Validate the selected_philosopher. If it's too short, pick a valid fallback.
-        if selected_philosopher and len(selected_philosopher.strip().replace(".", "")) <= 1:
-            # Fallback: pick a random philosopher from the main list, respecting exclusions
-            valid_fallback_philosophers = [p for p in philosophers if p not in (exclude or set()) and len(p.strip().replace(".","")) > 1]
-            if valid_fallback_philosophers:
-                selected_philosopher = random.choice(valid_fallback_philosophers)
-            elif philosophers: # If all valid ones are excluded, pick any from main list (should be rare)
-                selected_philosopher = random.choice([p for p in philosophers if len(p.strip().replace(".","")) > 1] or ["Michel Foucault"])
-            else: # Absolute fallback
-                selected_philosopher = "Michel Foucault"
-        elif selected_philosopher is None: # if _get_weighted_items returned None
-            valid_fallback_philosophers = [p for p in philosophers if p not in (exclude or set()) and len(p.strip().replace(".","")) > 1]
-            if valid_fallback_philosophers:
-                selected_philosopher = random.choice(valid_fallback_philosophers)
-            elif philosophers:
-                selected_philosopher = random.choice([p for p in philosophers if len(p.strip().replace(".","")) > 1] or ["Michel Foucault"])
-            else:
-                selected_philosopher = "Michel Foucault" # Absolute fallback
-
-        # Chance to pick a related philosopher if a theme is active
-        if self.active_theme_key and selected_philosopher in theme_philosophers and random.random() < 0.3:
-            secondary_options = []
-            # Use .get() for safer access to citation_relationships and philosophical_movements
-            related_by_citation = citation_relationships.get(selected_philosopher, [])
-            secondary_options.extend([p for p in related_by_citation if p not in (exclude or set()) and p != selected_philosopher])
-            
-            for movement, movement_philosophers_list in philosophical_movements.items():
-                if selected_philosopher in movement_philosophers_list:
-                    secondary_options.extend([p for p in movement_philosophers_list if p not in (exclude or set()) and p != selected_philosopher and p not in secondary_options])
-            
-            if secondary_options:
-                return random.choice(secondary_options)
-        return selected_philosopher
+        """Get a philosopher based on current weights and thematic relevance."""
+        # Ensure `philosophers` (the global list) is accessible or use `self.philosophers`
+        theme_philosophers = self.active_theme_data.get('core_philosophers', []) if self.active_theme_data else []
+        return self._get_weighted_items(self.philosophers, self.philosopher_weights, exclude, theme_philosophers, subset=subset)
 
     def get_related_concept(self, concept_name, exclude=None): # Renamed arg from concept to concept_name
-        """
-        Get a concept related to the given concept, using relationship graph, 
-        concept_clusters, and active theme.
-        """
-        exclude = exclude or set()
-        exclude.add(concept_name) # Exclude the concept itself
+        """Get a concept related to concept_name, favoring stronger relationships."""
+        if concept_name not in self.concept_relationships:
+            # Fallback: if no relationships known, pick a random concept not in exclude or self.
+            available_concepts = [c for c in self.concepts if c != concept_name and (not exclude or c not in exclude)]
+            return random.choice(available_concepts) if available_concepts else None
 
-        options = list(self.concept_relationships.get(concept_name, []))
+        related_options = self.concept_relationships[concept_name]
         
-        for cluster_concepts in thematic_clusters.values():
-            if concept_name in cluster_concepts:
-                options.extend([c for c in cluster_concepts if c != concept_name])
-        
-        if self.active_theme_key:
-            options.extend([c for c in self.active_theme_data.get('key_concepts', []) if c != concept_name])
-            options.extend([c for c in self.active_theme_data.get('relevant_terms', []) if c != concept_name and c in concepts]) # if a term is also a concept
+        # Filter out excluded concepts and the concept itself
+        valid_options = {
+            rel_concept: data
+            for rel_concept, data in related_options.items()
+            if rel_concept != concept_name and (not exclude or rel_concept not in exclude) and data.get("type", "related") == "related"
+        }
 
-        # Filter out excluded and duplicate options
-        valid_options = [opt for opt in list(set(options)) if opt not in exclude and opt in concepts] # Ensure options are actual concepts
-        
         if not valid_options:
-            # Fallback: get any weighted concept not excluded
-            return self.get_weighted_concept(exclude=exclude)
-            
-        # Weight options: prefer those also in concept_weights or highly related
-        option_weights = [max(self.concept_weights.get(opt, 0.1) + (5 if opt in self.concept_relationships.get(concept_name, []) else 0), 0.1) for opt in valid_options]
+            # Fallback if no valid *related* options, try any non-excluded concept
+            available_concepts = [c for c in self.concepts if c != concept_name and (not exclude or c not in exclude)]
+            return random.choice(available_concepts) if available_concepts else None
 
-        if not option_weights or sum(option_weights) == 0:
-            return random.choice(valid_options) if valid_options else self.get_weighted_concept(exclude=exclude)
+        # Weigh by strength
+        choices = []
+        weights = []
+        for concept, data in valid_options.items():
+            choices.append(concept)
+            weights.append(data.get("strength", 1)) # Default strength 1 if somehow missing
+        
+        if not choices: # Should be covered by valid_options check, but as safeguard
+            return random.choice([c for c in self.concepts if c != concept_name and (not exclude or c not in exclude)] or [None])
 
-        return random.choices(valid_options, weights=option_weights, k=1)[0]
+        return random.choices(choices, weights=weights, k=1)[0]
 
     def get_oppositional_concept(self, concept_name, exclude=None): # Renamed arg
-        """
-        Get a concept that is oppositionally related to the given concept.
-        Prioritizes oppositional_pairs, then looks for contrasting elements within theme.
-        """
-        exclude = exclude or set()
-        exclude.add(concept_name)
+        """Get a concept oppositional to concept_name."""
+        # 1. Check explicit oppositional_pairs first (via concept_relationships type)
+        if concept_name in self.concept_relationships:
+            oppositional_options = {
+                rel_concept: data
+                for rel_concept, data in self.concept_relationships[concept_name].items()
+                if rel_concept != concept_name and (not exclude or rel_concept not in exclude) and data.get("type") == "oppositional"
+            }
+            if oppositional_options:
+                # Weigh by strength if multiple explicit oppositions exist (though usually direct pairs)
+                choices = []
+                weights = []
+                for concept, data in oppositional_options.items():
+                    choices.append(concept)
+                    weights.append(data.get("strength", 1))
+                if choices:
+                    return random.choices(choices, weights=weights, k=1)[0]
 
-        for pair in oppositional_pairs:
-            if concept_name == pair[0] and pair[1] not in exclude and pair[1] in concepts:
-                return pair[1]
-            if concept_name == pair[1] and pair[0] not in exclude and pair[0] in concepts:
-                return pair[0]
+        # 2. Fallback: if no explicit oppositional relationship found in concept_relationships,
+        #    look for the original oppositional_pairs list from data.json
+        for c1, c2 in oppositional_pairs:
+            if c1 == concept_name and (not exclude or c2 not in exclude):
+                return c2
+            if c2 == concept_name and (not exclude or c1 not in exclude):
+                return c1
         
-        # Fallback: if no direct oppositional pair, try to find a contrasting concept
-        # This is a placeholder for more sophisticated contrast logic.
-        # For now, just return a random concept not closely related or not the same.
-        related_to_concept_name = self.concept_relationships.get(concept_name, set())
-        potential_opposites = [c for c in concepts if c not in exclude and c not in related_to_concept_name]
+        # 3. Further Fallback: if no direct opposition, pick a concept that is NOT strongly related (low strength or not related)
+        # This is a more complex heuristic. For now, let's keep it simpler.
+        # If no explicit opposition, we might return a weakly related concept or a random one not strongly related.
+        # For now, if no explicit opposition, pick a random concept not in exclude or self, and not strongly related.
         
+        potential_opposites = []
+        if concept_name in self.concept_relationships:
+            related_concepts_data = self.concept_relationships[concept_name]
+            for c in self.concepts:
+                if c == concept_name or (exclude and c in exclude):
+                    continue
+                # If not related, or weakly related, consider it a potential (weak) opposite
+                if c not in related_concepts_data or related_concepts_data[c].get("strength", 0) <= 1: # Threshold for "weakly related"
+                    potential_opposites.append(c)
+        else: # If concept_name has no relationships recorded, any other concept is a potential opposite
+            potential_opposites = [c for c in self.concepts if c != concept_name and (not exclude or c not in exclude)]
+
         if potential_opposites:
-            return self.get_weighted_concept(exclude=exclude.union({concept_name}).union(related_to_concept_name))
-
-        return self.get_weighted_concept(exclude=exclude) # Last resort
+            return random.choice(potential_opposites)
+        
+        # Absolute fallback: a random concept different from concept_name
+        fallback_concepts = [c for c in self.concepts if c != concept_name and (not exclude or c not in exclude)]
+        return random.choice(fallback_concepts) if fallback_concepts else None
 
     def develop_dialectic(self, starting_concept, num_steps=3):
         """
-        Develop a dialectical progression of concepts.
-        
-        Args:
-            starting_concept (str): The initial concept (thesis)
-            num_steps (int): Number of steps in the dialectic (thesis, antithesis, synthesis)
-            
-        Returns:
-            list: A list of concepts representing the dialectical progression
+        Develop an advanced dialectical progression of concepts for essay sections.
+        Uses relationship strengths and explicitly defined types for a nuanced progression.
+        Aims for Thesis -> Antithesis -> Synthesis/Development(s).
         """
-        if num_steps < 2: return [starting_concept]
+        if not starting_concept or starting_concept not in self.concepts:
+            starting_concept = self.get_weighted_concept() or (random.choice(self.concepts) if self.concepts else "postmodernism")
 
-        dialectic = [starting_concept]
-        current_concept = starting_concept
-        
-        # Antithesis
-        antithesis = self.get_oppositional_concept(current_concept, exclude=set(dialectic))
-        if antithesis:
-            dialectic.append(antithesis)
-            current_concept = antithesis
-        else: # Could not find a good antithesis, just get a related one
-            related = self.get_related_concept(current_concept, exclude=set(dialectic))
-            if related: dialectic.append(related)
-            return dialectic # End early if no good antithesis
+        progression = [starting_concept]
+        excluded_from_progression = {starting_concept}
 
-        if num_steps < 3: return dialectic
+        current_thesis = starting_concept
 
-        # Synthesis: find a concept related to both thesis and antithesis, or a broader concept
-        synthesis_candidates = []
-        thesis_relations = set(self.concept_relationships.get(dialectic[0], [])).union(
-            *[set(cluster) for cluster in thematic_clusters.values() if dialectic[0] in cluster]
-        )
-        antithesis_relations = set(self.concept_relationships.get(dialectic[1], [])).union(
-            *[set(cluster) for cluster in thematic_clusters.values() if dialectic[1] in cluster]
-        )
-        
-        common_relations = list(thesis_relations.intersection(antithesis_relations) - set(dialectic))
-        
-        if common_relations:
-            synthesis_candidates.extend(common_relations)
-
-        # Also consider broader concepts from active theme if available
-        if self.active_theme_key:
-            theme_concepts_for_synthesis = [
-                c for c in self.active_theme_data.get('key_concepts', []) 
-                if c not in dialectic
-            ]
-            synthesis_candidates.extend(theme_concepts_for_synthesis)
-
-        valid_synthesis_candidates = [c for c in list(set(synthesis_candidates)) if c not in dialectic and c in concepts]
-
-        if valid_synthesis_candidates:
-            # Weight synthesis candidates: prefer those with higher existing weights
-            synthesis_weights = [max(self.concept_weights.get(c, 0.1), 0.1) for c in valid_synthesis_candidates]
-            if synthesis_weights and sum(synthesis_weights) > 0 :
-                 synthesis = random.choices(valid_synthesis_candidates, weights=synthesis_weights, k=1)[0]
-                 dialectic.append(synthesis)
-            elif valid_synthesis_candidates: # Fallback if all weights zero
-                 dialectic.append(random.choice(valid_synthesis_candidates))
-            else: # Fallback if no valid candidates
-                related_to_last = self.get_related_concept(current_concept, exclude=set(dialectic))
-                if related_to_last: dialectic.append(related_to_last)
-
-        elif len(dialectic) < num_steps: # Still need more steps but no clear synthesis
-            related_to_last = self.get_related_concept(current_concept, exclude=set(dialectic))
-            if related_to_last: dialectic.append(related_to_last)
+        for i in range(num_steps - 1): # num_steps includes the initial thesis
+            next_concept_in_dialectic = None
             
-        return dialectic[:num_steps]
+            # Step 1: Find Antithesis to the current_thesis
+            if i == 0:
+                # Priority: 1. Explicit "oppositional", 2. Explicit "critiques" current_thesis
+                # 3. Fallback to general get_oppositional_concept (which has its own fallbacks)
+                found_antithesis = False
+                if current_thesis in self.concept_relationships:
+                    candidates = []
+                    for rel_concept, data in self.concept_relationships[current_thesis].items():
+                        if rel_concept not in excluded_from_progression:
+                            if data.get("type") == "oppositional":
+                                candidates.append((rel_concept, data.get("strength", 0) + 10)) # Prioritize oppositional
+                            elif data.get("type") == "critiques": # Assuming c1 critiques c2 is stored as rel[c2][c1] type="critiques"
+                                candidates.append((rel_concept, data.get("strength", 0) + 5))
+                    if candidates:
+                        candidates.sort(key=lambda x: x[1], reverse=True)
+                        next_concept_in_dialectic = candidates[0][0]
+                        found_antithesis = True
+                
+                if not found_antithesis:
+                    next_concept_in_dialectic = self.get_oppositional_concept(current_thesis, exclude=excluded_from_progression)
+                
+                if next_concept_in_dialectic:
+                    current_antithesis = next_concept_in_dialectic # Store for synthesis step
+                else: # Major fallback if no antithesis can be found
+                    next_concept_in_dialectic = self.get_weighted_concept(exclude=excluded_from_progression)
+                    if not next_concept_in_dialectic: break # Cannot continue progression
+                    current_antithesis = next_concept_in_dialectic # Treat this as the antithesis for next step
+
+            # Step 2+: Synthesis or Further Development
+            else:
+                previous_concept = progression[-1] # The result of the last step (could be an antithesis or a synthesis)
+                
+                synthesis_candidates = []
+                # Try to find concepts that EXTEND or offer a RESOLUTION/SYNTHESIS related to previous_concept (antithesis or prior synthesis)
+                # Or concepts strongly related to BOTH original thesis and current antithesis/previous_concept
+
+                # Option A: Find concepts that extend/resolve the previous_concept
+                if previous_concept in self.concept_relationships:
+                    for rel_c, data in self.concept_relationships[previous_concept].items():
+                        if rel_c not in excluded_from_progression:
+                            rel_type = data.get("type", "related")
+                            strength = data.get("strength", 0)
+                            if rel_type in ["extends", "resolves", "synthesizes_with"]:
+                                synthesis_candidates.append((rel_c, strength + 10, "direct_development"))
+                            elif rel_type == "related" and strength > 3: # Strong general relation
+                                synthesis_candidates.append((rel_c, strength, "strong_related"))
+                
+                # Option B: Bridge between original thesis and current antithesis/previous_concept
+                if 'current_antithesis' in locals() and current_antithesis: # Ensure antithesis was set
+                    thesis_relations = self.concept_relationships.get(current_thesis, {})
+                    antithesis_relations = self.concept_relationships.get(current_antithesis, {})
+                    
+                    for rel_to_thesis, data_thesis in thesis_relations.items():
+                        if rel_to_thesis in antithesis_relations and rel_to_thesis not in excluded_from_progression:
+                            # Found a concept related to both
+                            combined_strength = data_thesis.get("strength",0) + antithesis_relations[rel_to_thesis].get("strength",0)
+                            synthesis_candidates.append((rel_to_thesis, combined_strength, "bridge"))
+
+                # Option C: Example or Context for the previous concept
+                if previous_concept in self.concept_relationships:
+                     for rel_c, data in self.concept_relationships[previous_concept].items():
+                        if rel_c not in excluded_from_progression:
+                            rel_type = data.get("type", "related")
+                            strength = data.get("strength", 0)
+                            if rel_type in ["is_example_of", "provides_context_for"]:
+                                synthesis_candidates.append((rel_c, strength + 5, "elaboration"))
+                
+                if synthesis_candidates:
+                    synthesis_candidates.sort(key=lambda x: x[1], reverse=True) # Sort by strength
+                    next_concept_in_dialectic = synthesis_candidates[0][0]
+                else:
+                    # Fallback: get a concept generally related to the previous one
+                    next_concept_in_dialectic = self.get_related_concept(previous_concept, exclude=excluded_from_progression)
+                    if not next_concept_in_dialectic: # Broader fallback
+                        next_concept_in_dialectic = self.get_weighted_concept(exclude=excluded_from_progression)
+            
+            # Add to progression
+            if next_concept_in_dialectic and next_concept_in_dialectic not in excluded_from_progression:
+                progression.append(next_concept_in_dialectic)
+                excluded_from_progression.add(next_concept_in_dialectic)
+                # Update current_thesis for the next potential antithesis if we are in a multi-stage development that resets the dialectic.
+                # For a simple T-A-S, current_thesis remains the original. For T-A-S1-A2-S2, it might shift.
+                # For now, we keep current_thesis as the original starting_concept for finding antitheses for simplicity in T-A-S structure.
+                # If further development steps (i > 1) should treat the previous synthesis as a new thesis, this logic would need adjustment.
+            else:
+                # If truly stuck (e.g. ran out of concepts or all valid ones excluded)
+                final_fallback = self.get_weighted_concept(exclude=excluded_from_progression)
+                if final_fallback and final_fallback not in excluded_from_progression:
+                    progression.append(final_fallback)
+                    excluded_from_progression.add(final_fallback)
+                else:
+                    break # Stop if no new concept can be added
+        
+        # Final check for uniqueness, though `excluded_from_progression` should handle it.
+        final_progression = []
+        seen_in_final = set()
+        for concept in progression:
+            if concept not in seen_in_final:
+                final_progression.append(concept)
+                seen_in_final.add(concept)
+        return final_progression
 
     def get_section_theme(self, avoid_recent=False, is_conclusion=False, specific_concept=None):
         """Generate a theme for a section, optionally guided by a specific concept."""

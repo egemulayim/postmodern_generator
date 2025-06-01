@@ -707,35 +707,40 @@ def _populate_concept_fields(fields, data, used_philosophers, forbidden_concepts
 
 
 def _select_related_concept(primary_concept, used_philosophers, data, forbidden_concepts, used_concepts, coherence_manager=None):
-    """Select a concept related to the primary concept in the sentence."""
-    # Try coherence_manager first if available
-    if coherence_manager:
-        related_concept = coherence_manager.get_related_concept(primary_concept, exclude=set(forbidden_concepts).union(used_concepts))
+    """Select a concept related to the primary_concept, preferably using coherence_manager."""
+    # Ensure concepts module is available if not using self.concepts from a class context
+    from json_data_provider import concepts as all_av_concepts # Local import for safety
+
+    if coherence_manager and primary_concept:
+        # Use the coherence manager to get a thematically and strongly related concept
+        # Coherence manager's get_related_concept should handle exclusions and strength.
+        related_concept = coherence_manager.get_related_concept(primary_concept, exclude=forbidden_concepts.union(used_concepts))
         if related_concept:
             return related_concept
-        # If no directly related, try a weighted one from coherence_manager as a fallback
-        weighted_fallback = coherence_manager.get_weighted_concept(exclude=set(forbidden_concepts).union(used_concepts).union({primary_concept}))
-        if weighted_fallback:
-            return weighted_fallback
+        # Fallback if coherence_manager doesn't find one (e.g., primary_concept is too obscure or all related are excluded)
 
-    # Fallback logic (previously in except ImportError block and part of the try)
-    # Check philosopher relationship first if other_phil is available
-    other_phil = data.get('other_philosopher', data.get('philosopher2'))
-    if other_phil and other_phil in philosopher_concepts:
-        phil_concepts = [c for c in philosopher_concepts[other_phil]
-                         if c not in forbidden_concepts and c not in used_concepts and c != primary_concept]
-        if phil_concepts:
-            return random.choice(phil_concepts)
+    # Original fallback logic (simplified as coherence_manager should be the primary source)
+    # This part can be significantly reduced if coherence_manager is reliable.
+    potential_concepts = []
+    if primary_concept in philosopher_concepts:
+        # Find concepts associated with philosophers who also discuss the primary_concept
+        for philosopher, ph_concepts in philosopher_concepts.items():
+            if primary_concept in ph_concepts:
+                for concept in ph_concepts:
+                    if concept != primary_concept and concept not in forbidden_concepts and concept not in used_concepts:
+                        potential_concepts.append(concept)
     
-    # Default fallback to a random concept if other methods fail or not applicable
-    available_concepts = [c for c in concepts 
-                          if c not in forbidden_concepts 
-                          and c not in used_concepts and c != primary_concept]
-    if available_concepts:
-        return random.choice(available_concepts)
-    elif concepts: # If all are forbidden/used, pick any concept as a last resort
-        return random.choice(concepts)
-    return None # Should not happen if concepts list is not empty
+    if not potential_concepts:
+        # If no specific relations found, pick any other concept
+        potential_concepts = [c for c in all_av_concepts if c != primary_concept and c not in forbidden_concepts and c not in used_concepts]
+
+    if not potential_concepts:
+        # Absolute fallback: any concept not the primary, ignoring used_concepts temporarily
+        potential_concepts = [c for c in all_av_concepts if c != primary_concept and c not in forbidden_concepts]
+        if not potential_concepts:
+             return random.choice(all_av_concepts) if all_av_concepts else "hyperreality" # Last resort
+
+    return random.choice(potential_concepts)
 
 
 def _populate_term_fields(fields, data, forbidden_terms, used_terms, coherence_manager=None):

@@ -56,6 +56,10 @@ class NoteSystem:
         self.recently_used_note_templates = [] # Reset for new essay
         self.recently_used_formatted_commentaries = [] # Reset for new essay
     
+    def get_mentioned_philosophers(self):
+        """Returns a list of philosophers who have been cited."""
+        return list(self.author_work_count.keys())
+
     def _ensure_work_in_bibliography(self, reference_string):
         """
         Ensures a reference is in the bibliography and updates related tracking.

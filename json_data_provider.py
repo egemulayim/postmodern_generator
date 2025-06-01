@@ -7,10 +7,13 @@ It also provides default data if the JSON file is not found or corrupt.
 import json
 import os
 
-# Define the path to data.json in the workspace root
+# Determine the absolute path to data.json dynamically
+# __file__ is the path to the current script (json_data_provider.py)
+# os.path.dirname(__file__) gives the directory containing this script.
+# We assume data.json is in the same directory as this script.
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE_NAME = "data.json"
-WORKSPACE_ROOT = "/Users/egemulayim/postmodern_generator-dev"  # Provided by user_info
-ABSOLUTE_DATA_FILE_PATH = os.path.join(WORKSPACE_ROOT, DATA_FILE_NAME)
+ABSOLUTE_DATA_FILE_PATH = os.path.join(SCRIPT_DIR, DATA_FILE_NAME)
 
 # Default empty structures for all expected data keys
 DEFAULT_DATA = {
@@ -45,7 +48,8 @@ DEFAULT_DATA = {
     "METAFICTIONAL_CONCLUSIONS": [],
     "rhetorical_devices": ["default rhetorical device"],  # Added back with a default
     "discursive_modes": ["default discursive mode"],    # Added back with a default
-    "PROPER_NOUNS": []
+    "PROPER_NOUNS": [],
+    "concept_relation_details": [] # Added new key with default empty list
 }
 
 _data_store = {}
@@ -120,6 +124,7 @@ METAFICTIONAL_CONCLUSIONS = _get_data("METAFICTIONAL_CONCLUSIONS", DEFAULT_DATA[
 rhetorical_devices = _get_data("rhetorical_devices", DEFAULT_DATA.get("rhetorical_devices", ["fallback device"])) # Added back
 discursive_modes = _get_data("discursive_modes", DEFAULT_DATA.get("discursive_modes", ["fallback mode"]))     # Added back
 PROPER_NOUNS = _get_data("PROPER_NOUNS", DEFAULT_DATA["PROPER_NOUNS"])
+concept_relation_details = _get_data("concept_relation_details", DEFAULT_DATA["concept_relation_details"]) # Added new variable
 
 # Ensure that key variables are of the expected type if they were loaded with a value of None from JSON
 # For example, if philosophers is critical to be a list:
@@ -135,6 +140,9 @@ if terms is None:
 if PROPER_NOUNS is None:
     print(f"Warning: 'PROPER_NOUNS' was null in {DATA_FILE_NAME}. Defaulting to an empty list.")
     PROPER_NOUNS = []
+if concept_relation_details is None: # Added check for new variable
+    print(f"Warning: 'concept_relation_details' was null in {DATA_FILE_NAME}. Defaulting to an empty list.")
+    concept_relation_details = []
 # Add more checks like this for other critical variables if necessary
 
 # print("json_data_provider.py loaded and data (or defaults) are set.") # Optional: for debugging 

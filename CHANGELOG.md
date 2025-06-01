@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-language support
 - Expanded knowledge base with emerging theorists
 
+## [0.1.15] - 2025-06-01
+
+### Added
+- **Advanced Concept Relationships**: Implemented a more advanced system for defining relationships between concepts in `data.json` (via `concept_relation_details`) and `coherence.py`. This includes relationship types (e.g., 'critiques', 'is_foundational_to', 'complements') and strength modifiers.
+- **Refined Dialectical Progression**: Enhanced the `develop_dialectic` method in `coherence.py` to leverage the new concept relationship strengths and types, enabling a more nuanced Thesis-Antithesis-Synthesis progression in essay structure. This logic is integrated into `essay.py` for section theme generation.
+- **Expanded Concept Coverage**: Significantly increased the number of defined relationships in `concept_relation_details` within `data.json` to cover a broader range of concepts.
+
+### Changed
+- **Data File Path**: Modified `json_data_provider.py` to determine the `data.json` file path dynamically relative to the script's location. This removes the hardcoded absolute path, ensuring the project runs correctly in different environments and for various users.
+
 ## [0.1.1] - 2025-06-01 
 
 ### Fixed

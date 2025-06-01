@@ -242,126 +242,114 @@ def generate_essay(theme_key=None):
     # Body sections with dialectical development
     num_body_sections = random.randint(3, 5)
     
-    # Create a dialectical progression for section themes
     # Start with a primary concept from the title if available
     starting_concept = (title_themes['primary_concepts'][0] if title_themes['primary_concepts'] 
                        else coherence_manager.primary_concepts[0] if coherence_manager.primary_concepts 
                        else random.choice(concepts))
     
-    dialectic = coherence_manager.develop_dialectic(starting_concept, num_steps=num_body_sections - 1)
+    # Generate the sequence of concepts for body sections using the advanced dialectic
+    section_concepts = coherence_manager.develop_dialectic(starting_concept, num_steps=num_body_sections)
 
-    # Determine paragraph counts for Intro and Conclusion first (1-3 paragraphs each)
-    actual_num_intro_paragraphs = random.randint(1, 3)
-    actual_num_conclusion_paragraphs = random.randint(1, 3)
-    max_intro_conclusion_length = max(actual_num_intro_paragraphs, actual_num_conclusion_paragraphs)
+    # Ensure section_concepts has enough items, pad if necessary with weighted concepts
+    # This is a safeguard in case develop_dialectic returns fewer than num_body_sections.
+    if len(section_concepts) < num_body_sections:
+        needed = num_body_sections - len(section_concepts)
+        for _ in range(needed):
+            # Exclude concepts already in the progression to ensure variety
+            fallback_concept = coherence_manager.get_weighted_concept(exclude=set(section_concepts))
+            if fallback_concept:
+                section_concepts.append(fallback_concept)
+            else:
+                # If still no fallback, pick any concept not already used (very rare)
+                available_fallbacks = [c for c in concepts if c not in section_concepts]
+                if available_fallbacks:
+                    section_concepts.append(random.choice(available_fallbacks))
+                else: # Absolute last resort, repeat last concept (should almost never happen)
+                    section_concepts.append(section_concepts[-1] if section_concepts else random.choice(concepts))
 
-    # Pre-calculate paragraph counts for Body Sections.
-    # Body sections must be at least one paragraph longer than the longer of intro/conclusion,
-    # and a maximum of 5 paragraphs.
-    temp_body_section_paragraph_counts = []
-    for _ in range(num_body_sections):
-        lower_bound_body = max_intro_conclusion_length + 1
-        # Ensure lower_bound is not greater than upper_bound (5).
-        # Since max_intro_conclusion_length is at most 3, lower_bound_body is at most 4.
-        # So random.randint(lower_bound_body, 5) is always valid.
-        num_paragraphs_for_this_body_section = random.randint(lower_bound_body, 5)
-        temp_body_section_paragraph_counts.append(num_paragraphs_for_this_body_section)
-    
-    # Introduction with more theoretical sophistication
-    intro_theme = coherence_manager.get_section_theme() 
-    intro_context = {
-        'section': 'introduction',
-        'title_themes': title_themes,
-        'relevant_philosophers': relevant_philosophers
-    }
-    # actual_num_intro_paragraphs (defined above) will be used to generate the intro paragraphs
-    intro_paragraphs_content = []
-    for _ in range(actual_num_intro_paragraphs):
-        paragraph_text, used_concepts, used_terms = generate_paragraph(
-            "introduction", random.randint(7, 9), 
-            used_quotes=used_quotes, note_system=note_system, context=intro_context,
-            coherence_manager=coherence_manager
-        )
-        # Capitalize and italicize paragraph text
-        paragraph_text = ensure_proper_capitalization_with_italics(paragraph_text)
-        paragraph_text = italicize_terms_in_text(paragraph_text)
-        intro_paragraphs_content.append(paragraph_text)
-        coherence_manager.record_usage(concepts=used_concepts, terms=used_terms) # Ensure usage is recorded
-    
-    essay_parts.append("\n".join(intro_paragraphs_content) + "\n\n") # Join paragraphs with one newline, then two newlines after the section
-
-    # Generate body sections
-    for i, body_section_theme_concept in enumerate(dialectic):
-        # Determine actual number of paragraphs for this body section based on pre-calculated counts
-        actual_num_paragraphs_for_section = temp_body_section_paragraph_counts[i]
-
-        section_theme = coherence_manager.get_section_theme(specific_concept=body_section_theme_concept)
+    section_counter = 0
+    for i in range(num_body_sections):
+        section_theme_concept = section_concepts[i]
+        section_counter += 1
+        section_paragraphs = []
+        num_paragraphs_in_section = random.randint(MIN_PARAGRAPHS_PER_SECTION, MAX_PARAGRAPHS_PER_SECTION)
         
-        # Create context for the section
+        # Context for this section, including the main concept for the section
+        # and philosophers relevant to the overall essay title
         section_context = {
-            'section': f'body_section_{i+1}',
-            'title_themes': title_themes,
-            'relevant_philosophers': relevant_philosophers,
-            'section_theme_concept': body_section_theme_concept 
+            'section_index': i,
+            'total_sections': num_body_sections,
+            'theme_concept': section_theme_concept, # The core concept for this section from dialectic
+            'title_themes': title_themes, # Overall title themes for broader context
+            'relevant_philosophers': relevant_philosophers # Philosophers from title
         }
 
-        # Generate paragraphs for the current section
-        section_paragraphs = []
-        for para_idx in range(actual_num_paragraphs_for_section):
-            paragraph_text, used_concepts, used_terms = generate_paragraph(
-                f"body_section_{i+1}", 
-                random.randint(MIN_SENTENCES_PER_PARAGRAPH, MAX_SENTENCES_PER_PARAGRAPH),
-                used_quotes=used_quotes, 
+        for j in range(num_paragraphs_in_section):
+            num_sentences = random.randint(MIN_SENTENCES_PER_PARAGRAPH, MAX_SENTENCES_PER_PARAGRAPH)
+            # Pass coherence_manager and section_context to paragraph generation
+            paragraph_text, _, _ = generate_paragraph(
+                template_type='general', 
+                num_sentences=num_sentences, 
+                forbidden_philosophers=[], # Manage forbidden items at a higher level or within paragraph if needed
+                forbidden_concepts=[c for c in section_concepts if c != section_theme_concept], # Avoid other section themes strongly
+                mentioned_philosophers=note_system.get_mentioned_philosophers(),
+                used_quotes=used_quotes,
                 note_system=note_system,
-                context=section_context,
+                context=section_context, # Pass section-specific context
                 coherence_manager=coherence_manager
             )
-            # Capitalize and italicize paragraph text
-            paragraph_text = ensure_proper_capitalization_with_italics(paragraph_text)
-            paragraph_text = italicize_terms_in_text(paragraph_text)
             section_paragraphs.append(paragraph_text)
-            coherence_manager.record_usage(concepts=used_concepts, terms=used_terms) # Ensure usage is recorded
-        
-        # Generate section title (now using the corrected theme)
-        section_title_text = generate_section_title(
-            section_paragraphs, coherence_manager, section_theme, title_themes=title_themes
-        )
-        # Format section title with ## and a single space, then add to essay_parts
-        essay_parts.append(f"## {section_title_text}\n\n") # Section title followed by two newlines (for a blank line)
-        essay_parts.append("\n".join(section_paragraphs) + "\n\n") # Join paragraphs with one newline, then two newlines after the section
+            
+            # Add a metafictional element with some probability
+            if random.random() < 0.15: # 15% chance to add metafiction to a paragraph
+                meta_text = metafiction.insert_metafiction_in_paragraph(section_paragraphs[-1], theme_key=theme_key, coherence_manager=coherence_manager)
+                section_paragraphs[-1] = meta_text
 
-    # Conclusion with more theoretical sophistication
-    conclusion_theme = coherence_manager.get_section_theme(is_conclusion=True)
-    conclusion_context = {
-        'section': 'conclusion',
-        'title_themes': title_themes,
-        'relevant_philosophers': relevant_philosophers
-    }
-    # actual_num_conclusion_paragraphs will be used to generate the conclusion paragraphs
-    conclusion_paragraphs_content = []
-    for _ in range(actual_num_conclusion_paragraphs):
-        paragraph_text, used_concepts, used_terms = generate_paragraph(
-            "conclusion", random.randint(7, 9), 
-            used_quotes=used_quotes, note_system=note_system, context=conclusion_context,
+        # Generate section title based on content and section theme
+        section_title_text = generate_section_title(section_paragraphs, coherence_manager, section_theme_concept, title_themes)
+        essay_parts.append(f"## {section_title_text}\n\n")
+        essay_parts.extend([p + "\n\n" for p in section_paragraphs])
+
+    # Conclusion
+    essay_parts.append("## Conclusion\n\n")
+    num_conclusion_paragraphs = random.randint(1, MAX_PARAGRAPHS_PER_SECTION -1) # Typically 1-2 paragraphs
+    for _ in range(num_conclusion_paragraphs):
+        num_sentences = random.randint(MIN_SENTENCES_PER_PARAGRAPH -1, MAX_SENTENCES_PER_PARAGRAPH -1)
+        if num_sentences < 3: num_sentences = 3 # Ensure conclusion is not too short
+        
+        # Conclusion context can be simpler or refer to overall themes
+        conclusion_context = {
+            'section_index': num_body_sections, # After last body section
+            'total_sections': num_body_sections + 1, # Intro + Body + Conclusion
+            'theme_concept': coherence_manager.get_weighted_concept(subset=coherence_manager.used_concepts or None),
+            'title_themes': title_themes,
+            'relevant_philosophers': relevant_philosophers
+        }
+        
+        conclusion_paragraph, _, _ = generate_paragraph(
+            template_type='conclusion', 
+            num_sentences=num_sentences, 
+            mentioned_philosophers=note_system.get_mentioned_philosophers(),
+            used_quotes=used_quotes,
+            note_system=note_system,
+            context=conclusion_context,
             coherence_manager=coherence_manager
         )
-        # Capitalize and italicize paragraph text
-        paragraph_text = ensure_proper_capitalization_with_italics(paragraph_text)
-        paragraph_text = italicize_terms_in_text(paragraph_text)
-        conclusion_paragraphs_content.append(paragraph_text)
-        coherence_manager.record_usage(concepts=used_concepts, terms=used_terms) # Ensure usage is recorded
+        essay_parts.append(conclusion_paragraph + "\n\n")
     
-    essay_parts.append("## Conclusion\n\n") # Add "## Conclusion" title with two newlines after (for a blank line)
-    essay_parts.append("\n".join(conclusion_paragraphs_content) + "\n\n") # Join paragraphs, then two newlines
+    # Add a final metafictional statement to the conclusion if desired
+    if random.random() < 0.4: # 40% chance for a final metafictional kicker
+        final_meta = metafiction.generate_metafictional_conclusion(coherence_manager.used_concepts, coherence_manager.used_terms, theme_key=theme_key, coherence_manager=coherence_manager)
+        essay_parts.append(ensure_proper_capitalization_with_italics(italicize_terms_in_text(final_meta)) + "\n\n")
 
-    # Generate Notes section and Works Cited section from a single call
-    full_notes_and_works_cited = note_system.generate_notes_section()
-    if full_notes_and_works_cited and full_notes_and_works_cited.strip():
-        essay_parts.append(full_notes_and_works_cited)
+    # Works Cited / Bibliography
+    notes_and_bibliography_section = note_system.generate_notes_section()
+    if notes_and_bibliography_section:
+        essay_parts.append(notes_and_bibliography_section)
     
     return "".join(essay_parts)
 
-def generate_section_title(section_paragraphs, coherence_manager, section_theme, title_themes=None):
+def generate_section_title(section_paragraphs, coherence_manager, section_theme_concept, title_themes=None):
     """
     Generate a sophisticated, context-aware section title using a template.
     Ensures the title is relevant to the section's content and overall essay themes.
@@ -380,35 +368,54 @@ def generate_section_title(section_paragraphs, coherence_manager, section_theme,
         "The {context1} of {concept1}: {philosopher1}, {term1}, and Postmodernity's {concept2}"
     ]
     
-    # Get primary concepts and terms from the section theme
-    # These will be prioritized for the title
-    primary_concept = section_theme.get('primary_concept', random.choice(concepts))
-    primary_term = section_theme.get('primary_term', random.choice(terms))
+    # section_theme_concept is the primary concept for this section's title
+    primary_concept = section_theme_concept
     
-    # Get other concepts and terms, trying to use title_themes for relevance if available
-    secondary_concept = random.choice(title_themes['primary_concepts'] + title_themes['related_concepts'] if title_themes and (title_themes['primary_concepts'] + title_themes['related_concepts']) else concepts)
-    secondary_term = random.choice(title_themes['primary_terms'] if title_themes and title_themes['primary_terms'] else terms)
+    # Get a primary term related to the primary_concept or from coherence_manager
+    if coherence_manager:
+        primary_term = coherence_manager.get_weighted_term(exclude={primary_concept})
+    else:
+        primary_term = random.choice([t for t in terms if t != primary_concept] or terms)
 
-    # Ensure distinct concepts and terms
-    while secondary_concept == primary_concept:
-        secondary_concept = random.choice(concepts)
-    while secondary_term == primary_term:
-        secondary_term = random.choice(terms)
+    if not primary_term: # Absolute fallback if term selection failed
+        primary_term = random.choice([t for t in terms if t != primary_concept] or terms)
+
+    # Get other concepts and terms, trying to use title_themes for relevance if available
+    secondary_concept_candidates = []
+    if title_themes:
+        secondary_concept_candidates.extend(title_themes.get('primary_concepts', []))
+        secondary_concept_candidates.extend(title_themes.get('related_concepts', []))
+    # Filter out the primary_concept from candidates
+    secondary_concept_candidates = [c for c in secondary_concept_candidates if c != primary_concept]
+    if not secondary_concept_candidates: # Fallback if title_themes didn't provide suitable candidates
+        secondary_concept_candidates = [c for c in concepts if c != primary_concept]
+    
+    secondary_concept = random.choice(secondary_concept_candidates if secondary_concept_candidates else concepts) # Final fallback to all concepts
+
+    secondary_term_candidates = []
+    if title_themes:
+        secondary_term_candidates.extend(title_themes.get('primary_terms', []))
+    # Filter out the primary_term and concepts used as terms
+    secondary_term_candidates = [t for t in secondary_term_candidates if t != primary_term and t != primary_concept and t != secondary_concept]
+    if not secondary_term_candidates: # Fallback
+        secondary_term_candidates = [t for t in terms if t != primary_term and t != primary_concept and t != secondary_concept]
+
+    secondary_term = random.choice(secondary_term_candidates if secondary_term_candidates else terms) # Final fallback to all terms
         
     # Select a relevant philosopher
     # Prefer philosophers linked to the primary concept of the section, or from title_themes
     relevant_philosophers_for_section = find_relevant_philosophers([primary_concept], [primary_term], philosopher_concepts)
     if not relevant_philosophers_for_section and title_themes:
         relevant_philosophers_for_section = find_relevant_philosophers(
-            title_themes['primary_concepts'] + title_themes['related_concepts'],
-            title_themes['primary_terms'],
+            title_themes.get('primary_concepts', []) + title_themes.get('related_concepts', []),
+            title_themes.get('primary_terms', []),
             philosopher_concepts
         )
     
     philosopher = random.choice(relevant_philosophers_for_section if relevant_philosophers_for_section else philosophers)
 
     # Choose a random context
-    context = random.choice(contexts)
+    context_word = random.choice(contexts) # 'contexts' is a list of strings like "in the context of late capitalism"
 
     # Choose a random template
     template = random.choice(templates)
@@ -420,7 +427,7 @@ def generate_section_title(section_paragraphs, coherence_manager, section_theme,
         term1=primary_term,
         term2=secondary_term,
         philosopher1=philosopher,
-        context1=context
+        context1=context_word # Use the chosen context string
     )
     
     # Apply title case to the raw section title

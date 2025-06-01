@@ -167,7 +167,7 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
         # Pass coherence_manager to generate_sentence
         sentence_parts, used_phils, used_concs, used_trms = generate_sentence(
             template_type, 
-            mentioned_philosophers.union(final_used_philosophers), # Pass already mentioned ones
+            set(mentioned_philosophers).union(final_used_philosophers), # Pass already mentioned ones
             forbidden_philosophers_set.union(temp_used_phils_in_pool),
             forbidden_concepts_set.union(temp_used_concs_in_pool).union({paragraph_theme_term} if paragraph_theme_term else set()), # Avoid term as concept here
             forbidden_terms_set.union(temp_used_trms_in_pool).union({paragraph_theme_concept} if paragraph_theme_concept else set()), # Avoid concept as term
@@ -190,7 +190,7 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
         for _ in range(num_sentences): # Generate just enough
             sentence_parts, used_phils, used_concs, used_trms = generate_sentence(
                 template_type, 
-                mentioned_philosophers.union(final_used_philosophers),
+                set(mentioned_philosophers).union(final_used_philosophers),
                 forbidden_philosophers_set, forbidden_concepts_set, forbidden_terms_set, # Less restrictive
                 used_quotes, 
                 note_system=note_system, context=sentence_generation_context, coherence_manager=coherence_manager
