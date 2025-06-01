@@ -10,6 +10,7 @@ Welcome to The Postmodern Generator project. This repository contains the source
 - [Previous Changes](#previous-changes)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Available Themes](#available-themes)
 - [Thematic Clusters](#thematic-clusters)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
@@ -192,7 +193,7 @@ Each theme includes specific philosophers, concepts, terms, and contextual frame
 
 ### Completed Features
 - ✅ Enhanced thematic clustering system
-- ✅ Professional command-line interface
+- ✅ Easy-to-use command-line interface
 - ✅ Markdown export functionality
 - ✅ JSON-based data architecture
 - ✅ MLA 9 citation compliance
