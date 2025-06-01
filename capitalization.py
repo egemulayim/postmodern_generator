@@ -72,12 +72,20 @@ def ensure_proper_capitalization(text, capitalize_first=True):
         # If so, don't capitalize the very first letter of the whole string.
         # Sentence capitalization will still apply later if needed.
         do_not_capitalize_first_char = False
-        for lc_author_biblio_form in ["hooks, bell"]: # Add other biblio forms if needed
-            if text.lower().startswith(lc_author_biblio_form):
-                # Ensure the beginning is exactly as specified, in lowercase
-                text = lc_author_biblio_form + text[len(lc_author_biblio_form):]
-                do_not_capitalize_first_char = True
-                break
+        for lc_author_biblio_form in ["hooks, bell", "bell hooks"]: # Add other biblio forms if needed
+            if text.lower().startswith(lc_author_biblio_form.lower()): # Ensure check is case-insensitive
+                # Ensure the beginning is exactly as specified in LOWERCASE_AUTHORS or its biblio form
+                # For "bell hooks", ensure it starts as "bell hooks"
+                # For "hooks, bell", ensure it starts as "hooks, bell"
+                # This logic needs to correctly re-apply the intended lowercase form
+                if lc_author_biblio_form == "bell hooks" and text.lower().startswith("bell hooks"):
+                    text = "bell hooks" + text[len("bell hooks"):]
+                    do_not_capitalize_first_char = True
+                    break
+                elif lc_author_biblio_form == "hooks, bell" and text.lower().startswith("hooks, bell"):
+                    text = "hooks, bell" + text[len("hooks, bell"):]
+                    do_not_capitalize_first_char = True
+                    break
         
         # Capitalize first letter of the text unless it's a special lowercase author start
         if not do_not_capitalize_first_char and text and text[0].isalpha():
