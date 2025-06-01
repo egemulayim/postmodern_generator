@@ -13,7 +13,7 @@ import random
 import metafiction
 from coherence import EssayCoherence
 from paragraph import generate_paragraph
-from json_data_provider import philosophers, concepts, terms, philosopher_concepts, contexts, thematic_clusters
+from json_data_provider import philosophers, concepts, terms, philosopher_concepts, thematic_clusters
 from reference import generate_reference
 from capitalization import (
     ensure_proper_capitalization_with_italics, 
@@ -203,7 +203,7 @@ def generate_essay(theme_key=None):
     note_system.reset() # Reset note system state
     
     essay_parts = []
-    used_quotes = set()
+    used_quotes = set() # Initialize used_quotes here
 
     # Title with greater sophistication
     raw_title = generate_title(coherence_manager)
@@ -293,7 +293,7 @@ def generate_essay(theme_key=None):
                 forbidden_philosophers=[], # Manage forbidden items at a higher level or within paragraph if needed
                 forbidden_concepts=[c for c in section_concepts if c != section_theme_concept], # Avoid other section themes strongly
                 mentioned_philosophers=note_system.get_mentioned_philosophers(),
-                used_quotes=used_quotes,
+                used_quotes=used_quotes, # Pass used_quotes
                 note_system=note_system,
                 context=section_context, # Pass section-specific context
                 coherence_manager=coherence_manager
@@ -330,7 +330,7 @@ def generate_essay(theme_key=None):
             template_type='conclusion', 
             num_sentences=num_sentences, 
             mentioned_philosophers=note_system.get_mentioned_philosophers(),
-            used_quotes=used_quotes,
+            used_quotes=used_quotes, # Pass used_quotes
             note_system=note_system,
             context=conclusion_context,
             coherence_manager=coherence_manager
@@ -415,7 +415,9 @@ def generate_section_title(section_paragraphs, coherence_manager, section_theme_
     philosopher = random.choice(relevant_philosophers_for_section if relevant_philosophers_for_section else philosophers)
 
     # Choose a random context
-    context_word = random.choice(contexts) # 'contexts' is a list of strings like "in the context of late capitalism"
+    context_word = coherence_manager.get_theme_context_phrase() # 'contexts' is a list of strings like "in the context of late capitalism"
+    if not context_word:
+        context_word = "a particular theoretical framework" # Fallback if no theme context
 
     # Choose a random template
     template = random.choice(templates)

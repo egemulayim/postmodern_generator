@@ -6,7 +6,7 @@ Welcome to The Postmodern Generator project. This repository contains the source
 
 - [Introduction](#introduction)
 - [Features](#features)
-- [Recent Changes (v0.1.15)](#recent-changes-v0115)
+- [Recent Changes (v0.1.2)](#recent-changes-v012)
 - [Previous Changes](#previous-changes)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -25,10 +25,10 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 
 - **Complete Essay Generation**: Produces fully-formed academic essays with title, abstract, introduction, body sections, conclusion, notes, and works cited sections
 - **Thematic Coherence System**: Advanced clustering system with 11 predefined themes for theoretical focus
-- **Advanced Concept Relationships and Dialectic**: Advanced system for defining concept relations (type and strength), which powers a nuanced dialectical (Thesis-Antithesis-Synthesis) progression in essay structure.
+- **Concept Relationships and Dialectic**: Advanced system for defining concept relations (type and strength), which powers a nuanced dialectical (Thesis-Antithesis-Synthesis) progression in essay structure.
 - **Theme-Based Generation**: Choose from specialized themes like "Digital Subjectivity," "Decoloniality and Postcolonial Studies," or "Speculative Realism"
 - **Interactive Theme Selection**: User-friendly interface for selecting specific themes or random generation
-- **Enhanced Command-Line Interface**: Professional CLI with seed and theme arguments for reproducible and targeted output
+- **Command-Line Interface**: Easy-to-use CLI with seed and theme arguments for reproducible and targeted output
 - **Theoretical Sophistication**: Incorporates postmodern concepts, philosophers, and theoretical frameworks with authentic relationships
 - **MLA 9 Compliant Citations**: Generates proper in-text citations, endnotes, and formatted works cited sections
 - **Dialectical Progressions**: Develops ideas through dialectical movement across essay sections
@@ -40,16 +40,25 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 - **Markdown Export**: Save generated essays as `.md` files with comprehensive metadata including seed, theme, and generation timestamp
 - **JSON-Based Data Architecture**: Robust, extensible knowledge base with advanced error handling and dynamic data file path loading.
 
-## Recent Changes (v0.1.15)
+## Recent Changes (v0.1.2)
 
-Version 0.1.15 introduces key enhancements to the generator's logical core and portability:
+Version 0.1.2 focuses on enhancing the quality of generated text and improving performance:
+
+- **Enhanced Sentence Complexity and Variety**: Introduced new algorithms to generate more diverse and intricate sentence structures, moving beyond simpler templates. This results in more engaging and less repetitive prose.
+- **Refined Abstract Generation Logic**: Improved the abstract generation to produce summaries that are more thematically focused, concise, and accurately representative of the essay's core arguments and theoretical positioning.
+- **Performance Optimization in Core Logic**: Optimized key algorithms related to coherence and essay structuring, leading to noticeably faster generation times, especially for longer and more thematically complex essays.
+- **Markdown Export Fix**: Addressed a minor bug related to the formatting of very long titles in the metadata section of exported Markdown files, ensuring consistent output.
+
+## Previous Changes
+
+### v0.1.15
+
+Version 0.1.15 introduced key enhancements to the generator's logical core and portability:
 
 - **Advanced Concept Relationships**: Implemented a more advanced system for defining relationships between concepts. This includes various relationship types (e.g., 'critiques', 'is_foundational_to', 'complements') and strength modifiers, which allows for richer thematic development.
 - **Refined Dialectical Progression**: There is a new dialectical development system targeting concept relationship strengths and types to create a more nuanced and logically sound Thesis-Antithesis-Synthesis progression for essay sections. This is integrated for generating section themes.
 - **Expanded Concept Relation Coverage**: Concept relationships have been substantially expanded to provide more comprehensive links between concepts.
 - **Dynamic Data File Path**: The method for locating the dataset has been updated to be dynamic. It now determines the path relative to the script's own location, rather than relying on a hardcoded absolute path. This enhancement ensures that the project can be run correctly by different users on different systems without requiring manual path adjustments, improving portability and ease of use.
-
-## Previous Changes
 
 ### v0.1.1
 

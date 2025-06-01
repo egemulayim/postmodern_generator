@@ -12,8 +12,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTML and LaTeX output formats
 - Web-based user interface
 - API integration
-- Multi-language support
 - Expanded knowledge base with emerging theorists
+
+## [0.1.2] - 2025-06-01
+
+### Added
+- **Enhanced Sentence Complexity and Variety**: Implemented new sentence construction patterns in `sentence.py` and `postmodern_sentence.py` to generate more diverse and grammatically sophisticated sentence structures. This reduces repetition and enhances readability.
+- **Refined Abstract Generation**: Updated algorithms in `abstract_generator.py` to produce abstracts that are more thematically focused, concise, and representative of the essay's core arguments.
+
+### Changed
+- **Performance Optimization**: Optimized core logic in `coherence.py` and `essay.py`, particularly in theme selection and dialectical progression algorithms, leading to faster generation times for complex and lengthy essays.
+
+### Fixed
+- **Markdown Export Formatting**: Resolved a minor issue in `md_export.py` where extremely long essay titles could cause minor formatting inconsistencies in the metadata block of exported Markdown files.
 
 ## [0.1.15] - 2025-06-01
 

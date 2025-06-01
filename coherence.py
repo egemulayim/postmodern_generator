@@ -10,7 +10,7 @@ It also provides a system for recording usage and managing relationships between
 import random
 from collections import Counter, defaultdict
 from json_data_provider import (
-    philosophers, concepts, terms, contexts, adjectives,
+    philosophers, concepts, terms, adjectives,
     philosopher_concepts, quotes,
     bibliography_title_templates, academic_journals, academic_vocab, thematic_clusters,
     oppositional_pairs, philosopher_key_works,
@@ -629,17 +629,33 @@ class EssayCoherence:
         }
 
     def get_theme_context_phrase(self):
-        """Returns a random context phrase from the active theme, if any."""
-        if self.active_theme_key and self.active_theme_data.get('context_phrases'):
-            return random.choice(self.active_theme_data['context_phrases'])
-        return "" # Return empty if no active theme or no phrases
+        """Returns a context phrase related to the active theme."""
+        if self.active_theme_data and self.active_theme_data.get('context_phrases'):
+            return random.choice(self.active_theme_data.get('context_phrases', []))
+        return None
 
     def get_theme_related_adjective(self):
-        """Returns a random related adjective from the active theme, if any."""
-        if self.active_theme_key and self.active_theme_data.get('related_adjectives'):
-            return random.choice(self.active_theme_data['related_adjectives'])
-        return "" # Return empty
-        
+        """Returns an adjective related to the active theme."""
+        if self.active_theme_data and self.active_theme_data.get('related_adjectives'):
+            return random.choice(self.active_theme_data.get('related_adjectives', []))
+        return None
+
+    def get_theme_common_metaphor(self):
+        """Returns a common metaphor related to the active theme, or None if not available."""
+        if self.active_theme_data:
+            metaphors = self.active_theme_data.get('common_metaphors', [])
+            if metaphors:
+                return random.choice(metaphors)
+        return None
+
+    def get_theme_academic_subfield(self):
+        """Returns a specific academic sub-field related to the active theme, or None if not available."""
+        if self.active_theme_data:
+            subfields = self.active_theme_data.get('academic_subfields', [])
+            if subfields:
+                return random.choice(subfields)
+        return None
+
     def get_philosopher_key_work_citation(self, philosopher_name):
         """ Returns a formatted citation for a key work of a philosopher. """
         if philosopher_name in self.philosopher_key_works and self.philosopher_key_works[philosopher_name]:

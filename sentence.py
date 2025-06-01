@@ -14,7 +14,7 @@ import random
 import string
 import re
 from json_data_provider import (
-    philosophers as RAW_PHILOSOPHERS_FROM_DATA, concepts, terms, philosopher_concepts, contexts, # Renamed main import
+    philosophers as RAW_PHILOSOPHERS_FROM_DATA, concepts, terms, philosopher_concepts, # Renamed main import
     quotes,
     philosopher_key_works as data_philosopher_key_works,
     verbs,
@@ -133,7 +133,11 @@ general_templates = [
     "the concept of {concept}, as {philosopher} suggests, is fraught with contradictions—yet it remains indispensable for analyzing {term}.",
     "while {philosopher} celebrates {concept}, it is crucial to recognize its limitations in addressing {term}.",
     "{philosopher}'s {concept} offers a powerful lens for viewing {term}, yet it risks oversimplifying the complexities involved.",
-    "in a {context}, {term} becomes a battleground where {concept} and its counterpoints collide."
+    "in a {context}, {term} becomes a battleground where {concept} and its counterpoints collide.",
+    "Employing the metaphor '{metaphor}', {philosopher} critiques {term} by highlighting its entanglement with {concept}.",
+    "Within the academic subfield of '{subfield}', {philosopher}'s arguments on {concept} are often interpreted as a response to {term}.",
+    "The concept of {concept}, when understood through the common metaphor '{metaphor}', reveals hidden dimensions of {term} often overlooked in standard analyses.",
+    "Situating {philosopher}'s work within '{subfield}' allows for a nuanced reading of their claims about {term} and {concept}."
 ]
 
 conclusion_templates = [
@@ -245,15 +249,23 @@ def generate_sentence(template_type, mentioned_philosophers, forbidden_philosoph
     else:
         context['type'] = template_type
     
+    # Ensure used_quotes is a set
+    if used_quotes is None:
+        used_quotes = set()
+    
     # Select appropriate template pool based on type
     if template_type == "introduction":
         return _generate_introduction_sentence(mentioned_philosophers, forbidden_philosophers,
                                              forbidden_concepts, forbidden_terms, context,
+                                             used_quotes, # Add used_quotes here
+                                             note_system, # Add note_system here
                                              coherence_manager=coherence_manager)
     
     elif template_type == "conclusion":
         return _generate_conclusion_sentence(mentioned_philosophers, forbidden_philosophers,
                                            forbidden_concepts, forbidden_terms, context,
+                                           used_quotes, # Add used_quotes here
+                                           note_system, # Add note_system here
                                            coherence_manager=coherence_manager)
     
     else:  # general sentences
@@ -265,90 +277,193 @@ def generate_sentence(template_type, mentioned_philosophers, forbidden_philosoph
 
 def _generate_introduction_sentence(mentioned_philosophers, forbidden_philosophers,
                                   forbidden_concepts, forbidden_terms, context,
+                                  used_quotes, # Add used_quotes here
+                                  note_system, # Add note_system here
                                   coherence_manager=None):
     """Generate an introduction-type sentence."""
-    templates = get_introduction_templates()
+    # If primary_concept is provided, use it. Otherwise, select one.
+    # Simplified logic: always try to use primary concept if available
+    primary_concept = context.get('primary_concept')
+    if not primary_concept:
+        available_concepts = [c for c in concepts if c not in forbidden_concepts]
+        if not available_concepts:
+            available_concepts = concepts # Fallback to all concepts
+        primary_concept = random.choice(available_concepts) if available_concepts else "an intriguing concept"
+
+    primary_term = context.get('primary_term')
+    if not primary_term:
+        available_terms = [t for t in terms if t not in forbidden_terms]
+        if not available_terms:
+            available_terms = terms # Fallback to all terms
+        primary_term = random.choice(available_terms) if available_terms else "a significant term"
     
-    # Occasionally use metafictional templates in introduction
-    if random.random() < 0.2:
-        templates.extend(metafictional_templates[:3])
-        
-    template = random.choice(templates)
+    if coherence_manager and coherence_manager.active_theme_data:
+        context_text = coherence_manager.get_theme_context_phrase()
+        if not context_text: # Fallback if theme has no phrases
+            context_text = "a relevant theoretical framework" # Or some other suitable default
+    else:
+        context_text = "a broad theoretical context" # Fallback if no coherence_manager or no active theme
+
+    template = random.choice(get_introduction_templates())
+    fields_in_template = {fn for _, fn, _, _ in string.Formatter().parse(template) if fn is not None}
+    available_philosophers_intro = [p for p in CLEANED_PHILOSOPHERS if p not in forbidden_philosophers]
+    if not available_philosophers_intro: # Ensure there's always a pool
+        available_philosophers_intro = CLEANED_PHILOSOPHERS[:5]
+
+    sentence_data = {
+        'philosopher': None,
+        'philosopher1': None,
+        'philosopher2': None,
+        'other_philosopher': None,
+        'concept': primary_concept,
+        'other_concept': None,
+        'term': primary_term,
+        'adjective': None,
+        'context': context_text,
+        'metaphor': None,
+        'subfield': None,
+        'quote': None,
+        'citation': None,
+        'citation_for_quote': None,
+        'author': None,
+        'year': None,
+        'coherence_manager': coherence_manager
+    }
     
-    # Prioritize terms and concepts from title themes or coherence_manager
-    title_themes = context.get('title_themes', {})
+    # Populate philosopher fields
+    # _populate_philosopher_fields(sentence_data, mentioned_philosophers, used_philosophers=[])
+    _populate_philosopher_fields(fields_in_template, sentence_data, available_philosophers_intro, [], mentioned_philosophers, coherence_manager)
     
-    if coherence_manager:
-        concept = coherence_manager.get_weighted_concept(exclude=forbidden_concepts)
-        term = coherence_manager.get_weighted_term(exclude=forbidden_terms)
-    else: # Fallback to original logic if no coherence_manager
-        if title_themes and title_themes.get('primary_concepts') and random.random() < 0.8:
-            available_concepts = [c for c in title_themes['primary_concepts'] 
-                                if c not in forbidden_concepts]
-            if not available_concepts and title_themes.get('related_concepts'):
-                available_concepts = [c for c in title_themes['related_concepts'] 
-                                    if c not in forbidden_concepts]
-            if available_concepts:
-                concept = random.choice(available_concepts)
-            else:
-                concept = random.choice([c for c in concepts if c not in forbidden_concepts])
-        else:
-            concept = random.choice([c for c in concepts if c not in forbidden_concepts])
-        
-        if title_themes and title_themes.get('primary_terms') and random.random() < 0.8:
-            available_terms = [t for t in title_themes['primary_terms'] 
-                             if t not in forbidden_terms]
-            if available_terms:
-                term = random.choice(available_terms)
-            else:
-                term = random.choice([t for t in terms if t not in forbidden_terms])
-        else:
-            term = random.choice([t for t in terms if t not in forbidden_terms])
+    # Populate concept fields
+    _populate_concept_fields(fields_in_template, sentence_data, sentence_data.get('used_philosophers', []), forbidden_concepts, [primary_concept], coherence_manager)
     
-    adj = random.choice(["critical", "radical", "postmodern", "deconstructive", "theoretical", 
-                       "discursive", "dialectical", "phenomenological", "ontological", "epistemological"])
-    context_text = random.choice(contexts)
+    # Populate term fields
+    _populate_term_fields(fields_in_template, sentence_data, forbidden_terms, [primary_term], coherence_manager)
     
-    # Format the template with selected terms
-    sentence = template.format(term=term, concept=concept, context=context_text, adj=adj)
+    # Populate context fields (now uses _coherence_manager from sentence_data if present)
+    _populate_context_fields(fields_in_template, sentence_data) # sentence_data should have _coherence_manager if coherence_manager is passed
+
+    # Handle quotes
+    # _handle_quote_in_template(sentence_data, 'philosopher', used_quotes, note_system, context, coherence_manager)
+    # Corrected call: quote_source_field is needed
+    quote_source_field_intro = 'philosopher' # Default
+    if 'other_philosopher' in fields_in_template: quote_source_field_intro = 'other_philosopher'
+    elif 'philosopher1' in fields_in_template: quote_source_field_intro = 'philosopher1'
+    _handle_quote_in_template(sentence_data, quote_source_field_intro, used_quotes, note_system, context, coherence_manager)
+
+    # Handle citation for templates that explicitly use {author} and {year} (less common for intro)
+    # _handle_author_citation(sentence_data, note_system, context, used_concepts=[primary_concept], used_terms=[primary_term])
+    # This call was incorrect. _handle_author_citation expects template as first arg and modifies data.
+    # It's usually called in _generate_general_sentence. For intro, we rely on {citation} or [citation] markers.
+    # For now, let's ensure data['citation'] is at least initialized if the template expects it.
+    if 'citation' in fields_in_template and 'citation' not in sentence_data:
+        sentence_data['citation'] = ''
+
+    # Format sentence
+    sentence = _format_sentence_from_template(template, sentence_data, [primary_concept], [primary_term], note_system, context, coherence_manager)
     
-    used_philosophers = []
-    used_concepts = [concept]
-    used_terms = [term]
+    # Handle citation markers
+    # sentence = _handle_citation_marker(sentence, context, used_concepts=[primary_concept], used_terms=[primary_term])
+    # Corrected call: Pass currently used philosophers for the citation context
+    current_used_philosophers_intro = [p for p in [sentence_data.get('philosopher'), sentence_data.get('philosopher1'), sentence_data.get('philosopher2'), sentence_data.get('other_philosopher')] if p]
+    sentence = _handle_citation_marker(sentence, context, [primary_concept], [primary_term], current_used_philosophers_intro, note_system, coherence_manager)
+
+    # Finalize sentence
+    sentence = _finalize_sentence(sentence)
     
-    return [(sentence, None)], used_philosophers, used_concepts, used_terms
+    return [(sentence, None)], sentence_data.get('used_philosophers', []), sentence_data.get('used_concepts', []), sentence_data.get('used_terms', [])
 
 
 def _generate_conclusion_sentence(mentioned_philosophers, forbidden_philosophers,
                                 forbidden_concepts, forbidden_terms, context,
+                                used_quotes, # Add used_quotes here
+                                note_system, # Add note_system here
                                 coherence_manager=None):
     """Generate a conclusion-type sentence."""
-    templates = get_conclusion_templates()
+    primary_concept = context.get('primary_concept', random.choice(concepts))
+    primary_term = context.get('primary_term', random.choice(terms))
+
+    if coherence_manager and coherence_manager.active_theme_data:
+        context_text = coherence_manager.get_theme_context_phrase()
+        if not context_text: # Fallback if theme has no phrases
+            context_text = "a relevant theoretical framework"
+    else:
+        context_text = "a broad theoretical context" # Fallback if no coherence_manager or theme
+
+    template = random.choice(get_conclusion_templates())
+    fields_in_template_conc = {fn for _, fn, _, _ in string.Formatter().parse(template) if fn is not None}
+    available_philosophers_conc = [p for p in CLEANED_PHILOSOPHERS if p not in forbidden_philosophers]
+    if not available_philosophers_conc: # Ensure there's always a pool
+        available_philosophers_conc = CLEANED_PHILOSOPHERS[:5]
+
+    sentence_data = {
+        'philosopher': None,
+        'philosopher1': None,
+        'philosopher2': None,
+        'other_philosopher': None,
+        'concept': primary_concept,
+        'other_concept': None,
+        'term': primary_term,
+        'adjective': None,
+        'context': context_text,
+        'metaphor': None,
+        'subfield': None,
+        'quote': None,
+        'citation': None,
+        'citation_for_quote': None,
+        'author': None,
+        'year': None,
+        'coherence_manager': coherence_manager
+    }
     
-    # Higher chance of metafictional elements in conclusions
-    if random.random() < 0.3:
-        templates.extend(metafictional_templates[:5])
-        
-    template = random.choice(templates)
+    # Populate philosopher fields
+    # _populate_philosopher_fields(sentence_data, mentioned_philosophers, used_philosophers=[])
+    _populate_philosopher_fields(fields_in_template_conc, sentence_data, available_philosophers_conc, [], mentioned_philosophers, coherence_manager)
     
-    # For conclusions, we want to refer back to core concepts, guided by coherence_manager if available
-    if coherence_manager:
-        term = coherence_manager.get_weighted_term(exclude=forbidden_terms)
-        concept = coherence_manager.get_weighted_concept(exclude=forbidden_concepts)
-    else: # Fallback to original logic
-        term = random.choice([t for t in terms if t not in forbidden_terms])
-        concept = random.choice([c for c in concepts if c not in forbidden_concepts])
-        
-    context_text = random.choice(contexts)
+    # Populate concept fields
+    # _populate_concept_fields(sentence_data, used_philosophers=[], forbidden_concepts=forbidden_concepts, used_concepts=[primary_concept])
+    _populate_concept_fields(fields_in_template_conc, sentence_data, sentence_data.get('used_philosophers', []), forbidden_concepts, [primary_concept], coherence_manager)
+
+    # Populate term fields
+    # _populate_term_fields(sentence_data, forbidden_terms=[], used_terms=[primary_term])
+    _populate_term_fields(fields_in_template_conc, sentence_data, forbidden_terms, [primary_term], coherence_manager)
     
-    # Format the template with selected terms
-    sentence = template.format(term=term, concept=concept, context=context_text)
+    # Populate context fields
+    # _populate_context_fields(sentence_data)
+    _populate_context_fields(fields_in_template_conc, sentence_data) # sentence_data should have _coherence_manager
+
+    # Handle quotes
+    # _handle_quote_in_template(sentence_data, 'philosopher', used_quotes, note_system, context, coherence_manager)
+    quote_source_field_conc = 'philosopher' # Default
+    if 'other_philosopher' in fields_in_template_conc: quote_source_field_conc = 'other_philosopher'
+    elif 'philosopher1' in fields_in_template_conc: quote_source_field_conc = 'philosopher1'
+    _handle_quote_in_template(sentence_data, quote_source_field_conc, used_quotes, note_system, context, coherence_manager)
     
-    used_philosophers = []
-    used_concepts = [concept]
-    used_terms = [term]
+    # Handle citation
+    # _handle_author_citation(sentence_data, note_system, context, used_concepts=[primary_concept], used_terms=[primary_term])
+    # Similar to intro, this direct call was incorrect.
+    if 'citation' in fields_in_template_conc and 'citation' not in sentence_data:
+        sentence_data['citation'] = ''
+
+    # Format sentence
+    # sentence = _format_sentence_from_template(template, sentence_data, used_concepts=[primary_concept], used_terms=[primary_term])
+    sentence = _format_sentence_from_template(template, sentence_data, [primary_concept], [primary_term], note_system, context, coherence_manager)
     
-    return [(sentence, None)], used_philosophers, used_concepts, used_terms
+    # The used_philosophers list for return should be derived from sentence_data or a more robust collection mechanism
+    final_used_philosophers = [p for p in [sentence_data.get('philosopher'), sentence_data.get('philosopher1'), sentence_data.get('philosopher2'), sentence_data.get('other_philosopher')] if p and isinstance(p, str)]
+    # Ensure these are full names if they were shortened in sentence_data for display
+    # This is a simplified approach; a more robust way would be to track the original full names used to populate sentence_data.
+    
+    final_used_concepts = [c for c in [sentence_data.get('concept'), sentence_data.get('other_concept')] if c]
+    final_used_terms = [t for t in [sentence_data.get('term')] if t]
+
+    # Handle citation markers if any are present in the formatted sentence
+    sentence = _handle_citation_marker(sentence, context, final_used_concepts, final_used_terms, final_used_philosophers, note_system, coherence_manager)
+
+    # Finalize sentence (punctuation, etc.)
+    sentence = _finalize_sentence(sentence)
+    
+    return [(sentence, None)], final_used_philosophers, final_used_concepts, final_used_terms
 
 def _generate_general_sentence(mentioned_philosophers, forbidden_philosophers, 
                              forbidden_concepts, forbidden_terms, used_quotes,
@@ -759,12 +874,24 @@ def _populate_term_fields(fields, data, forbidden_terms, used_terms, coherence_m
 
 
 def _populate_context_fields(fields, data):
-    """Populate context and adjective fields in the template data dictionary."""
-    if 'context' in fields:
-        data['context'] = random.choice(contexts)
-        
-    if 'adj' in fields:
-        data['adj'] = random.choice(["critical", "radical", "postmodern", "deconstructive", "theoretical", 
+    """Populate context and adjective fields if not already present."""
+    if 'context' not in data and '{context}' in fields:
+        # This function is called from _format_sentence_from_template,
+        # which should have coherence_manager if {context} is a placeholder.
+        # However, to be safe, we check.
+        coherence_manager = data.get('_coherence_manager') # Assume coherence_manager is passed in data dict
+        if coherence_manager:
+            theme_context = coherence_manager.get_theme_context_phrase()
+            if theme_context:
+                data['context'] = theme_context
+            else:
+                data['context'] = "a relevant theoretical framework" # Fallback if no theme context
+        else:
+            # Fallback if coherence_manager is not available for some reason, though it should be.
+            # This path should ideally not be taken if {context} placeholder is used.
+            data['context'] = "a broad theoretical context" # Generic fallback
+    if 'adjective' not in data and '{adjective}' in fields:
+        data['adjective'] = random.choice(["critical", "radical", "postmodern", "deconstructive", "theoretical", 
                                   "discursive", "dialectical", "phenomenological", "ontological", "epistemological"])
 
 
@@ -959,25 +1086,110 @@ def _process_citation_placeholders(sentence, note_system, context, philosopher_n
         else:
             citation_text_to_insert = '' # Fallback if no note_system, changed from '(Generic Citation)'
     
-        # Ensure citation_text_to_insert is not empty
-        if not citation_text_to_insert:
-            citation_text_to_insert = "(General Citation Placeholder)" # Robust fallback
+    # Ensure citation_text_to_insert is not empty
+    if not citation_text_to_insert:
+        citation_text_to_insert = "(General Citation Placeholder)" # Robust fallback
 
     sentence = sentence.replace('{citation}', citation_text_to_insert)
     return sentence
 
 def _format_sentence_from_template(template, data, used_concepts, used_terms, note_system=None, context=None, coherence_manager=None):
     """
-    Format a sentence from a template and data dictionary, handling any missing keys.
-    """
-    # Ensure all expected placeholders in the template have a value in data, even if generic.
-    # This is especially important for {quote} and {citation} if not handled by specific logic.
-    if '{quote}' in template and 'quote' not in data:
-        data['quote'] = "a relevant observation" # Generic fallback
-    if '{citation}' in template and 'citation' not in data:
-        # Check if citation_for_quote was set, prioritize it
-        data['citation'] = data.get('citation_for_quote', '') # Fallback to empty or specific generic
+    Formats a sentence string using a dictionary of replacements, handling citations.
+    This function populates a template with dynamic data, including philosophers, concepts,
+    terms, contexts, quotes, and potentially new thematic elements like metaphors and subfields.
+    It also handles the processing of citation placeholders.
 
+    Args:
+        template (str): The sentence template string.
+        data (dict): Dictionary of placeholders and their values.
+        used_concepts (set): Set of concepts used so far.
+        used_terms (set): Set of terms used so far.
+        note_system (NoteSystem, optional): System for managing notes and citations.
+        context (dict, optional): Contextual information for citation generation.
+        coherence_manager (EssayCoherence, optional): Manager for thematic coherence.
+
+    Returns:
+        str: The formatted sentence.
+    """
+    sentence = template
+    
+    # Populate new thematic elements if coherence_manager is available and template requires them
+    if coherence_manager:
+        if '{metaphor}' in sentence:
+            metaphor = coherence_manager.get_theme_common_metaphor()
+            if metaphor:
+                data['metaphor'] = metaphor
+            else:
+                # Fallback: remove placeholder if no metaphor available, or adapt template if needed
+                # For now, let's assume templates are robust or this causes an error to be caught later
+                # A better fallback would be to have alternative template structures.
+                if 'metaphor' not in data: data['metaphor'] = "a relevant conceptual framing" # Generic fallback
+
+        if '{subfield}' in sentence:
+            subfield = coherence_manager.get_theme_academic_subfield()
+            if subfield:
+                data['subfield'] = subfield
+            else:
+                if 'subfield' not in data: data['subfield'] = "a related academic discipline" # Generic fallback
+
+    # Initial population of fields based on placeholders present in the template.
+    # This needs to happen before the main data dictionary is built.
+    fields_in_template = {fn for _, fn, _, _ in string.Formatter().parse(template) if fn is not None}
+
+    # Create a working copy of data to pass to population functions.
+    # This prevents premature modification of the original data dictionary if population functions
+    # have side effects or if we decide to conditionally use their results.
+    working_data = data.copy()
+    if coherence_manager:
+        working_data['_coherence_manager'] = coherence_manager
+
+    # Populate context, adjective, metaphor, subfield if their placeholders are in the template
+    # and they haven't been set by the calling function (e.g., _generate_general_sentence)
+    if '{context}' in fields_in_template and 'context' not in working_data:
+        _populate_context_fields(fields_in_template, working_data) # Should use _coherence_manager from working_data
+    
+    if '{adjective}' in fields_in_template and 'adjective' not in working_data:
+        # A simplified version for adjectives if not pre-populated, can be expanded if needed
+        working_data['adjective'] = coherence_manager.get_theme_related_adjective() if coherence_manager else random.choice(adjectives if adjectives else ["relevant"])
+
+    if '{metaphor}' in fields_in_template and 'metaphor' not in working_data:
+        if coherence_manager:
+            theme_metaphor = coherence_manager.get_theme_common_metaphor()
+            if theme_metaphor: working_data['metaphor'] = theme_metaphor
+            # else: let it fall through to KeyError handling for a more specific fallback if not found
+
+    if '{subfield}' in fields_in_template and 'subfield' not in working_data:
+        if coherence_manager:
+            theme_subfield = coherence_manager.get_theme_academic_subfield()
+            if theme_subfield: working_data['subfield'] = theme_subfield
+            # else: let it fall through to KeyError handling
+
+    # Update the main data dictionary with any newly populated fields from working_data.
+    # This ensures that if _populate_context_fields (or others) added/modified a value, it's reflected
+    # in the data used for the final .format_map() call.
+    for key in ['context', 'adjective', 'metaphor', 'subfield']:
+        if key in working_data and data.get(key) != working_data[key]: # Update if populated or changed
+            data[key] = working_data[key]
+
+    # Fallback for {context} if it's still not in data after population attempts.
+    if '{context}' in fields_in_template and 'context' not in data:
+        data['context'] = "a broad theoretical context" # Generic fallback
+
+    # Basic placeholder replacement for items in the data dictionary
+    for key, value in data.items():
+        placeholder = "{" + key + "}"
+        # Ensure value is a string before replacing. If it's a list or other type, handle appropriately.
+        # This simple replacement assumes values are already strings or convertible.
+        if isinstance(value, (list, tuple)):
+            # If a list is provided for a placeholder, we might want to join it or pick one.
+            # For now, let's assume the data preparation stage handles this and provides a string.
+            # Or, we could make a decision here, e.g., str(value) or random.choice(value) if applicable.
+            # This part might need refinement based on how `data` is constructed for list-type values.
+            pass # Let it be handled by the try-except below for now or ensure data dict has strings.
+        
+        sentence = sentence.replace(placeholder, str(value))
+    
     try:
         # Pass the 'data' dictionary to context for _process_citation_placeholders
         current_context = context.copy() if context else {}
@@ -1011,11 +1223,17 @@ def _format_sentence_from_template(template, data, used_concepts, used_terms, no
             elif missing_key == 'concept' or missing_key == 'other_concept':
                 data[missing_key] = coherence_manager.get_weighted_concept() or random.choice(concepts)
             elif missing_key == 'term':
-                data[missing_key] = coherence_manager.get_weighted_term() or random.choice(terms)
+                available_terms = [t for t in terms if t not in data.get('used_terms', [])]
+                if not available_terms: available_terms = terms
+                data[missing_key] = random.choice(available_terms) if available_terms else "a relevant notion"
             elif missing_key == 'context':
-                data[missing_key] = random.choice(contexts) # context not in coherence_manager typically
+                # If context is still missing, it implies that coherence_manager was not available,
+                # or it was available but get_theme_context_phrase() returned None, 
+                # and the fallback within _populate_context_fields also wasn't triggered or failed.
+                # This is the final fallback.
+                data[missing_key] = "a significant discursive framework" 
             elif missing_key == 'adj':
-                data[missing_key] = random.choice(["critical", "radical", "postmodern"])
+                data[missing_key] = random.choice(adjectives) if adjectives else "relevant"
             elif missing_key == 'author':
                  # Try to get a philosopher name for author if it's missing.
                 data[missing_key] = (coherence_manager.get_weighted_philosopher() or "Smith").split()[0] # Use last name
@@ -1032,8 +1250,8 @@ def _format_sentence_from_template(template, data, used_concepts, used_terms, no
                 data[missing_key] = random.choice(concepts)
             elif missing_key == 'term':
                 data[missing_key] = random.choice(terms)
-            elif missing_key == 'context':
-                data[missing_key] = random.choice(contexts)
+            # elif missing_key == 'context': # This line should be removed/commented
+            # data[missing_key] = random.choice(contexts)
             elif missing_key == 'adj':
                 data[missing_key] = random.choice(["critical", "radical", "postmodern"])
             elif missing_key == 'author':
@@ -1244,7 +1462,11 @@ def _generate_contextual_reference(context, concepts=None, terms=None, philosoph
     else: 
         final_title_hint = "A Relevant Study"
 
-    return generate_reference(author_name=target_author_name, title_hint=final_title_hint)
+    # This ensures that if the template is simple (no complex fields), it still works.
+    # And if it is complex, the necessary data is available.
+
+    # The actual reference string is generated here using the determined author and hint.
+    return generate_reference(author_name=target_author_name, title_hint=final_title_hint, coherence_manager=coherence_manager)
 
 
 def _handle_author_citation(template, data, context, used_concepts, used_terms, used_philosophers, note_system, coherence_manager=None):

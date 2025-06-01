@@ -9,7 +9,7 @@ while also incorporating a metafictional element.
 
 import random
 import metafiction
-from json_data_provider import philosophers, concepts, terms, contexts, philosopher_concepts, thematic_clusters
+from json_data_provider import philosophers, concepts, terms, philosopher_concepts, thematic_clusters
 from coherence import EssayCoherence
 from collections import Counter
 
@@ -140,8 +140,8 @@ def generate_enhanced_abstract(coherence_manager: EssayCoherence, title_themes=N
     chosen_methodology1 = random.choice(methodologies)
     chosen_methodology2 = random.choice([m for m in methodologies if m != chosen_methodology1])
     
-    theme_context_phrase = coherence_manager.get_theme_context_phrase() if coherence_manager.active_theme_key else random.choice(contexts)
-    if not theme_context_phrase: theme_context_phrase = random.choice(contexts) # Ensure fallback
+    theme_context_phrase = coherence_manager.get_theme_context_phrase() if coherence_manager.active_theme_key else "in a relevant theoretical framework"
+    if not theme_context_phrase: theme_context_phrase = "within a significant discursive field" # Ensure fallback
 
     methodology_concept_focus = coherence_manager.get_weighted_concept(exclude={abstract_concept, abstract_term})
 

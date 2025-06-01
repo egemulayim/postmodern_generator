@@ -10,7 +10,7 @@ as well as a function to generate a complete works cited.
 
 import random
 import string
-from json_data_provider import (philosophers as RAW_PHILOSOPHERS_FROM_DATA, concepts, terms, contexts, adjectives,
+from json_data_provider import (philosophers as RAW_PHILOSOPHERS_FROM_DATA, concepts, terms, adjectives,
                                bibliography_title_templates, publishers, academic_journals,
                                conferences, locations, philosopher_key_works, NON_STANDARD_AUTHOR_FORMATS,
                                verbs, nouns, philosopher_concepts)
@@ -47,7 +47,7 @@ def generate_full_name():
     last = random.choice(last_names) if last_names else "Researcher"
     return f"{last}, {first}"
 
-def generate_title(fixed_philosopher=None, concept_hint=None, term_hint=None):
+def generate_title(fixed_philosopher=None, concept_hint=None, term_hint=None, coherence_manager=None):
     """
     Generate an authentic, academic-sounding title using templates and word pools.
     Allows specifying a philosopher and concept to guide title generation.
@@ -112,11 +112,17 @@ def generate_title(fixed_philosopher=None, concept_hint=None, term_hint=None):
     template = chosen_template
     keys_in_template = [item[1] for item in string.Formatter().parse(template) if item[1] is not None]
 
+    context_for_title = "contemporary discourse" # Default
+    if coherence_manager and coherence_manager.active_theme_key:
+        theme_context = coherence_manager.get_theme_context_phrase()
+        if theme_context:
+            context_for_title = theme_context
+
     format_args = {
         'verb': random.choice(verbs) if verbs else "explores",
         'noun': random.choice(nouns) if nouns else "discourse",
         'adj': random.choice(adjectives) if adjectives else "critical",
-        'context': random.choice(contexts) if contexts else "contemporary thought",
+        'context': context_for_title,
         'philosopher': philosopher_for_title, # Use the determined philosopher_for_title
         'philosopher1': philosopher_for_title,
     }
@@ -191,7 +197,7 @@ def generate_title(fixed_philosopher=None, concept_hint=None, term_hint=None):
     title = apply_title_case(raw_title if raw_title else "A Notable Contribution") # Ensure raw_title is not empty
     return title if title else "Untitled Work" # Final fallback for title
 
-def generate_reference(author_name=None, title_hint=None, work_year=None, specific_work_type=None):
+def generate_reference(author_name=None, title_hint=None, work_year=None, specific_work_type=None, coherence_manager=None):
     """
     Generate a reference with a randomly selected work type in MLA 9 style format.
     If author_name is provided, that author will be used.
@@ -264,7 +270,7 @@ def generate_reference(author_name=None, title_hint=None, work_year=None, specif
     if title_concept_for_generation and len(title_concept_for_generation.split()) > 4 : # Arbitrary threshold for "substantial"
         final_title_raw = title_concept_for_generation
     else: # Otherwise, generate a title based on hints or defaults.
-        final_title_raw = generate_title(fixed_philosopher=philosopher_for_title_gen, concept_hint=title_concept_for_generation, term_hint=None)
+        final_title_raw = generate_title(fixed_philosopher=philosopher_for_title_gen, concept_hint=title_concept_for_generation, term_hint=None, coherence_manager=coherence_manager)
 
     final_title = apply_title_case(final_title_raw if final_title_raw else "An Important Study")
     final_title = strip_markdown_italics(final_title) # Ensure stripping always happens
@@ -309,7 +315,7 @@ def generate_reference(author_name=None, title_hint=None, work_year=None, specif
         editor_name = generate_full_name() # Generate a plausible editor name
         editor_suffix = "" if editor_name.endswith(".") else "."
         
-        book_title_raw = generate_title(fixed_philosopher=None, concept_hint="Collected Works")
+        book_title_raw = generate_title(fixed_philosopher=None, concept_hint="Collected Works", coherence_manager=coherence_manager)
         book_title_italicized = "*" + apply_title_case(strip_markdown_italics(book_title_raw)) + "*"
         
         publisher = random.choice(publishers) if publishers else default_publisher

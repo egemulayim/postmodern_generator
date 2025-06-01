@@ -25,7 +25,6 @@ DEFAULT_DATA = {
     "LOWERCASE_WORDS": [],
     "NAME_SUFFIXES": [],
     "philosopher_concepts": {},
-    "contexts": [],
     "adjectives": [],
     "bibliography_title_templates": [],
     "publishers": [],
@@ -100,7 +99,6 @@ terms = _get_data("terms", DEFAULT_DATA["terms"])
 LOWERCASE_WORDS = _get_data("LOWERCASE_WORDS", DEFAULT_DATA["LOWERCASE_WORDS"])
 NAME_SUFFIXES = _get_data("NAME_SUFFIXES", DEFAULT_DATA["NAME_SUFFIXES"])
 philosopher_concepts = _get_data("philosopher_concepts", DEFAULT_DATA["philosopher_concepts"])
-contexts = _get_data("contexts", DEFAULT_DATA["contexts"])
 adjectives = _get_data("adjectives", DEFAULT_DATA["adjectives"])
 bibliography_title_templates = _get_data("bibliography_title_templates", DEFAULT_DATA["bibliography_title_templates"])
 publishers = _get_data("publishers", DEFAULT_DATA["publishers"])
