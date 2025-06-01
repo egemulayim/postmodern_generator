@@ -134,6 +134,24 @@ python main.py --seed 42 --theme "Power and Knowledge"
 - If only `--theme` is provided: Random seed with specified theme
 - If both provided: Direct generation with specified parameters
 
+## Available Themes
+
+The generator currently supports the following thematic clusters:
+
+- Power and Knowledge
+- Identity and Subjectivity
+- Postmodernity and Critique of Metanarratives
+- Technology, Media, and Culture
+- Decoloniality and Postcolonial Studies
+- Affect, Materiality, and the Posthuman
+- Critical Pedagogy and Liberatory Education
+- Speculative Realism and Object-Oriented Ontology
+- Psychoanalysis and Culture
+- Feminist Epistemologies and Standpoint Theory
+- Digital Subjectivity
+
+Each theme is designed to produce essays with a distinct theoretical focus, drawing on relevant philosophers, concepts, and terminology.
+
 ### Generated Output
 
 The generator produces a complete academic essay including:
