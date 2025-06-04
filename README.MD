@@ -24,7 +24,7 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 ## Features
 
 - **Complete Essay Generation**: Produces fully-formed academic essays with title, abstract, introduction, body sections, conclusion, notes, and works cited sections
-- **Thematic Coherence System**: Advanced clustering system with 11 predefined themes for theoretical focus
+- **Thematic Coherence System**: Advanced clustering with 16 predefined themes for theoretical focus
 - **Concept Relationships and Dialectic**: Advanced system for defining concept relations (type and strength), which powers a nuanced dialectical (Thesis-Antithesis-Synthesis) progression in essay structure.
 - **Dynamic Weight Adjustment**: A system that dynamically adjusts the selection weights of concepts, terms, and philosophers during essay generation. This includes decaying weights of used items to reduce repetition and boosting related items to enhance local thematic coherence.
 - **Theme-Based Generation**: Choose from specialized themes like "Digital Subjectivity," "Decoloniality and Postcolonial Studies," or "Speculative Realism"
