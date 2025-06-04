@@ -171,7 +171,8 @@ python main.py
 
 When running the script, you will be prompted to:
 1. Enter a random seed (or press Enter for random generation)
-2. Select from available themes (or choose 0 for random theme selection)
+2. Select a metafiction level (subtle, moderate, or highly self-aware)
+3. Select from available themes (or choose 0 for random theme selection)
 
 **Interactive Help Options:**
 - Type `h` during theme selection to view CLI command examples
