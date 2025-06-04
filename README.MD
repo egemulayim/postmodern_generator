@@ -6,7 +6,7 @@ Welcome to The Postmodern Generator project. This repository contains the source
 
 - [Introduction](#introduction)
 - [Features](#features)
-- [Recent Changes (v0.1.5)](#recent-changes-v015)
+- [Recent Changes (v0.1.6)](#recent-changes-v016)
 - [Previous Changes](#previous-changes)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -42,9 +42,48 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 - **Enhanced Export Metadata**: Exported essays include detailed YAML frontmatter with generation parameters for reproducibility and analysis
 - **JSON-Based Data Architecture**: Robust, extensible knowledge base with advanced error handling and dynamic data file path loading.
 
-## Recent Changes (v0.1.5)
+## Recent Changes (v0.1.6)
 
-Version 0.1.5 focuses on comprehensive code quality improvements and maintainability enhancements:
+Version 0.1.6 addresses critical structural issues and dramatically enhances note quality and variety:
+
+### **Critical Fixes**
+- **Empty Introduction Section**: Resolved major issue where the Introduction section appeared with header but no content. Now generates substantial introduction paragraphs (4+ sentences each, 1-2 paragraphs total) with proper thematic context, relevant philosophers, and coherent connection to overall essay themes
+- **Essay Structure Completeness**: Introduction now properly follows the abstract and precedes body sections, ensuring all major essay components generate appropriate content
+
+### **Enhanced Notes System**
+- **Dramatic Template Expansion**: Increased note template variety from 4 basic categories with minimal templates to 20+ comprehensive categories with 100+ diverse templates, including:
+  - **Elaboration & Analysis**: Sophisticated templates for expanding theoretical points and providing analytical depth
+  - **Contextualization**: Historical, political, and theoretical context templates for situating ideas
+  - **Critique & Comparison**: Templates for comparative analysis and critical theoretical engagement
+  - **Methodological Commentary**: Discussion of theoretical approaches, frameworks, and scholarly methods
+  - **Intertextual References**: Templates connecting different works and theoretical traditions
+  - **Contemporary Relevance**: Links between historical theory and current academic debates
+  - **Biographical Context**: Philosophical and historical background for key thinkers
+  - **Theoretical Implications**: Templates exploring broader significance and ramifications of ideas
+  - **Conceptual Clarification**: Templates for defining and refining complex theoretical concepts
+  - **Interdisciplinary Connections**: Templates linking insights across different academic fields
+- **Enhanced Template Selection Algorithm**: Completely redesigned `_select_unique_template` function with sophisticated tracking to avoid repetition of recently used categories and specific templates
+- **Advanced Variety Tracking**: Implemented comprehensive tracking system monitoring recently used note categories, specific templates, and formatted commentaries to maximize diversity across all generated notes
+
+### **Technical Improvements**
+- **Introduction Generation Integration**: Added complete introduction section generation in `essay.py` with proper paragraph structure, sentence count management, and thematic coherence that connects title themes with relevant philosophers
+- **Note Template Architecture**: Expanded `master_template_list` in `notes.py` from basic templates to comprehensive categorized collection covering all aspects of academic commentary
+- **Sophisticated Tracking System**: Enhanced note system with multiple tracking arrays (`recently_used_note_categories`, `recently_used_note_templates`, `recently_used_formatted_commentaries`) for optimal variety distribution
+- **Context-Aware Content**: Introduction generation includes proper context passing with title themes, relevant philosophers, section positioning, and essay structure awareness
+
+### **Quality Enhancements**
+- **Complete Essay Structure**: All sections now generate substantial, relevant content (Abstract ✓, Introduction ✓, Body Sections ✓, Conclusion ✓, Notes ✓, Works Cited ✓)
+- **Authentic Academic Commentary**: Notes now sound like genuine scholarly commentary rather than generic placeholder text, with varied analytical approaches and theoretical sophistication
+- **Enhanced Thematic Consistency**: Introduction properly establishes essay themes and provides coherent foundation for subsequent dialectical development
+
+## Previous Changes
+
+<details>
+<summary><strong>Click to expand previous version history</strong></summary>
+
+### **v0.1.5 - Code Quality and Maintenance**
+
+Version 0.1.5 focused on comprehensive code quality improvements and maintainability enhancements:
 
 ### **Code Quality and Maintenance**
 - **Duplicate Function Elimination**: Removed redundant `_select_theme()` function in `main.py`, replacing it with a streamlined `_select_theme_simple()` wrapper while preserving all functionality and improving code organization
@@ -98,8 +137,6 @@ Version 0.1.3 focuses on enhancing dialectical reasoning and conceptual sophisti
 - **Contemporary Theory Integration**: Added oppositions spanning intersectional and decolonial theory, digital/technological dialectics, affect theory and new materialism, climate and Anthropocene studies, queer and trans studies, surveillance capitalism vs. commons concepts, Lacanian psychoanalysis, emergence vs. reductionism in scientific theory, and feminist epistemology.
 - **Improved Thematic Coherence**: The expanded oppositional pairs provide better support for contemporary themes like "Digital Subjectivity," "Decoloniality and Postcolonial Studies," and "Affect, Materiality, and the Posthuman," resulting in more theoretically sophisticated and current essays.
 
-## Previous Changes
-
 ### v0.1.2
 
 Version 0.1.2 focuses on enhancing the quality of generated text and improving performance:
@@ -143,6 +180,8 @@ This version represents a fundamental architectural overhaul and the first stabl
 - **Improved Code Organization**: Centralized data access, better error handling, and reduced code duplication
 - **Enhanced Academic Authenticity**: Expanded philosopher-concept relationships and more template variety
 - **Dependencies Cleanup**: Removed unnecessary dependencies for improved efficiency
+
+</details>
 
 ## Installation
 

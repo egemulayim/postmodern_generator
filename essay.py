@@ -239,13 +239,48 @@ def generate_essay(theme_key=None, metafiction_level='moderate'):
     essay_parts.append(abstract) # Removed unnecessary extra '\n'
     essay_parts.append("## Introduction\n\n") # Then "## Introduction" followed by two newlines (for a blank line)
 
-    # Body sections with dialectical development
+    # Body sections with dialectical development - determine count early for intro context
     num_body_sections = random.randint(3, 5)
-    
+
     # Start with a primary concept from the title if available
     starting_concept = (title_themes['primary_concepts'][0] if title_themes['primary_concepts'] 
                        else coherence_manager.primary_concepts[0] if coherence_manager.primary_concepts 
                        else random.choice(concepts))
+    
+    # Generate Introduction section
+    num_intro_paragraphs = random.randint(1, 2)  # Usually 1-2 paragraphs for introduction
+    coherence_manager.advance_section()  # Track introduction section
+    
+    for _ in range(num_intro_paragraphs):
+        num_sentences = random.randint(MIN_SENTENCES_PER_PARAGRAPH - 2, MAX_SENTENCES_PER_PARAGRAPH - 1)
+        if num_sentences < 4: num_sentences = 4  # Ensure introduction is substantial
+        
+        # Introduction context includes overall essay themes and relevant philosophers
+        intro_context = {
+            'section_index': 0,  # Introduction is the first section
+            'total_sections': num_body_sections + 2,  # intro + body + conclusion
+            'theme_concept': starting_concept,  # Use the starting concept that will drive the essay
+            'title_themes': title_themes,
+            'relevant_philosophers': relevant_philosophers,
+            'is_introduction': True  # Flag to help paragraph generation recognize this as introduction
+        }
+        
+        intro_paragraph, intro_concepts, intro_philosophers = generate_paragraph(
+            template_type='introduction',  # Use introduction template type
+            num_sentences=num_sentences,
+            mentioned_philosophers=note_system.get_mentioned_philosophers(),
+            used_quotes=used_quotes,
+            note_system=note_system,
+            context=intro_context,
+            coherence_manager=coherence_manager
+        )
+        essay_parts.append(intro_paragraph + "\n\n")
+        
+        # Record usage for introduction elements
+        if intro_concepts:
+            coherence_manager.record_usage(concepts=intro_concepts)
+        if intro_philosophers:
+            coherence_manager.record_usage(philosophers=intro_philosophers)
     
     # Generate the sequence of concepts for body sections using the advanced dialectic
     section_concepts = coherence_manager.develop_dialectic(starting_concept, num_steps=num_body_sections)

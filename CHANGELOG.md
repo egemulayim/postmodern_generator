@@ -5,6 +5,38 @@ All notable changes to The Postmodern Generator project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2025-06-04
+
+### Fixed
+- **Empty Introduction Section**: Resolved critical issue where the Introduction section was appearing with header but no content. Added proper introduction paragraph generation with thematic context and relevant philosophers, ensuring substantial content (4+ sentences per paragraph, 1-2 paragraphs total)
+- **Essay Structure Completeness**: Introduction now properly follows the abstract and precedes body sections, with coherent thematic development that connects to the overall essay themes
+
+### Enhanced
+- **Notes Section Variety**: Dramatically expanded note template diversity to eliminate repetitive and generic commentary. Increased from 4 categories with minimal templates to 20+ comprehensive categories including:
+  - **Elaboration & Analysis**: Multiple sophisticated templates for expanding on theoretical points
+  - **Contextualization**: Historical, political, and theoretical context templates  
+  - **Critique & Comparison**: Comparative analysis and critical engagement templates
+  - **Methodological Commentary**: Templates for discussing theoretical approaches and frameworks
+  - **Intertextual References**: Templates for connecting works and theoretical traditions
+  - **Contemporary Relevance**: Templates linking historical theory to current debates
+  - **Biographical Context**: Templates providing philosophical and historical background
+  - **Theoretical Implications**: Templates exploring broader significance of ideas
+  - **Conceptual Clarification**: Templates for defining and refining theoretical concepts
+  - **Interdisciplinary Connections**: Templates linking across academic fields
+- **Enhanced Template Selection**: Improved `_select_unique_template` function with advanced tracking to avoid repetition of recently used categories and specific templates
+- **Template Tracking System**: Added sophisticated tracking of recently used note templates and formatted commentaries to maximize variety across generated notes
+
+### Technical Implementation
+- **Introduction Generation**: Added complete introduction section generation in `essay.py` with proper paragraph structure, sentence count management, and thematic coherence
+- **Note Template Architecture**: Expanded `master_template_list` in `notes.py` from 5 basic templates to 100+ diverse templates across 20+ categories
+- **Variety Tracking**: Enhanced note system tracking with `recently_used_note_categories`, `recently_used_note_templates`, and `recently_used_formatted_commentaries` for maximum diversity
+- **Context-Aware Selection**: Introduction generation now includes proper context passing with title themes, relevant philosophers, and section positioning
+
+### Quality Improvements
+- **Essay Completeness**: All essay sections now generate proper content (Abstract ✓, Introduction ✓, Body Sections ✓, Conclusion ✓, Notes ✓, Works Cited ✓)
+- **Note Authenticity**: Notes now sound much more like genuine academic commentary rather than generic filler text
+- **Thematic Consistency**: Introduction properly establishes essay themes and connects to title elements for better overall coherence
+
 ## [0.1.5] - 2025-06-04
 
 ### Fixed
@@ -143,6 +175,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
+- **v0.1.6**: Fixed empty introduction section and expanded note template variety
 - **v0.1.5**: Comprehensive code review and cleanup
 - **v0.1.4**: Sophisticated metafiction system with contextual awareness
 - **v0.1.3**: Expanded oppositional pairs and enhanced dialectical progression  

@@ -33,14 +33,15 @@ class NoteSystem:
         self.notes = [] # Stores tuples of (note_number, commentary_text, full_reference_string)
         self.works_cited = []
         self.citation_markers = {}  # Maps reference to note number for substantive notes
-        self.used_template_patterns = set()  # Track used template pattern types
-        self.used_template_fingerprints = set()  # Track specific template structures
         self.page_numbers = {}  # Maps reference to page number(s)
         # Track which authors have multiple works
         self.author_work_count = {}  # Maps author to count of their works
         self.author_works = {}  # Maps author to dict of their works (title -> full reference)
         self.recently_used_note_templates = [] # For reducing immediate repetition of note commentary
         self.recently_used_formatted_commentaries = [] # Track recently *generated* commentaries
+        # Enhanced template variety tracking
+        self.recently_used_categories = []
+        self.recently_used_template_content = []
         self.style = "endnotes"
     
     def reset(self):
@@ -48,13 +49,14 @@ class NoteSystem:
         self.notes = []
         self.works_cited = []
         self.citation_markers = {}
-        self.used_template_patterns = set()
-        self.used_template_fingerprints = set()
         self.page_numbers = {}
         self.author_work_count = {}
         self.author_works = {}
         self.recently_used_note_templates = [] # Reset for new essay
         self.recently_used_formatted_commentaries = [] # Reset for new essay
+        # Reset enhanced template variety tracking
+        self.recently_used_categories = []
+        self.recently_used_template_content = []
     
     def get_mentioned_philosophers(self):
         """Returns a list of philosophers who have been cited."""
@@ -557,41 +559,240 @@ class NoteSystem:
             'r_topic': r_topic_display
         }
 
-        master_template_list = { # Ensure this is defined as it was in the original correct code
+        master_template_list = { # Significantly expanded template variety for diverse note generation
             "elaboration": [
                 f"{ct_auth_display}'s perspective on {f_topic_display} is particularly noteworthy here, especially in how it diverges from common interpretations.",
                 f"This work offers an important elaboration of {f_topic_display}, particularly as it concerns {r_topic_display} and its contemporary relevance.",
+                f"The nuanced treatment of {f_topic_display} in this source provides essential clarification often overlooked in broader discussions.",
+                f"{ct_auth_display} develops a sophisticated framework for understanding {f_topic_display} that extends beyond traditional approaches.",
+                f"The author's detailed analysis of {f_topic_display} reveals complexities that merit further consideration, especially regarding {r_topic_display}.",
+                f"This reference expands on {f_topic_display} in ways that illuminate previously unexamined dimensions of {r_topic_display}.",
+                f"{ct_auth_display}'s contribution here lies in unpacking the multilayered nature of {f_topic_display} and its relationship to {r_topic_display}."
             ],
+            
             "contextualization": [
                 f"This source provides important historical context for understanding {f_topic_display}, especially during its period of emergence and its impact on {r_topic_display}.",
+                f"The historical significance of {f_topic_display} becomes clearer when situated within the broader intellectual context that {ct_auth_display} provides.",
+                f"Understanding {f_topic_display} requires the kind of temporal perspective that this work supplies, particularly concerning {r_topic_display}.",
+                f"{ct_auth_display} situates {f_topic_display} within its proper intellectual genealogy, revealing connections to {r_topic_display}.",
+                f"The cultural and philosophical background necessary for comprehending {f_topic_display} is effectively established in this reference.",
+                f"This work traces the evolution of thinking about {f_topic_display} and its gradual convergence with discussions of {r_topic_display}.",
+                f"The contextual framework provided here is essential for grasping how {f_topic_display} relates to broader philosophical concerns with {r_topic_display}."
             ],
-            # ... (add more categories and templates with f-strings for robustness if needed)
+            
             "critique_comparison": [
                 f"This source presents a contrasting viewpoint to {ct_auth_display} on {f_topic_display}, often attributed to scholars like {an_phil_display}, particularly concerning {r_topic_display}.",
+                f"A critical assessment of {ct_auth_display}'s position on {f_topic_display} emerges when compared with alternative approaches to {r_topic_display}.",
+                f"The limitations of conventional approaches to {f_topic_display} become apparent through this critical examination of {r_topic_display}.",
+                f"{ct_auth_display} challenges prevailing interpretations of {f_topic_display}, offering a critique that extends to related discussions of {r_topic_display}.",
+                f"This reference provides a counterpoint to mainstream views on {f_topic_display}, particularly where they intersect with {r_topic_display}.",
+                f"The author's critical stance toward {f_topic_display} opens up alternative pathways for thinking about {r_topic_display}.",
+                f"In questioning established assumptions about {f_topic_display}, this work reveals underlying tensions in how we approach {r_topic_display}."
             ],
-             "general_academic_comment": [
+            
+            "methodological": [
+                f"The methodological approach employed here for examining {f_topic_display} offers a model for similar investigations into {r_topic_display}.",
+                f"{ct_auth_display}'s analytical framework provides valuable tools for approaching complex questions about {f_topic_display} and {r_topic_display}.",
+                f"The research methodology demonstrated in this work establishes important precedents for studying {f_topic_display}.",
+                f"This source exemplifies rigorous scholarship in its treatment of {f_topic_display}, particularly in relation to {r_topic_display}.",
+                f"The systematic approach taken here toward {f_topic_display} could be productively applied to other areas, including {r_topic_display}.",
+                f"{ct_auth_display}'s investigative method reveals dimensions of {f_topic_display} that previous approaches had overlooked.",
+                f"The analytical precision with which this work examines {f_topic_display} sets a standard for discussions of {r_topic_display}."
+            ],
+            
+            "theoretical_implications": [
+                f"The theoretical implications of {ct_auth_display}'s work on {f_topic_display} extend well beyond immediate concerns with {r_topic_display}.",
+                f"This reference opens up theoretical possibilities for {f_topic_display} that have broader significance for understanding {r_topic_display}.",
+                f"The conceptual framework developed here for {f_topic_display} has ramifications for how we theorize {r_topic_display}.",
+                f"{ct_auth_display} advances theoretical understanding of {f_topic_display} in ways that reshape discussions of {r_topic_display}.",
+                f"The theoretical contributions of this work extend from its analysis of {f_topic_display} to broader questions about {r_topic_display}.",
+                f"This source develops theoretical insights about {f_topic_display} that prove relevant to contemporary debates over {r_topic_display}.",
+                f"The author's theoretical innovations regarding {f_topic_display} offer new perspectives on longstanding problems with {r_topic_display}."
+            ],
+            
+            "interdisciplinary": [
+                f"This work demonstrates the value of interdisciplinary approaches to {f_topic_display}, drawing connections to fields beyond traditional studies of {r_topic_display}.",
+                f"{ct_auth_display} brings insights from multiple disciplines to bear on questions of {f_topic_display} and its relationship to {r_topic_display}.",
+                f"The interdisciplinary perspective offered here enriches our understanding of both {f_topic_display} and {r_topic_display}.",
+                f"By crossing disciplinary boundaries, this reference illuminates aspects of {f_topic_display} typically obscured in discussions of {r_topic_display}.",
+                f"The author's interdisciplinary method reveals connections between {f_topic_display} and {r_topic_display} that disciplinary specialization often misses.",
+                f"This work exemplifies the productive potential of interdisciplinary dialogue in addressing complex questions about {f_topic_display}.",
+                f"The synthesis of different disciplinary perspectives on {f_topic_display} opens new avenues for exploring {r_topic_display}."
+            ],
+            
+            "contemporary_relevance": [
+                f"The contemporary relevance of {ct_auth_display}'s analysis of {f_topic_display} becomes particularly evident in current discussions of {r_topic_display}.",
+                f"This work's treatment of {f_topic_display} speaks directly to present-day concerns about {r_topic_display}.",
+                f"The enduring significance of this analysis lies in its applicability to contemporary questions surrounding {f_topic_display} and {r_topic_display}.",
+                f"{ct_auth_display}'s insights into {f_topic_display} prove remarkably prescient given recent developments in {r_topic_display}.",
+                f"The contemporary pertinence of this work stems from its sophisticated engagement with {f_topic_display} in relation to {r_topic_display}.",
+                f"Current debates about {r_topic_display} would benefit from the perspective on {f_topic_display} that this reference provides.",
+                f"The author's analysis of {f_topic_display} offers resources for addressing urgent contemporary questions about {r_topic_display}."
+            ],
+            
+            "philosophical_foundations": [
+                f"The philosophical foundations underlying {ct_auth_display}'s approach to {f_topic_display} merit examination, particularly as they inform discussions of {r_topic_display}.",
+                f"This work's philosophical underpinnings provide important grounding for its treatment of {f_topic_display} and related questions about {r_topic_display}.",
+                f"The foundational assumptions about {f_topic_display} that inform this analysis have significant implications for how we approach {r_topic_display}.",
+                f"{ct_auth_display} articulates philosophical commitments regarding {f_topic_display} that shape the broader discourse on {r_topic_display}.",
+                f"The philosophical framework employed here for understanding {f_topic_display} offers insights applicable to {r_topic_display}.",
+                f"This reference's philosophical foundations illuminate deeper questions about the relationship between {f_topic_display} and {r_topic_display}.",
+                f"The author's philosophical orientation toward {f_topic_display} provides a lens through which to examine {r_topic_display}."
+            ],
+            
+            "empirical_evidence": [
+                f"The empirical evidence presented here regarding {f_topic_display} substantiates claims that extend to broader questions about {r_topic_display}.",
+                f"{ct_auth_display} marshals compelling evidence in support of positions on {f_topic_display} that have bearing on {r_topic_display}.",
+                f"The evidentiary foundation of this work's claims about {f_topic_display} strengthens arguments concerning {r_topic_display}.",
+                f"This reference provides empirical support for theoretical positions on {f_topic_display} that inform discussions of {r_topic_display}.",
+                f"The evidence presented here challenges conventional assumptions about {f_topic_display} and, by extension, {r_topic_display}.",
+                f"The author's careful attention to empirical detail in examining {f_topic_display} establishes credibility for claims about {r_topic_display}.",
+                f"This work's empirical contributions to understanding {f_topic_display} have ramifications for how we study {r_topic_display}."
+            ],
+            
+            "pedagogical": [
+                f"This reference serves valuable pedagogical purposes in teaching about {f_topic_display}, particularly for students encountering {r_topic_display}.",
+                f"{ct_auth_display}'s clear exposition of {f_topic_display} makes complex ideas accessible without sacrificing sophistication in addressing {r_topic_display}.",
+                f"The pedagogical value of this work lies in its systematic introduction to key issues surrounding {f_topic_display} and {r_topic_display}.",
+                f"This source provides an excellent starting point for students beginning to grapple with questions of {f_topic_display} in relation to {r_topic_display}.",
+                f"The author's pedagogical sensitivity is evident in the careful way complex questions about {f_topic_display} are related to {r_topic_display}.",
+                f"This work's educational significance extends beyond its immediate subject matter to broader pedagogical questions about teaching {f_topic_display}.",
+                f"The clarity with which this reference presents difficult concepts about {f_topic_display} serves as a model for discussing {r_topic_display}."
+            ],
+            
+            "historical_development": [
+                f"The historical development of ideas about {f_topic_display} traced in this work illuminates the evolution of thinking about {r_topic_display}.",
+                f"{ct_auth_display} charts the intellectual history of {f_topic_display} in ways that reveal its connections to {r_topic_display}.",
+                f"This reference documents important moments in the development of scholarship on {f_topic_display} and its relationship to {r_topic_display}.",
+                f"The genealogy of concepts related to {f_topic_display} presented here extends to contemporary discussions of {r_topic_display}.",
+                f"This work traces intellectual lineages that connect historical treatments of {f_topic_display} to current approaches to {r_topic_display}.",
+                f"The author's historical perspective on {f_topic_display} provides context essential for understanding debates about {r_topic_display}.",
+                f"The development of scholarly discourse about {f_topic_display} documented here has parallels in the evolution of thinking about {r_topic_display}."
+            ],
+            
+            "cross_cultural": [
+                f"This work's cross-cultural perspective on {f_topic_display} reveals dimensions often overlooked in Western-centric discussions of {r_topic_display}.",
+                f"{ct_auth_display} brings important cultural insights to bear on questions of {f_topic_display} that enrich understanding of {r_topic_display}.",
+                f"The cultural specificity of approaches to {f_topic_display} highlighted here has implications for how we understand {r_topic_display} across contexts.",
+                f"This reference demonstrates the value of examining {f_topic_display} from multiple cultural vantage points, especially regarding {r_topic_display}.",
+                f"The author's attention to cultural variation in conceptions of {f_topic_display} opens new perspectives on {r_topic_display}.",
+                f"This work challenges universal claims about {f_topic_display} by attending to cultural differences that extend to {r_topic_display}.",
+                f"The cross-cultural analysis of {f_topic_display} provided here offers resources for more inclusive approaches to {r_topic_display}."
+            ],
+            
+            "feminist_analysis": [
+                f"The feminist analysis of {f_topic_display} offered here reveals gendered dimensions often invisible in discussions of {r_topic_display}.",
+                f"{ct_auth_display} brings feminist insights to {f_topic_display} that have broader implications for understanding {r_topic_display}.",
+                f"This work's feminist perspective on {f_topic_display} challenges masculinist assumptions in scholarship on {r_topic_display}.",
+                f"The gendered analysis of {f_topic_display} presented here extends to important questions about {r_topic_display}.",
+                f"This reference demonstrates how feminist approaches to {f_topic_display} can illuminate overlooked aspects of {r_topic_display}.",
+                f"The author's feminist critique of traditional approaches to {f_topic_display} has ramifications for how we study {r_topic_display}.",
+                f"This work contributes to feminist scholarship by examining {f_topic_display} in ways that connect to broader concerns with {r_topic_display}."
+            ],
+            
+            "postcolonial_perspective": [
+                f"The postcolonial perspective on {f_topic_display} developed here challenges colonial legacies in scholarship on {r_topic_display}.",
+                f"{ct_auth_display} brings postcolonial insights to bear on {f_topic_display} that reshape understanding of {r_topic_display}.",
+                f"This work's postcolonial analysis reveals how discussions of {f_topic_display} have been shaped by colonial frameworks affecting {r_topic_display}.",
+                f"The decolonizing approach to {f_topic_display} offered here has implications for how we address {r_topic_display}.",
+                f"This reference demonstrates the importance of postcolonial perspectives for understanding both {f_topic_display} and {r_topic_display}.",
+                f"The author's postcolonial critique of Western approaches to {f_topic_display} opens alternative pathways for examining {r_topic_display}.",
+                f"This work contributes to decolonizing scholarship through its treatment of {f_topic_display} in relation to {r_topic_display}."
+            ],
+            
+            "phenomenological": [
+                f"The phenomenological approach to {f_topic_display} employed here reveals experiential dimensions relevant to understanding {r_topic_display}.",
+                f"{ct_auth_display} brings phenomenological insights to {f_topic_display} that illuminate the lived experience of {r_topic_display}.",
+                f"This work's phenomenological analysis of {f_topic_display} attends to subjective aspects often neglected in discussions of {r_topic_display}.",
+                f"The experiential focus of this analysis of {f_topic_display} provides important perspectives on {r_topic_display}.",
+                f"This reference demonstrates the value of phenomenological approaches to {f_topic_display} for understanding {r_topic_display}.",
+                f"The author's phenomenological sensitivity to {f_topic_display} reveals embodied dimensions of {r_topic_display}.",
+                f"This work's attention to lived experience in relation to {f_topic_display} has implications for how we approach {r_topic_display}."
+            ],
+            
+            "aesthetic_considerations": [
+                f"The aesthetic dimensions of {f_topic_display} explored here connect to broader questions about the relationship between beauty and {r_topic_display}.",
+                f"{ct_auth_display} attends to aesthetic aspects of {f_topic_display} that have often been overlooked in discussions of {r_topic_display}.",
+                f"This work's aesthetic analysis of {f_topic_display} reveals sensory and affective dimensions relevant to {r_topic_display}.",
+                f"The aesthetic framework employed here for understanding {f_topic_display} offers new perspectives on {r_topic_display}.",
+                f"This reference demonstrates how aesthetic considerations inform both {f_topic_display} and related questions about {r_topic_display}.",
+                f"The author's sensitivity to aesthetic questions surrounding {f_topic_display} enriches discussions of {r_topic_display}.",
+                f"This work's aesthetic approach to {f_topic_display} illuminates affective and sensory dimensions of {r_topic_display}."
+            ],
+            
+            "technological_implications": [
+                f"The technological implications of {ct_auth_display}'s analysis of {f_topic_display} extend to contemporary questions about {r_topic_display} in digital contexts.",
+                f"This work's examination of {f_topic_display} has relevance for understanding how technology shapes {r_topic_display}.",
+                f"The relationship between technology and {f_topic_display} explored here provides insights applicable to {r_topic_display}.",
+                f"{ct_auth_display} addresses technological dimensions of {f_topic_display} that connect to broader concerns about {r_topic_display}.",
+                f"This reference anticipates technological developments relevant to both {f_topic_display} and {r_topic_display}.",
+                f"The author's attention to technological mediation in discussions of {f_topic_display} has implications for {r_topic_display}.",
+                f"This work's technological perspective on {f_topic_display} offers resources for addressing digital-age questions about {r_topic_display}."
+            ],
+            
+            "ethical_dimensions": [
+                f"The ethical implications of {ct_auth_display}'s treatment of {f_topic_display} extend to moral questions surrounding {r_topic_display}.",
+                f"This work raises important ethical questions about {f_topic_display} that have bearing on how we approach {r_topic_display}.",
+                f"The moral dimensions of {f_topic_display} highlighted here connect to broader ethical concerns with {r_topic_display}.",
+                f"{ct_auth_display} attends to ethical aspects of {f_topic_display} often overlooked in discussions of {r_topic_display}.",
+                f"This reference demonstrates the ethical stakes involved in how we understand {f_topic_display} in relation to {r_topic_display}.",
+                f"The author's ethical analysis of {f_topic_display} provides moral resources for addressing questions about {r_topic_display}.",
+                f"This work's attention to ethical dimensions of {f_topic_display} has implications for moral approaches to {r_topic_display}."
+            ],
+            
+            "psychoanalytic": [
+                f"The psychoanalytic insights into {f_topic_display} offered here reveal unconscious dimensions relevant to understanding {r_topic_display}.",
+                f"{ct_auth_display} brings psychoanalytic theory to bear on {f_topic_display} in ways that illuminate {r_topic_display}.",
+                f"This work's psychoanalytic approach to {f_topic_display} uncovers repressed aspects that connect to {r_topic_display}.",
+                f"The unconscious dynamics of {f_topic_display} explored here have implications for how we understand {r_topic_display}.",
+                f"This reference demonstrates the value of psychoanalytic perspectives for examining both {f_topic_display} and {r_topic_display}.",
+                f"The author's psychoanalytic reading of {f_topic_display} reveals libidinal economies that inform {r_topic_display}.",
+                f"This work's attention to unconscious processes in {f_topic_display} provides insights applicable to {r_topic_display}."
+            ],
+            
+            "linguistic_analysis": [
+                f"The linguistic analysis of {f_topic_display} provided here reveals discursive patterns that extend to discussions of {r_topic_display}.",
+                f"{ct_auth_display} attends to language use in relation to {f_topic_display} that has implications for how we discuss {r_topic_display}.",
+                f"This work's linguistic approach to {f_topic_display} illuminates semantic dimensions relevant to {r_topic_display}.",
+                f"The discursive analysis of {f_topic_display} offered here connects to broader questions about language and {r_topic_display}.",
+                f"This reference demonstrates how linguistic considerations inform understanding of both {f_topic_display} and {r_topic_display}.",
+                f"The author's attention to rhetoric and discourse in discussions of {f_topic_display} has bearing on {r_topic_display}.",
+                f"This work's linguistic sensitivity reveals how language shapes our understanding of {f_topic_display} and {r_topic_display}."
+            ],
+            
+            "political_economy": [
+                f"The political economic analysis of {f_topic_display} offered here reveals material conditions that shape {r_topic_display}.",
+                f"{ct_auth_display} brings insights from political economy to bear on {f_topic_display} that illuminate {r_topic_display}.",
+                f"This work's attention to economic dimensions of {f_topic_display} has implications for understanding {r_topic_display}.",
+                f"The material analysis of {f_topic_display} provided here connects to broader questions about capitalism and {r_topic_display}.",
+                f"This reference demonstrates how economic forces shape both {f_topic_display} and {r_topic_display}.",
+                f"The author's political economic perspective on {f_topic_display} reveals class dynamics relevant to {r_topic_display}.",
+                f"This work's analysis of power relations in {f_topic_display} extends to important questions about {r_topic_display}."
+            ],
+            
+            "general_academic_comment": [
                 f"{an_phil_display} also offers a complementary perspective on {f_topic_display} in their work on {r_topic_display}, which is touched upon in the cited reference.",
+                f"The scholarly consensus on {f_topic_display} has evolved significantly, as this reference demonstrates in its treatment of {r_topic_display}.",
+                f"Recent scholarship on {f_topic_display} has moved in directions that this work anticipates, particularly regarding {r_topic_display}.",
+                f"The academic reception of ideas about {f_topic_display} continues to develop, as evidenced by ongoing discussions of {r_topic_display}.",
+                f"This work contributes to a growing body of scholarship that examines {f_topic_display} in relation to {r_topic_display}.",
+                f"The intellectual legacy of this analysis of {f_topic_display} can be traced in subsequent scholarship on {r_topic_display}.",
+                f"Academic debate about {f_topic_display} has been enriched by the kind of analysis that this reference provides regarding {r_topic_display}."
             ]
-        } 
-        if not any(master_template_list.values()): # Check if all lists inside are empty
-             master_template_list["general_academic_comment"] = [f"{ct_auth_display} discusses {f_topic_display} in relation to {r_topic_display} in the cited work."]
+        }
 
         chosen_template_str = ""
         try:
-            # _select_unique_template expects dict -> list of templates
-            # We need to ensure templates are actual strings here before passing to _select_unique_template
-            # For robustness, pick directly here if _select_unique_template has issues.
+            # Use the enhanced _select_unique_template with the expanded template collection
+            chosen_template_str = self._select_unique_template(master_template_list)
+        except Exception:
+            # Fallback: select randomly from available categories if the enhanced selection fails
             category_keys = [k for k,v in master_template_list.items() if v] # Only categories with templates
-            if not category_keys: # Fallback if all template lists are empty
-                chosen_template_str = f"{ct_auth_display} discusses {f_topic_display} in relation to {r_topic_display} in the cited work."
-            else:
+            if category_keys:
                 chosen_category = random.choice(category_keys)
                 chosen_template_str = random.choice(master_template_list[chosen_category])
-        except Exception:
-            chosen_template_str = f"{ct_auth_display} provides further commentary on {f_topic_display} in the cited work."
-        
-        if not chosen_template_str: # If somehow still empty
-            chosen_template_str = f"The work by {ct_auth_display} offers insights into {f_topic_display}."
+            else:
+                chosen_template_str = f"{ct_auth_display} provides further commentary on {f_topic_display}."
 
         final_commentary = ""
         try:
@@ -912,38 +1113,83 @@ class NoteSystem:
     def _select_unique_template(self, templates_by_category):
         """
         Select a unique template string from a dictionary of template lists.
-        Tries to ensure variety by not repeating template *structures* or *patterns* too often,
-        though true uniqueness of generated text is not guaranteed.
+        Enhanced to provide much better variety by avoiding recently used categories and templates.
+        Prioritizes category diversity and template uniqueness across the greatly expanded collection.
 
         Args:
-            templates_by_category (dict): A dictionary where keys are category names (e.g., "historical")
-                                          and values are lists of template strings for that category.
+            templates_by_category (dict): A dictionary where keys are category names and values are lists of template strings.
             
         Returns:
-            str: A selected template string, or a generic fallback if selection fails.
+            str: A selected template string that maximizes variety.
         """
         if not templates_by_category:
             return "This citation provides additional perspective."
 
         available_categories = list(templates_by_category.keys())
         
-        for _ in range(len(available_categories) * 2):
-            category_key = random.choice(available_categories)
+        # Track recently used categories to encourage category diversity
+        if not hasattr(self, 'recently_used_categories'):
+            self.recently_used_categories = []
+        
+        # Track recently used template content to avoid immediate repetition
+        if not hasattr(self, 'recently_used_template_content'):
+            self.recently_used_template_content = []
+        
+        # First, try to select from categories not recently used
+        unused_categories = [cat for cat in available_categories if cat not in self.recently_used_categories[-5:]]
+        if not unused_categories:
+            # If all categories have been used recently, reset and use all
+            unused_categories = available_categories
+            self.recently_used_categories = []
+        
+        # Try multiple attempts to find a unique template
+        for attempt in range(min(20, len(available_categories) * 3)):
+            # Prefer unused categories, but occasionally use any category for full variety
+            if unused_categories and random.random() < 0.8:
+                category_key = random.choice(unused_categories)
+            else:
+                category_key = random.choice(available_categories)
+                
             template_list = templates_by_category.get(category_key, [])
             
             if template_list:
                 template_str = random.choice(template_list)
-                fingerprint = (category_key, template_str.count("{")) 
                 
-                if fingerprint not in self.used_template_fingerprints:
-                    self.used_template_fingerprints.add(fingerprint)
-                    if len(self.used_template_fingerprints) > 50:
-                        self.used_template_fingerprints.pop()
+                # Create a content fingerprint to avoid similar templates
+                # Use first few words and template structure as fingerprint
+                template_words = template_str.split()[:8] if len(template_str.split()) > 8 else template_str.split()
+                content_fingerprint = " ".join(template_words).lower()
+                
+                # Check if this content is too similar to recently used ones
+                is_too_similar = any(
+                    len(set(content_fingerprint.split()) & set(recent.split())) > 4
+                    for recent in self.recently_used_template_content[-10:]
+                )
+                
+                if not is_too_similar:
+                    # Update tracking
+                    self.recently_used_categories.append(category_key)
+                    if len(self.recently_used_categories) > 15:
+                        self.recently_used_categories = self.recently_used_categories[-10:]
+                    
+                    self.recently_used_template_content.append(content_fingerprint)
+                    if len(self.recently_used_template_content) > 20:
+                        self.recently_used_template_content = self.recently_used_template_content[-15:]
+                    
                     return template_str
         
+        # If we couldn't find a unique template after many attempts, just pick one
+        # This ensures we always return something even if variety isn't perfect
         category_key = random.choice(available_categories)
         template_list = templates_by_category.get(category_key, [])
         if template_list:
-            return random.choice(template_list)
+            selected_template = random.choice(template_list)
+            
+            # Still update tracking even for fallback selection
+            self.recently_used_categories.append(category_key)
+            if len(self.recently_used_categories) > 15:
+                self.recently_used_categories = self.recently_used_categories[-10:]
+                
+            return selected_template
 
         return "This work is relevant to the discussion."
