@@ -249,7 +249,7 @@
     "Chela Sandoval": ["methodology of the oppressed", "oppositional consciousness", "third world feminism", "cyberfeminism", "differential consciousness"],
     "Linda Tuhiwai Smith": ["decolonizing methodologies", "indigenous research", "kaupapa māori research", "self-determination"],
     "Taiaiake Alfred": ["indigenous resurgence", "wasáse", "peace, power, righteousness", "decolonization", "indigenous nationhood"],
-    "Leanne Betasamosake Simpson": ["indigenous resurgence", "anishinaabeg intelligence", "storytelling", "decolonization", "as we have always done"],
+    "Leanne Betasamosake Simpson": ["indigenous resurgence", "land as pedagogy", "constellations of co-resistance", "storytelling as theory", "anishinaabeg intelligence", "as we have always done", "decolonization"],
     "Vine Deloria Jr.": ["native american studies", "critique of anthropology", "indigenous sovereignty", "custer died for your sins", "god is red"]
   },
   "academic_journals": [
@@ -660,112 +660,6 @@
     "immanent critique"
   ],
   "thematic_clusters": {
-    "Power and Knowledge": {
-        "description": "Examines the relationship between power structures and the production, dissemination, and validation of knowledge. This theme often critiques traditional epistemologies, highlighting subjugated forms of knowing and the mechanisms through which power shapes discourse and truth.",
-        "core_philosophers": ["Michel Foucault", "Judith Butler", "Achille Mbembe", "Gayatri Chakravorty Spivak", "Edward Said", "Angela Davis", "Stuart Hall", "Byung-Chul Han"],
-        "key_concepts": ["power/knowledge", "biopower", "governmentality", "discipline", "panopticism", "necropolitics", "subaltern", "epistemic violence", "orientalism", "surveillance capitalism", "ideology", "discourse analysis"],
-        "relevant_terms": ["hegemony", "discourse", "subjectivity", "surveillance", "coloniality", "decoloniality", "resistance", "counter-hegemony", "truth", "regime of truth"],
-        "context_phrases": [
-            "drawing on Foucauldian analysis of power relations and knowledge formation",
-            "within the framework of critical race theory's examination of systemic power and racial hierarchy",
-            "through the lens of postcolonial critique of colonial knowledge production and its legacies",
-            "examining the mechanisms of biopolitical control, discipline, and governmentality",
-            "interrogating the coloniality of knowledge, being, and power, and its enduring global effects",
-            "considering Butler's theory of power in relation to gender performativity and the construction of the subject",
-            "in the context of Mbembe's concept of necropolitics and the sovereign power to dictate life and death",
-            "analyzing how surveillance capitalism reconfigures power dynamics and extracts value from human experience",
-            "unmasking the ideological functions of discourse, as articulated by theorists like Althusser or Žižek",
-            "investigating the relationship between epistemic injustice and broader social inequalities",
-            "through the lens of biopolitics",
-            "in the age of digital surveillance",
-            "amidst the ruins of neoliberalism",
-            "under the shadow of postcolonial critique",
-            "within the matrix of intersectionality",
-            "against the grain of hegemonic discourse",
-            "through the gaze of the subaltern",
-            "from the perspective of critical race theory",
-            "within the discourse of surveillance studies",
-            "navigating the terrain of platform capitalism",
-            "responding to the challenges of post-truth politics",
-            "from a standpoint of feminist epistemology",
-            "from a decolonial perspective",
-            "within the logic of settler colonialism",
-            "exploring the dynamics of racial capitalism",
-            "in an era of increasing precarity",
-            "considering the aesthetics of the sublime",
-            "through the framework of affect theory",
-            "within the parameters of new materialisms",
-            "examining the posthuman condition",
-            "in the sphere of cognitive capitalism",
-            "under conditions of semiocapitalism",
-            "from the vantage point of the Global South",
-            "in the afterglow of May '68",
-            "considering the legacy of the Cold War",
-            "in a world shaped by datafication",
-            "within the sphere of algorithmic governance",
-            "from the perspective of indigenous methodologies"
-        ],
-        "related_adjectives": ["discursive", "hegemonic", "biopolitical", "disciplinary", "subaltern", "racialized", "gendered", "counter-hegemonic", "epistemic", "panoptic"],
-        "common_metaphors": [
-            "knowledge as a battlefield",
-            "power as a current/flow",
-            "truth as constructed edifice",
-            "discourse as a prison-house",
-            "the Panopticon as a metaphor for surveillance societies"
-        ],
-        "academic_subfields": [
-            "Foucauldian discourse analysis",
-            "critical theory",
-            "post-structuralism",
-            "surveillance studies",
-            "social epistemology",
-            "governmentality studies"
-        ]
-    },
-    "Identity and Subjectivity": {
-        "description": "Explores the construction of identity and the self, challenging essentialist notions and emphasizing the role of social, cultural, linguistic, and political forces in shaping subjectivity. This theme often delves into psychoanalysis, performativity, and intersectional experiences.",
-        "core_philosophers": ["Judith Butler", "Frantz Fanon", "Slavoj Žižek", "Julia Kristeva", "Luce Irigaray", "Stuart Hall", "Gloria Anzaldúa", "Sara Ahmed", "Jacques Lacan", "Lauren Berlant"],
-        "key_concepts": ["gender performativity", "subjectivity", "the Other", "abjection", "intersectionality", "mestiza consciousness", "the gaze", "the symbolic", "the imaginary", "the Real", "desire", "affect", "identity politics"],
-        "relevant_terms": ["alterity", "difference", "performativity", "interpellation", "psychoanalysis", "representation", "essentialism", "hybridity", "selfhood", "othering", "recognition"],
-        "context_phrases": [
-            "in dialogue with psychoanalytic theories of the subject, desire, and the unconscious (e.g., Lacanian, Freudian)",
-            "from the perspective of queer theory's challenge to normative identities and heteronormativity",
-            "analyzing the construction of racialized, gendered, and classed identities through an intersectional lens",
-            "considering the impact of trauma, affect, and lived experience on subjectivity and memory",
-            "exploring Butler's notion of performativity in shaping the self, gender, and social intelligibility",
-            "within the framework of Anzaldúa's borderlands theory, mestiza consciousness, and nepantla",
-            "engaging with Fanon's critique of colonial alienation, racialized subjectivity, and the quest for liberation",
-            "examining how cultural narratives, media representations, and social scripts (per Stuart Hall) shape identity",
-            "investigating the formation of collective identities and their role in social movements and political action",
-            "reflecting on the precarity of the subject in contemporary neoliberal conditions, following Berlant or Butler",
-            "within the framework of postmodernity",
-            "in the wake of deconstruction",
-            "through the prism of queer theory",
-            "within the matrix of intersectionality",
-            "in the interstices of cultural hybridity",
-            "from the perspective of critical race theory",
-            "in dialogue with psychoanalytic thought",
-            "from a standpoint of feminist epistemology",
-            "in an era of increasing precarity",
-            "through the framework of affect theory"
-        ],
-        "related_adjectives": ["performative", "gendered", "racialized", "psychic", "affective", "fragmented", "relational", "constructed", "intersectional", "symbolic", "precarious"],
-        "common_metaphors": [
-            "identity as a performance/script",
-            "the self as a text/narrative",
-            "subjectivity as a fluid state",
-            "the unconscious as an iceberg/deep sea",
-            "the gaze as a mirror/camera"
-        ],
-        "academic_subfields": [
-            "psychoanalytic theory",
-            "queer theory",
-            "performance studies",
-            "intersectional feminism",
-            "affect studies",
-            "critical race studies"
-        ]
-    },
     "Postmodernity and Critique of Metanarratives": {
         "description": "Focuses on the cultural, social, and philosophical condition of postmodernity, characterized by skepticism towards grand narratives, a focus on fragmentation, irony, pastiche, and the blurring of high and low culture. It often involves critiques of enlightenment reason and universal truth claims.",
         "core_philosophers": ["Jean-François Lyotard", "Jean Baudrillard", "Fredric Jameson", "Linda Hutcheon", "Richard Rorty", "Brian McHale", "Ihab Hassan"],
@@ -781,17 +675,7 @@
             "interrogating the status of representation, truth, and history in a world saturated by images and signs",
             "analyzing the implications of the 'death of the author' and the 'birth of the reader' (Barthes) for interpretation",
             "reflecting on the experience of the postmodern sublime and the limits of representation",
-            "discussing the playful, skeptical, and often self-referential nature of postmodern discourse",
-            "in the context of late capitalism",
-            "within the framework of postmodernity",
-            "amidst the ruins of neoliberalism",
-            "in the wake of deconstruction",
-            "responding to the challenges of post-truth politics",
-            "in the milieu of accelerationist thought",
-            "considering the aesthetics of the sublime",
-            "under conditions of semiocapitalism",
-            "in the afterglow of May '68",
-            "considering the legacy of the Cold War"
+            "discussing the playful, skeptical, and often self-referential nature of postmodern discourse"
         ],
         "related_adjectives": ["postmodern", "late-capitalist", "fragmented", "ironic", "skeptical", "anti-foundational", "hyperreal", "simulated", "decentered", "parodic", "intertextual"],
         "common_metaphors": [
@@ -809,208 +693,107 @@
             "aesthetic theory (pastiche, irony)"
         ]
     },
-    "Technology, Media, and Culture": {
-        "description": "Investigates the profound impact of technology and media on society, culture, perception, and the human condition. This theme explores surveillance, virtuality, the network society, and the ways technology shapes power, identity, and social relations.",
-        "core_philosophers": ["Jean Baudrillard", "Paul Virilio", "Donna Haraway", "Katherine Hayles", "Mark Fisher", "Byung-Chul Han", "Bernard Stiegler", "Marshall McLuhan"],
-        "key_concepts": ["simulacra", "hyperreality", "dromology", "speed", "cyborg", "posthumanism", "surveillance capitalism", "technics", "media archaeology", "digital humanities", "capitalist realism", "burnout society", "the medium is the message", "network society"],
-        "relevant_terms": ["cyberculture", "virtuality", "information age", "algorithm", "datafication", "platform capitalism", "accelerationism", "mediation", "digital divide", "information overload"],
+    "Poststructuralism and Deconstruction": {
+      "description": "Focuses on deconstruction, logocentrism, différance, and the works of Derrida, Foucault, Barthes.",
+      "keywords": ["Deconstruction", "Poststructuralism", "Logocentrism", "Différance", "Trace", "Supplement", "Aporia", "Binary Oppositions", "Discourse Analysis", "Power/Knowledge", "Subjectivity", "Textuality", "Intertextuality", "Death of the Author", "Play of Signifiers"],
+      "philosophers": ["Jacques Derrida", "Michel Foucault", "Roland Barthes", "Julia Kristeva", "Judith Butler", "Gilles Deleuze", "Jean Baudrillard", "Jean-François Lyotard", "Paul de Man", "Hélène Cixous"],
+      "typical_phrasing": [
+        "the instability of meaning", "challenging traditional notions of", "the social construction of", "deconstructing the binary of", "the play of signifiers", "disrupting the dominant discourse", "the arbitrary nature of the sign", "examining the conditions of possibility for", "the ways in which power operates through", "problematizing the concept of"
+      ],
+      "common_metaphors": [
+        "text as a web", "meaning as a shifting sand", "language as a prison-house", "power as a capillary network", "identity as a performance"
+      ],
+      "academic_sub_fields": [
+        "Literary Theory", "Critical Theory", "Cultural Studies", "Gender Studies", "Queer Theory", "Postcolonial Studies", "Media Studies", "Philosophy of Language"
+      ]
+    },
+    "Marxism and Critical Theory": {
+      "description": "Analyzes capitalism, class struggle, ideology, hegemony, drawing from Marx, Adorno, Gramsci.",
+      "keywords": ["Marxism", "Critical Theory", "Capitalism", "Class Struggle", "Alienation", "Ideology", "Hegemony", "Frankfurt School", "Historical Materialism", "Commodification", "Reification", "False Consciousness", "Praxis", "Labor", "Surplus Value"],
+      "philosophers": ["Karl Marx", "Theodor Adorno", "Max Horkheimer", "Herbert Marcuse", "Walter Benjamin", "Fredric Jameson", "Terry Eagleton", "Antonio Gramsci", "Louis Althusser", "Slavoj Žižek", "Nancy Fraser", "Axel Honneth"],
+      "typical_phrasing": [
+        "the critique of political economy", "the contradictions of capitalism", "the role of ideology in maintaining power", "the concept of historical materialism", "the alienation of labor", "the struggle for emancipation", "unmasking false consciousness", "the dynamics of class conflict", "the commodification of everyday life", "the potential for revolutionary praxis"
+      ],
+      "common_metaphors": [
+        "base and superstructure", "capitalism as a vampire", "ideology as a camera obscura", "chains of oppression", "the spectre of communism"
+      ],
+      "academic_sub_fields": [
+        "Sociology", "Economics", "Political Science", "History", "Cultural Studies", "Media Studies", "Literary Theory", "Labor Studies"
+      ]
+    },
+    "Power and Knowledge": {
+        "description": "Examines the relationship between power structures and the production, dissemination, and validation of knowledge. This theme often critiques traditional epistemologies, highlighting subjugated forms of knowing and the mechanisms through which power shapes discourse and truth. It encompasses concepts like biopower, governmentality, and necropolitics.",
+        "core_philosophers": ["Michel Foucault", "Judith Butler", "Achille Mbembe", "Gayatri Chakravorty Spivak", "Edward Said", "Angela Davis", "Stuart Hall", "Byung-Chul Han", "Giorgio Agamben"],
+        "key_concepts": ["power/knowledge", "biopower", "governmentality", "discipline", "panopticism", "necropolitics", "subaltern", "epistemic violence", "orientalism", "surveillance capitalism", "ideology", "discourse analysis", "state of exception", "bare life"],
+        "relevant_terms": ["hegemony", "discourse", "subjectivity", "surveillance", "coloniality", "decoloniality", "resistance", "counter-hegemony", "truth", "regime of truth", "sovereignty"],
         "context_phrases": [
-            "in the age of digital surveillance, platform capitalism, and the datafication of everyday life",
-            "exploring Virilio's theories on dromology, speed, technology, and the integral accident",
-            "through Haraway's concept of the cyborg, situated knowledges, and the blurring of human-machine boundaries",
-            "analyzing the effects of media as extensions of man (McLuhan) or as systems of simulation (Baudrillard)",
-            "considering Stiegler's philosophy of technics, pharmacology, memory, and the proletarianization of the spirit",
-            "within the context of Byung-Chul Han's critique of digital society, psychopolitics, and the burnout society",
-            "examining the implications of Hayles' work on how we became posthuman and the embodiment of information",
-            "investigating the cultural impact of artificial intelligence and algorithmic governance",
-            "reflecting on Fisher's concept of capitalist realism and the perceived absence of alternatives mediated by culture",
-            "debating the utopian and dystopian potentials of emerging technologies and their societal integration",
-            "in the context of late capitalism",
-            "against the backdrop of globalization",
-            "in the age of digital surveillance",
-            "within the discourse of surveillance studies",
-            "navigating the terrain of platform capitalism",
-            "engaging with actor-network theory",
-            "in the milieu of accelerationist thought",
-            "examining the posthuman condition",
-            "in the sphere of cognitive capitalism",
-            "under conditions of semiocapitalism",
-            "in a world shaped by datafication",
-            "within the sphere of algorithmic governance"
+            "drawing on Foucauldian analysis of power relations and knowledge formation",
+            "within the framework of critical race theory's examination of systemic power and racial hierarchy",
+            "through the lens of postcolonial critique of colonial knowledge production and its legacies",
+            "examining the mechanisms of biopolitical control, discipline, and governmentality",
+            "interrogating the coloniality of knowledge, being, and power, and its enduring global effects",
+            "considering Butler's theory of power in relation to gender performativity and the construction of the subject",
+            "in the context of Mbembe's concept of necropolitics and the sovereign power to dictate life and death",
+            "analyzing how surveillance capitalism reconfigures power dynamics and extracts value from human experience",
+            "unmasking the ideological functions of discourse, as articulated by theorists like Althusser or Žižek",
+            "investigating the relationship between epistemic injustice and broader social inequalities",
+            "exploring Agamben's notions of bare life and the state of exception in contemporary political formations"
         ],
-        "related_adjectives": ["digital", "technological", "virtual", "networked", "mediated", "surveilled", "algorithmic", "posthuman", "cybernetic", "dromological"],
+        "related_adjectives": ["discursive", "hegemonic", "biopolitical", "disciplinary", "subaltern", "racialized", "gendered", "counter-hegemonic", "epistemic", "panoptic", "sovereign", "necropolitical"],
         "common_metaphors": [
-            "technology as an extension of man/prosthesis",
-            "media as a lens/filter/environment",
-            "the internet as a web/network/matrix",
-            "information as a flood/deluge",
-            "cyberspace as a new frontier/territory"
+            "knowledge as a battlefield",
+            "power as a current/flow/capillary network",
+            "truth as constructed edifice",
+            "discourse as a prison-house",
+            "the Panopticon as a metaphor for surveillance societies",
+            "sovereignty as the power over life and death"
         ],
         "academic_subfields": [
-            "media studies",
-            "science and technology studies (STS)",
-            "cyberculture studies",
-            "digital humanities",
+            "Foucauldian discourse analysis",
+            "critical theory",
+            "post-structuralism",
             "surveillance studies",
-            "posthumanist theory"
+            "social epistemology",
+            "governmentality studies",
+            "political philosophy",
+            "postcolonial theory"
         ]
     },
-    "Decoloniality and Postcolonial Studies": {
-        "description": "Critiques the enduring legacies of colonialism and imperialism, focusing on issues of power, knowledge, representation, and resistance from the perspectives of formerly colonized peoples and their diasporas. It seeks to decenter Eurocentric thought and promote alternative epistemologies.",
-        "core_philosophers": ["Frantz Fanon", "Edward Said", "Gayatri Chakravorty Spivak", "Homi K. Bhabha", "Achille Mbembe", "Walter Mignolo", "Anibal Quijano", "Linda Tuhiwai Smith", "Sylvia Wynter", "Dipesh Chakrabarty", "Ngũgĩ wa Thiong'o"],
-        "key_concepts": ["decoloniality", "postcolonialism", "orientalism", "subaltern", "necropolitics", "coloniality of power", "border thinking", "hybridity", "mimicry", "epistemic disobedience", "decolonizing methodologies", "provincializing Europe", "world-systems theory"],
-        "relevant_terms": ["colonialism", "imperialism", "eurocentrism", "global South", "indigeneity", "diaspora", "resistance", "sovereignty", "othering", "cultural imperialism", "dependency theory"],
+    "Identity and Subjectivity": {
+        "description": "Explores the construction of identity and the self, challenging essentialist notions and emphasizing the role of social, cultural, linguistic, and political forces in shaping subjectivity. This theme often delves into psychoanalysis, performativity, and intersectional experiences.",
+        "core_philosophers": ["Judith Butler", "Frantz Fanon", "Slavoj Žižek", "Julia Kristeva", "Luce Irigaray", "Stuart Hall", "Gloria Anzaldúa", "Sara Ahmed", "Jacques Lacan", "Lauren Berlant", "Michel Foucault"],
+        "key_concepts": ["gender performativity", "subjectivity", "the Other", "abjection", "intersectionality", "mestiza consciousness", "the gaze", "the symbolic", "the imaginary", "the Real", "desire", "affect", "identity politics", "interpellation", "selfhood"],
+        "relevant_terms": ["alterity", "difference", "performativity", "representation", "essentialism", "hybridity", "othering", "recognition", "psychoanalysis"],
         "context_phrases": [
-            "from a postcolonial theoretical perspective, challenging Eurocentric narratives and colonial legacies",
-            "engaging with Said's critique of Orientalism, its discursive power, and the politics of representation",
-            "considering Spivak's question 'Can the Subaltern Speak?' in relation to voice, agency, and epistemic violence",
-            "analyzing the concept of the coloniality of power/being/knowledge as developed by Quijano, Mignolo, and Wynter",
-            "exploring Fanon's theories on decolonization, violence, national consciousness, and the psychopathology of colonialism",
-            "within Mignolo's framework of border thinking, epistemic disobedience, and decolonial options/futures",
-            "examining Bhabha's notions of hybridity, mimicry, ambivalence, and the third space of enunciation",
-            "applying Linda Tuhiwai Smith's decolonizing methodologies to research practices and knowledge production",
-            "investigating the call to 'provincialize Europe' (Chakrabarty) and decenter Western epistemologies",
-            "discussing the ongoing struggles for indigenous sovereignty, land rights, and cultural resurgence globally",
-            "against the backdrop of globalization",
-            "under the shadow of postcolonial critique",
-            "in the era of climate crisis",
-            "within the matrix of intersectionality",
-            "in the interstices of cultural hybridity",
-            "through the gaze of the subaltern",
-            "from the perspective of critical race theory",
-            "considering the Anthropocene's implications",
-            "from a decolonial perspective",
-            "within the logic of settler colonialism",
-            "exploring the dynamics of racial capitalism",
-            "from the vantage point of the Global South",
-            "from the perspective of indigenous methodologies"
+            "in dialogue with psychoanalytic theories of the subject, desire, and the unconscious (e.g., Lacanian, Freudian)",
+            "from the perspective of queer theory's challenge to normative identities and heteronormativity",
+            "analyzing the construction of racialized, gendered, and classed identities through an intersectional lens",
+            "considering the impact of trauma, affect, and lived experience on subjectivity and memory",
+            "exploring Butler's notion of performativity in shaping the self, gender, and social intelligibility",
+            "within the framework of Anzaldúa's borderlands theory, mestiza consciousness, and nepantla",
+            "engaging with Fanon's critique of colonial alienation, racialized subjectivity, and the quest for liberation",
+            "examining how cultural narratives, media representations, and social scripts (per Stuart Hall) shape identity",
+            "investigating the formation of collective identities and their role in social movements and political action",
+            "reflecting on the precarity of the subject in contemporary neoliberal conditions, following Berlant or Butler",
+            "drawing on Foucault's work on subjectivation and the technologies of the self"
         ],
-        "related_adjectives": ["postcolonial", "decolonial", "anti-colonial", "subaltern", "indigenous", "diasporic", "eurocentric", "neo-colonial", "subalternized", "counter-hegemonic"],
+        "related_adjectives": ["performative", "gendered", "racialized", "psychic", "affective", "fragmented", "relational", "constructed", "intersectional", "symbolic", "precarious", "poststructuralist"],
         "common_metaphors": [
-            "colonialism as a wound/scar",
-            "empire as a vampire/parasite",
-            "the subaltern as silenced/ghosted",
-            "decolonization as a journey/exodus",
-            "knowledge as a colonial tool/weapon"
+            "identity as a performance/script",
+            "the self as a text/narrative",
+            "subjectivity as a fluid state/process",
+            "the unconscious as an iceberg/deep sea",
+            "the gaze as a mirror/camera/weapon"
         ],
         "academic_subfields": [
-            "postcolonial theory",
-            "decolonial studies",
-            "subaltern studies",
-            "indigenous studies",
-            "critical race theory",
-            "world-systems analysis"
-        ]
-    },
-    "Affect, Materiality, and the Posthuman": {
-        "description": "Explores the role of affect, emotions, and bodily experience in shaping social and political life, often moving beyond purely discursive or representational frameworks. This theme engages with new materialisms, posthumanism, and the entanglements of human and non-human entities.",
-        "core_philosophers": ["Gilles Deleuze", "Félix Guattari", "Brian Massumi", "Rosi Braidotti", "Donna Haraway", "Sara Ahmed", "Lauren Berlant", "Elizabeth Grosz", "Karen Barad", "Jane Bennett"],
-        "key_concepts": ["affect theory", "new materialism", "posthumanism", "becoming", "assemblage", "rhizome", "body without organs", "immanence", "vibrant matter", "intra-action", "situated knowledges", "companion species", "cruel optimism", "affective labor"],
-        "relevant_terms": ["materiality", "embodiment", "sensation", "intensity", "non-human", "entanglement", "flat ontology", "vitalism", "biopolitics", "ecology", "anthropocene"],
-        "context_phrases": [
-            "drawing on Deleuze and Guattari's concepts of affect, assemblage, becoming, and the body without organs",
-            "from the perspective of new materialist philosophies, emphasizing the agency and vibrancy of matter (Bennett, Barad)",
-            "exploring Braidotti's nomadic ethics, the posthuman subject, and affirmative politics",
-            "considering Haraway's work on cyborgs, companion species, situated knowledges, and chthulucenic entanglements",
-            "analyzing the political, cultural, and ethical work of affect, as theorized by Sara Ahmed, Lauren Berlant, or Brian Massumi",
-            "within a framework of Barad's agential realism, intra-action, and the inseparability of knowing and being",
-            "examining Jane Bennett's notion of vibrant matter, thing-power, and ecological assemblages",
-            "interrogating the boundaries between human and non-human in the Anthropocene, Capitalocene, or Plantationocene",
-            "investigating embodied cognition, affect contagion, and the visceral dimensions of social life",
-            "reflecting on posthuman ethics and the challenges of multispecies justice and planetary well-being",
-            "in the context of late capitalism",
-            "through the lens of biopolitics",
-            "in the era of climate crisis",
-            "considering the Anthropocene's implications",
-            "in the shadow of speculative realism",
-            "engaging with actor-network theory",
-            "in an era of increasing precarity",
-            "considering the aesthetics of the sublime",
-            "through the framework of affect theory",
-            "within the parameters of new materialisms",
-            "examining the posthuman condition"
-        ],
-        "related_adjectives": ["affective", "material", "embodied", "posthuman", "rhizomatic", "immanent", "vibrant", "non-anthropocentric", "ecological", "relational", "processual"],
-        "common_metaphors": [
-            "affect as a current/wave/contagion",
-            "matter as vibrant/agential",
-            "the body as a network/assemblage",
-            "humanity as a porous boundary",
-            "nature as a collaborator/co-conspirator"
-        ],
-        "academic_subfields": [
-            "affect theory",
-            "new materialism",
-            "posthumanism studies",
-            "animal studies",
-            "feminist science studies",
-            "critical disability studies"
-        ]
-    },
-    "Critical Pedagogy and Liberatory Education": {
-        "description": "Focuses on educational theories and practices that aim to empower students to critically examine and challenge oppressive social structures, fostering social justice and liberation.",
-        "core_philosophers": ["Paulo Freire", "bell hooks", "Henry Giroux", "Peter McLaren", "Ira Shor"],
-        "key_concepts": ["pedagogy of the oppressed", "critical consciousness", "banking model of education", "problem-posing education", "praxis", "hidden curriculum", "dialogue", "empowerment", "transformative learning"],
-        "relevant_terms": ["social justice education", "emancipatory learning", "student voice", "critical literacy", "participatory education"],
-        "context_phrases": [
-            "analyzing educational systems through a Freirean lens of 'pedagogy of the oppressed' and conscientização",
-            "exploring bell hooks' concept of engaged pedagogy, teaching to transgress, and creating liberatory classroom communities",
-            "within the framework of critical pedagogy's challenge to traditional schooling, banking education, and the hidden curriculum (Giroux, McLaren)",
-            "examining the role of education in social reproduction versus its potential for fostering social change and democratic participation",
-            "promoting dialogue, problem-posing education, and praxis as central to transformative learning experiences",
-            "addressing issues of power, privilege, and oppression within educational institutions and curricula",
-            "cultivating critical literacy and the ability to deconstruct dominant ideologies and narratives",
-            "advocating for student voice, agency, and participatory approaches to curriculum development and assessment",
-            "against the grain of hegemonic discourse"
-        ],
-        "related_adjectives": ["critical", "liberatory", "emancipatory", "dialogical", "transformative", "participatory", "empowering"],
-        "common_metaphors": [
-            "education as banking/filling vessels",
-            "consciousness as awakening/unveiling",
-            "oppression as a cage/chains",
-            "liberation as a path/journey",
-            "dialogue as bridge-building"
-        ],
-        "academic_subfields": [
-            "critical pedagogy",
-            "sociology of education",
-            "liberation theology (educational aspects)",
-            "participatory action research",
-            "feminist pedagogy"
-        ]
-    },
-    "Speculative Realism and Object-Oriented Ontology": {
-        "description": "A philosophical movement that rejects post-Kantian correlationism (the idea that reality is only accessible through human thought) and argues for the independent existence of objects and a reality beyond human perception.",
-        "core_philosophers": ["Quentin Meillassoux", "Graham Harman", "Ray Brassier", "Iain Hamilton Grant", "Manuel DeLanda", "Bruno Latour"],
-        "key_concepts": ["speculative realism", "object-oriented ontology (OOO)", "correlationism", "ancestrality", "hyperchaos", "the quadruple object", "tool-being", "flat ontology", "actor-network theory"],
-        "relevant_terms": ["anti-correlationism", "finitude", "non-philosophy", "realism", "materialism", "withdrawal", "dark vitalism"],
-        "context_phrases": [
-            "challenging Kantian correlationism (the human-world correlate) from a speculative realist standpoint (Meillassoux)",
-            "exploring Harman's object-oriented ontology (OOO), the withdrawal of objects, and vicarious causation",
-            "within Meillassoux's argument for absolute contingency, factiality, and the necessity of contingency (After Finitude)",
-            "considering the implications of flat ontology (DeLanda, Harman) for understanding reality beyond human access",
-            "engaging with Brassier's eliminative nihilism or Grant's transcendental materialism as strands of speculative thought",
-            "examining Latour's actor-network theory (ANT) as a related approach to decentering the human and tracing object relations",
-            "debating the nature of ancestrality, the arche-fossil, and thought's capacity to access a pre-human real",
-            "investigating the aesthetic and political implications of a world of autonomous objects and weird realism",
-            "in the shadow of speculative realism",
-            "engaging with actor-network theory",
-            "within the parameters of new materialisms"
-        ],
-        "related_adjectives": ["speculative", "realist", "object-oriented", "correlationist", "non-correlationist", "ancestral", "ontological"],
-        "common_metaphors": [
-            "correlationism as a prison/circle",
-            "objects as withdrawn/icebergs",
-            "reality as the great outdoors",
-            "thought as a tool/probe",
-            "the ancestral as a distant star/fossil record"
-        ],
-        "academic_subfields": [
-            "speculative realism",
-            "object-oriented ontology (OOO)",
-            "metaphysics",
-            "contemporary continental philosophy",
-            "philosophy of science (critiques of constructivism)"
+            "psychoanalytic theory",
+            "queer theory",
+            "performance studies",
+            "intersectional feminism",
+            "affect studies",
+            "critical race studies",
+            "poststructuralist philosophy",
+            "cultural studies"
         ]
     },
     "Psychoanalysis and Culture": {
@@ -1026,8 +809,7 @@
             "examining the role of trauma, fantasy, and the workings of the drive in shaping individual and collective experience",
             "investigating how psychoanalytic approaches can illuminate power dynamics, social bonds, and forms of cultural expression",
             "considering the application of psychoanalysis to film theory, literary criticism, or the study of political ideologies",
-            "debating the relevance and critiques of psychoanalytic thought in contemporary cultural analysis",
-            "in dialogue with psychoanalytic thought"
+            "debating the relevance and critiques of psychoanalytic thought in contemporary cultural analysis"
         ],
         "related_adjectives": ["psychoanalytic", "Freudian", "Lacanian", "Jungian", "unconscious", "libidinal", "symbolic", "imaginary", "traumatic"],
         "common_metaphors": [
@@ -1037,7 +819,7 @@
             "the psyche as a divided city/landscape",
             "dreams as a royal road/coded message"
         ],
-        "academic_subfields": [
+        "academic_sub_fields": [
             "psychoanalytic literary criticism",
             "film theory (psychoanalytic)",
             "cultural psychoanalysis",
@@ -1058,11 +840,7 @@
             "investigating how traditional epistemologies have often ignored or devalued women's experiences and ways of knowing",
             "addressing issues of epistemic injustice, such as testimonial injustice and hermeneutical injustice (Fricker)",
             "exploring the role of experience, embodiment, and affect in knowledge production from feminist perspectives",
-            "considering the implications of feminist epistemologies for research methodologies and scientific practice",
-            "through the prism of queer theory",
-            "within the matrix of intersectionality",
-            "from a standpoint of feminist epistemology",
-            "from the perspective of indigenous methodologies"
+            "considering the implications of feminist epistemologies for research methodologies and scientific practice"
         ],
         "related_adjectives": ["feminist", "epistemological", "situated", "standpoint-based", "androcentric", "intersectional", "objective", "subjective"],
         "common_metaphors": [
@@ -1072,12 +850,108 @@
             "experience as a source of data/insight",
             "epistemic injustice as silencing/blinding"
         ],
-        "academic_subfields": [
+        "academic_sub_fields": [
             "feminist epistemology",
             "standpoint theory",
             "philosophy of science (feminist critiques)",
             "social epistemology",
             "critical theory (feminist)"
+        ]
+    },
+    "Feminist Theory and Gender Studies": {
+      "description": "Examines gender performativity, patriarchy, intersectionality, with thinkers like Butler, de Beauvoir, hooks.",
+      "keywords": ["Feminism", "Gender Performativity", "Patriarchy", "Intersectionality", "Sexual Difference", "Écriture Féminine", "The Personal is Political", "Care Ethics", "Gender Roles", "Masculinity Studies", "Queer Theory", "Transgender Studies", "Body Politics", "Standpoint Theory", "Sex/Gender System"],
+      "philosophers": ["Judith Butler", "Simone de Beauvoir", "bell hooks", "Audre Lorde", "Luce Irigaray", "Donna Haraway", "Sara Ahmed", "Gayatri Chakravorty Spivak", "Nancy Fraser", "Rosi Braidotti", "Catherine Malabou", "Iris Marion Young"],
+      "typical_phrasing": [
+        "the social construction of gender", "challenging patriarchal structures", "an intersectional analysis reveals", "the performativity of gender identity", "the politics of embodiment", "unpacking gendered assumptions", "the dynamics of power and privilege", "towards a more inclusive understanding of", "the lived experiences of", "rethinking traditional gender roles"
+      ],
+      "common_metaphors": [
+        "the glass ceiling", "gender as a lens", "intersectionality as a crossroads", "the body as a site of resistance", "patriarchy as a system"
+      ],
+      "academic_sub_fields": [
+        "Sociology", "Political Science", "Literary Studies", "History", "Cultural Studies", "Queer Studies", "Trans Studies", "Philosophy (Ethics, Political)"
+      ]
+    },
+    "Queer Theory": {
+      "description": "Challenges normativity, explores performativity, affect, with Butler, Sedgwick, Foucault.",
+      "keywords": ["Queer", "Performativity", "Normativity", "Heteronormativity", "Homophobia", "Transphobia", "Anti-normativity", "Temporality", "Affect", "Shame", "Pride", "Intersectionality", "Assimilation vs. Liberation", "Utopia", "The Closet"],
+      "philosophers": ["Judith Butler", "Eve Kosofsky Sedgwick", "Michel Foucault", "Sara Ahmed", "Lauren Berlant", "Leo Bersani", "Jack Halberstam", "José Esteban Muñoz", "Gayle Rubin", "Lee Edelman", "David Halperin"],
+      "typical_phrasing": [
+        "destabilizing identity categories", "challenging heteronormative assumptions", "the fluidity of desire and identification", "queering dominant narratives", "the politics of shame and pride", "resisting assimilationist pressures", "exploring non-normative temporalities", "the critical potential of negativity (or utopia)", "beyond the binary of sex and gender", "how power disciplines and produces queer subjects"
+      ],
+      "common_metaphors": [
+        "the closet", "queer time/space", "gender as performance", "straight time", "the 'bad' object"
+      ],
+      "academic_sub_fields": [
+        "Gender Studies", "Literary Studies", "Cultural Studies", "Sociology", "Performance Studies", "Film Studies", "History", "Affect Theory"
+      ]
+    },
+    "Decoloniality and Postcolonial Studies": {
+        "description": "Critiques the enduring legacies of colonialism and imperialism, focusing on issues of power, knowledge, representation, and resistance from the perspectives of formerly colonized peoples and their diasporas. It seeks to decenter Eurocentric thought and promote alternative epistemologies.",
+        "core_philosophers": ["Frantz Fanon", "Edward Said", "Gayatri Chakravorty Spivak", "Homi K. Bhabha", "Achille Mbembe", "Walter Mignolo", "Anibal Quijano", "Linda Tuhiwai Smith", "Sylvia Wynter", "Dipesh Chakrabarty", "Ngũgĩ wa Thiong'o"],
+        "key_concepts": ["decoloniality", "postcolonialism", "orientalism", "subaltern", "necropolitics", "coloniality of power", "border thinking", "hybridity", "mimicry", "epistemic disobedience", "decolonizing methodologies", "provincializing Europe", "world-systems theory"],
+        "relevant_terms": ["colonialism", "imperialism", "eurocentrism", "global South", "indigeneity", "diaspora", "resistance", "sovereignty", "othering", "cultural imperialism", "dependency theory"],
+        "context_phrases": [
+            "from a postcolonial theoretical perspective, challenging Eurocentric narratives and colonial legacies",
+            "engaging with Said's critique of Orientalism, its discursive power, and the politics of representation",
+            "considering Spivak's question 'Can the Subaltern Speak?' in relation to voice, agency, and epistemic violence",
+            "analyzing the concept of the coloniality of power/being/knowledge as developed by Quijano, Mignolo, and Wynter",
+            "exploring Fanon's theories on decolonization, violence, national consciousness, and the psychopathology of colonialism",
+            "within Mignolo's framework of border thinking, epistemic disobedience, and decolonial options/futures",
+            "examining Bhabha's notions of hybridity, mimicry, ambivalence, and the third space of enunciation",
+            "applying Linda Tuhiwai Smith's decolonizing methodologies to research practices and knowledge production",
+            "investigating the call to 'provincialize Europe' (Chakrabarty) and decenter Western epistemologies",
+            "discussing the ongoing struggles for indigenous sovereignty, land rights, and cultural resurgence globally"
+        ],
+        "related_adjectives": ["postcolonial", "decolonial", "anti-colonial", "subaltern", "indigenous", "diasporic", "eurocentric", "neo-colonial", "subalternized", "counter-hegemonic"],
+        "common_metaphors": [
+            "colonialism as a wound/scar",
+            "empire as a vampire/parasite",
+            "the subaltern as silenced/ghosted",
+            "decolonization as a journey/exodus",
+            "knowledge as a colonial tool/weapon"
+        ],
+        "academic_sub_fields": [
+            "postcolonial theory",
+            "decolonial studies",
+            "subaltern studies",
+            "indigenous studies",
+            "critical race theory",
+            "world-systems analysis"
+        ]
+    },
+    "Technology, Media, and Culture": {
+        "description": "Investigates the profound impact of technology and media on society, culture, perception, and the human condition. This theme explores surveillance, virtuality, the network society, and the ways technology shapes power, identity, and social relations.",
+        "core_philosophers": ["Jean Baudrillard", "Paul Virilio", "Donna Haraway", "Katherine Hayles", "Mark Fisher", "Byung-Chul Han", "Bernard Stiegler", "Marshall McLuhan"],
+        "key_concepts": ["simulacra", "hyperreality", "dromology", "speed", "cyborg", "posthumanism", "surveillance capitalism", "technics", "media archaeology", "digital humanities", "capitalist realism", "burnout society", "the medium is the message", "network society"],
+        "relevant_terms": ["cyberculture", "virtuality", "information age", "algorithm", "datafication", "platform capitalism", "accelerationism", "mediation", "digital divide", "information overload"],
+        "context_phrases": [
+            "in the age of digital surveillance, platform capitalism, and the datafication of everyday life",
+            "exploring Virilio's theories on dromology, speed, technology, and the integral accident",
+            "through Haraway's concept of the cyborg, situated knowledges, and the blurring of human-machine boundaries",
+            "analyzing the effects of media as extensions of man (McLuhan) or as systems of simulation (Baudrillard)",
+            "considering Stiegler's philosophy of technics, pharmacology, memory, and the proletarianization of the spirit",
+            "within the context of Byung-Chul Han's critique of digital society, psychopolitics, and the burnout society",
+            "examining the implications of Hayles' work on how we became posthuman and the embodiment of information",
+            "investigating the cultural impact of artificial intelligence and algorithmic governance",
+            "reflecting on Fisher's concept of capitalist realism and the perceived absence of alternatives mediated by culture",
+            "debating the utopian and dystopian potentials of emerging technologies and their societal integration"
+        ],
+        "related_adjectives": ["digital", "technological", "virtual", "networked", "mediated", "surveilled", "algorithmic", "posthuman", "cybernetic", "dromological"],
+        "common_metaphors": [
+            "technology as an extension of man/prosthesis",
+            "media as a lens/filter/environment",
+            "the internet as a web/network/matrix",
+            "information as a flood/deluge",
+            "cyberspace as a new frontier/territory"
+        ],
+        "academic_sub_fields": [
+            "media studies",
+            "science and technology studies (STS)",
+            "cyberculture studies",
+            "digital humanities",
+            "surveillance studies",
+            "posthumanist theory"
         ]
     },
     "Digital Subjectivity": {
@@ -1093,13 +967,7 @@
             "examining the labor involved in maintaining a digital presence and the concept of the 'digital worker' (Terranova)",
             "debating the utopian and dystopian potentials of digital technologies for self-expression, connection, and political action",
             "addressing issues of privacy, surveillance, and control in relation to digital subjectivity",
-            "reflecting on the fragmented, fluid, and often curated nature of the self in digital spaces (Chun, Horning)",
-            "in the age of digital surveillance",
-            "within the discourse of surveillance studies",
-            "navigating the terrain of platform capitalism",
-            "examining the posthuman condition",
-            "in a world shaped by datafication",
-            "within the sphere of algorithmic governance"
+            "reflecting on the fragmented, fluid, and often curated nature of the self in digital spaces (Chun, Horning)"
         ],
         "related_adjectives": [
             "digital", "virtual", "networked", "algorithmic", "datafied", "online", "performative",
@@ -1112,13 +980,130 @@
             "algorithms as black boxes/invisible hands",
             "online identity as a curated performance"
         ],
-        "academic_subfields": [
+        "academic_sub_fields": [
             "digital sociology",
             "cyberpsychology",
             "media studies (new media)",
             "critical data studies",
             "software studies",
             "philosophy of technology"
+        ]
+    },
+    "Science and Technology Studies (STS)": {
+      "description": "Investigates technoscience, cyborgs, ANT, with Haraway, Latour, Hayles, focusing on the co-production of science and society rather than broader posthumanism.",
+      "keywords": ["Science and Technology Studies", "Actor-Network Theory (ANT)", "Technoscience", "Sociology of Scientific Knowledge (SSK)", "Co-production", "Cyborg", "Situated Knowledges", "Material Semiotics", "Translation (sociology)"],
+      "philosophers": ["Bruno Latour", "Donna Haraway", "Katherine Hayles", "Michel Callon", "John Law", "Isabelle Stengers", "Andrew Pickering", "Sheila Jasanoff"],
+      "typical_phrasing": [
+        "the co-construction of science and society", "challenging technological determinism", "the implications of emerging technologies", "the agency of nonhuman actors (actants)", "the entanglement of nature and culture in technoscience", "analyzing scientific controversies", "the social shaping of technology", "Latour's concept of translation shows...", "Haraway's notion of situated knowledges..."
+      ],
+      "common_metaphors": [
+        "the network", "the cyborg as a hybrid figure", "black boxing", "science as a process of translation", "immutable mobiles"
+      ],
+      "academic_sub_fields": [
+        "Sociology of Science", "History of Science", "Philosophy of Technology", "Media Studies", "Cultural Studies", "Environmental Humanities", "Medical Anthropology/Sociology"
+      ]
+    },
+    "Affect, Materiality, and the Posthuman": {
+        "description": "Explores the role of affect, emotions, and bodily experience in shaping social and political life, often moving beyond purely discursive or representational frameworks. This theme engages with new materialisms, posthumanism, and the entanglements of human and non-human entities.",
+        "core_philosophers": ["Gilles Deleuze", "Félix Guattari", "Brian Massumi", "Rosi Braidotti", "Donna Haraway", "Sara Ahmed", "Lauren Berlant", "Elizabeth Grosz", "Karen Barad", "Jane Bennett"],
+        "key_concepts": ["affect theory", "new materialism", "posthumanism", "becoming", "assemblage", "rhizome", "body without organs", "immanence", "vibrant matter", "intra-action", "situated knowledges", "companion species", "chthulucene", "cruel optimism", "affective labor"],
+        "relevant_terms": ["materiality", "embodiment", "sensation", "intensity", "non-human", "entanglement", "flat ontology", "vitalism", "biopolitics", "ecology", "anthropocene"],
+        "context_phrases": [
+            "drawing on Deleuze and Guattari's concepts of affect, assemblage, becoming, and the body without organs",
+            "from the perspective of new materialist philosophies, emphasizing the agency and vibrancy of matter (Bennett, Barad)",
+            "exploring Braidotti's nomadic ethics, the posthuman subject, and affirmative politics",
+            "considering Haraway's work on cyborgs, companion species, situated knowledges, and chthulucenic entanglements",
+            "analyzing the political, cultural, and ethical work of affect, as theorized by Sara Ahmed, Lauren Berlant, or Brian Massumi",
+            "within a framework of Barad's agential realism, intra-action, and the inseparability of knowing and being",
+            "examining Jane Bennett's notion of vibrant matter, thing-power, and ecological assemblages",
+            "interrogating the boundaries between human and non-human in the Anthropocene, Capitalocene, or Plantationocene",
+            "investigating embodied cognition, affect contagion, and the visceral dimensions of social life",
+            "reflecting on posthuman ethics and the challenges of multispecies justice and planetary well-being"
+        ],
+        "related_adjectives": ["affective", "material", "embodied", "posthuman", "rhizomatic", "immanent", "vibrant", "non-anthropocentric", "ecological", "relational", "processual"],
+        "common_metaphors": [
+            "affect as a current/wave/contagion",
+            "matter as vibrant/agential",
+            "the body as a network/assemblage",
+            "humanity as a porous boundary",
+            "nature as a collaborator/co-conspirator"
+        ],
+        "academic_sub_fields": [
+            "affect theory",
+            "new materialism",
+            "posthumanism studies",
+            "animal studies",
+            "feminist science studies",
+            "critical disability studies"
+        ]
+    },
+    "Speculative Realism and Object-Oriented Ontology": {
+        "description": "A philosophical movement that rejects post-Kantian correlationism (the idea that reality is only accessible through human thought) and argues for the independent existence of objects and a reality beyond human perception.",
+        "core_philosophers": ["Quentin Meillassoux", "Graham Harman", "Ray Brassier", "Iain Hamilton Grant", "Manuel DeLanda", "Bruno Latour"],
+        "key_concepts": ["speculative realism", "object-oriented ontology (OOO)", "correlationism", "ancestrality", "hyperchaos", "the quadruple object", "tool-being", "flat ontology", "actor-network theory"],
+        "relevant_terms": ["anti-correlationism", "finitude", "non-philosophy", "realism", "materialism", "withdrawal", "dark vitalism"],
+        "context_phrases": [
+            "challenging Kantian correlationism (the human-world correlate) from a speculative realist standpoint (Meillassoux)",
+            "exploring Harman's object-oriented ontology (OOO), the withdrawal of objects, and vicarious causation",
+            "within Meillassoux's argument for absolute contingency, factiality, and the necessity of contingency (After Finitude)",
+            "considering the implications of flat ontology (DeLanda, Harman) for understanding reality beyond human access",
+            "engaging with Brassier's eliminative nihilism or Grant's transcendental materialism as strands of speculative thought",
+            "examining Latour's actor-network theory (ANT) as a related approach to decentering the human and tracing object relations",
+            "debating the nature of ancestrality, the arche-fossil, and thought's capacity to access a pre-human real",
+            "investigating the aesthetic and political implications of a world of autonomous objects and weird realism"
+        ],
+        "related_adjectives": ["speculative", "realist", "object-oriented", "correlationist", "non-correlationist", "ancestral", "ontological"],
+        "common_metaphors": [
+            "correlationism as a prison/circle",
+            "objects as withdrawn/icebergs",
+            "reality as the great outdoors",
+            "thought as a tool/probe",
+            "the ancestral as a distant star/fossil record"
+        ],
+        "academic_sub_fields": [
+            "speculative realism",
+            "object-oriented ontology (OOO)",
+            "metaphysics",
+            "contemporary continental philosophy",
+            "philosophy of science (critiques of constructivism)"
+        ]
+    },
+    "Critical Pedagogy and Liberatory Education": {
+        "description": "Focuses on educational theories and practices that aim to empower students to critically examine and challenge oppressive social structures, fostering social justice and liberation. It emphasizes dialogue, praxis, and the development of critical consciousness.",
+        "core_philosophers": ["Paulo Freire", "bell hooks", "Henry Giroux", "Peter McLaren", "Ira Shor", "Joe L. Kincheloe", "Shirley R. Steinberg"],
+        "key_concepts": ["Pedagogy of the Oppressed", "Critical Consciousness (Conscientização)", "Banking Model of Education (critiqued)", "Problem-Posing Education", "Praxis (reflection and action)", "Hidden Curriculum", "Dialogue", "Empowerment", "Transformative Learning", "Social Justice Education", "Student Voice", "Cultural Democracy in classrooms"],
+        "relevant_terms": ["Emancipatory Learning", "Critical Literacy", "Participatory Education", "Hegemony (in education)", "Counter-Hegemonic Education", "Democratizing Education", "Culturally Relevant Pedagogy"],
+        "context_phrases": [
+            "analyzing educational systems through a Freirean lens of 'pedagogy of the oppressed' and the development of critical consciousness (conscientização)",
+            "exploring bell hooks' concept of engaged pedagogy, teaching to transgress, and creating liberatory, anti-oppressive classroom communities",
+            "within the framework of critical pedagogy's challenge to traditional schooling, the 'banking model' of education, and the hidden curriculum (Giroux, McLaren)",
+            "examining the role of education in social reproduction versus its potential for fostering social change, democratic participation, and critical citizenship",
+            "promoting dialogue, problem-posing education, and praxis (the dialectic of reflection and action) as central to transformative learning experiences",
+            "addressing issues of power, privilege, oppression, and inequality within educational institutions, curricula, and pedagogical practices",
+            "cultivating critical literacy and the ability to deconstruct dominant ideologies, narratives, and power structures embedded in knowledge",
+            "advocating for student voice, agency, and participatory approaches to curriculum development, assessment, and classroom governance",
+            "connecting classroom learning to students' lived experiences and struggles for social justice in their communities",
+            "challenging neoliberal reforms in education that emphasize standardization, testing, and marketization over critical thinking and equity"
+        ],
+        "related_adjectives": ["critical", "liberatory", "emancipatory", "dialogical", "transformative", "participatory", "empowering", " Freirean", "anti-oppressive", "democratic"],
+        "common_metaphors": [
+            "education as banking/filling vessels (critiqued)",
+            "consciousness as awakening/unveiling/seeing through",
+            "oppression as a cage/chains/silence",
+            "liberation as a path/journey/birth",
+            "dialogue as bridge-building/co-creation of knowledge"
+        ],
+        "academic_subfields": [
+            "Critical Pedagogy",
+            "Sociology of Education",
+            "Philosophy of Education",
+            "Curriculum Studies (Critical)",
+            "Adult Education (Critical approaches)",
+            "Feminist Pedagogy",
+            "Anti-Racist Education"
+        ],
+        "typical_phrasing": [
+            "critical pedagogy aims to...", "Freire's concept of conscientização involves...", "the banking model of education is problematic because...", "problem-posing education encourages students to...", "engaged pedagogy, as hooks describes, fosters..."
         ]
     }
   },
@@ -1190,6 +1175,12 @@
     "Sara Ahmed": [
         ["The Cultural Politics of Emotion", 2004],
         ["Living a Feminist Life", 2017]
+    ],
+    "Vine Deloria Jr.": [
+      ["Custer Died for Your Sins: An Indian Manifesto", 1969],
+      ["God Is Red: A Native View of Religion", 1972],
+      ["The Nations Within: The Past and Future of American Indian Sovereignty", 1984],
+      ["Red Earth, White Lies: Native Americans and the Myth of Scientific Fact", 1995]
     ]
   },
   "citation_relationships": {
@@ -1235,7 +1226,8 @@
     "Italian Autonomist Marxism (Operaismo/Post-Operaismo)": ["Antonio Negri", "Michael Hardt", "Franco Berardi", "Paolo Virno", "Mario Tronti", "Silvia Federici"],
     "Phenomenology": ["Edmund Husserl", "Martin Heidegger", "Maurice Merleau-Ponty", "Emmanuel Levinas", "Jean-Paul Sartre", "Simone de Beauvoir", "Sara Ahmed"],
     "Existentialism": ["Jean-Paul Sartre", "Simone de Beauvoir", "Albert Camus", "Maurice Merleau-Ponty", "Frantz Fanon"],
-    "Structuralism": ["Ferdinand de Saussure", "Claude Lévi-Strauss", "Roland Barthes (early)", "Louis Althusser", "Jacques Lacan (early)"]
+    "Structuralism": ["Ferdinand de Saussure", "Claude Lévi-Strauss", "Roland Barthes (early)", "Louis Althusser", "Jacques Lacan (early)"],
+    "New Materialism": ["Jane Bennett", "Karen Barad", "Rosi Braidotti", "Manuel DeLanda", "Elizabeth Grosz", "Brian Massumi", "Isabelle Stengers"]
   },
   "PROPER_NOUNS": [
     "Adornian",
@@ -1403,6 +1395,7 @@
     { "concept1": "capitalism", "concept2": "communism", "relation_type": "is_opposed_by_classical_marxism", "strength_modifier": 8 },
     { "concept1": "communism", "concept2": "capitalism", "relation_type": "opposes_classical_marxism", "strength_modifier": 8 },
     { "concept1": "identity", "concept2": "difference", "relation_type": "is_defined_by", "strength_modifier": 7 },
-    { "concept1": "difference", "concept2": "identity", "relation_type": "is_constitutive_of", "strength_modifier": 7 }
+    { "concept1": "difference", "concept2": "identity", "relation_type": "is_constitutive_of", "strength_modifier": 7 },
+    { "concept1": "Neoliberalism", "concept2": "Precarity", "relation_type": "causes/exacerbates", "context": "Neoliberal policies often lead to increased precarity for workers and citizens."}
   ]
 } 

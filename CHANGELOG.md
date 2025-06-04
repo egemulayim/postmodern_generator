@@ -14,17 +14,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API integration
 - Expanded knowledge base with emerging theorists
 
-## [0.1.2] - 2025-06-01
+## [0.1.2] - 2025-06-02
 
 ### Added
+- **Dynamic Weight Adjustment**: Implemented a dynamic weighting system in `coherence.py` (specifically in the `record_usage` method). This system adjusts the selection probability of concepts, terms, and philosophers during essay generation by: 
+    - Decaying the weight of items already used, reducing immediate repetition.
+    - Boosting the weight of concepts related to a recently used concept, and concepts associated with a recently used philosopher, to enhance local thematic coherence.
+    - Default decay factor is 0.8 and related boost factor is 1.2, configurable in `record_usage` calls.
 - **Enhanced Sentence Complexity and Variety**: Implemented new sentence construction patterns in `sentence.py` and `postmodern_sentence.py` to generate more diverse and grammatically sophisticated sentence structures. This reduces repetition and enhances readability.
 - **Refined Abstract Generation**: Updated algorithms in `abstract_generator.py` to produce abstracts that are more thematically focused, concise, and representative of the essay's core arguments.
+- **CLI Export Option**: Added `--export` and `--no-export` command-line arguments to predetermine whether essays will be exported as Markdown files, eliminating the need for post-generation user prompts and enabling fully automated essay generation workflows.
+- **Interactive Help System**: Added 'h' option during theme selection to display CLI command examples and usage tips. Enhanced the interactive interface with helpful prompts informing users about `--help` option for comprehensive command-line documentation.
+- **Interactive Theme Information Screen**: Added a new feature in `main.py` accessible from the theme selection menu. Users can now input 'i' to view a dedicated screen displaying a numbered list of all available themes along with their full descriptions. The screen clears for readability and refreshes back to the theme selection menu upon exit, preserving the session's seed.
 
 ### Changed
 - **Performance Optimization**: Optimized core logic in `coherence.py` and `essay.py`, particularly in theme selection and dialectical progression algorithms, leading to faster generation times for complex and lengthy essays.
+- **Theme Selection UI**: Removed the short parenthetical descriptions from the theme selection list in `main.py` as full descriptions are now available on the new theme information screen.
 
 ### Fixed
+- **Critical Import Issues in sentence.py**: Fixed improper local definitions of `citation_relationships` and `philosophical_movements` as empty dictionaries. These are now properly imported from `json_data_provider.py`, ensuring access to 20 philosophical movements and proper citation relationship mapping.
+- **Coherence Manager Integration**: Fixed inconsistent key usage in `_populate_context_fields` function where coherence_manager was expected under `'_coherence_manager'` key but stored under `'coherence_manager'` key.
+- **Template Field Processing**: Corrected field checking logic in `_populate_context_fields` to properly handle template placeholders without curly braces.
 - **Markdown Export Formatting**: Resolved a minor issue in `md_export.py` where extremely long essay titles could cause minor formatting inconsistencies in the metadata block of exported Markdown files.
+
+### Enhanced
+- **Sentence-Level Thematic Guidance**: Improved integration between sentence generation and the coherence manager, ensuring philosopher and concept selection aligns with active themes and dynamic weight adjustments.
+- **Error Handling**: Enhanced fallback mechanisms in sentence generation to gracefully handle missing data while maintaining thematic coherence.
+- **Code Consistency**: Standardized data key usage across sentence generation functions for better maintainability.
+
+### Tested
+- Verified functionality with multiple themes ("Digital Subjectivity", "Queer Theory") and different seeds
+- Confirmed proper philosopher relationship mapping and citation generation
+- Validated coherence manager integration across all sentence types (introduction, general, conclusion)
+- Tested CLI export options with various argument combinations
 
 ## [0.1.15] - 2025-06-01
 

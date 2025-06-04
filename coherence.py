@@ -275,28 +275,106 @@ class EssayCoherence:
                     relationships[c2][c1]["strength"] += strength_mod
         return relationships
     
-    def record_usage(self, concepts=None, terms=None, philosophers=None):
+    def record_usage(self, concepts=None, terms=None, philosophers=None, decay_factor=0.8, related_boost_factor=1.2):
         """
-        Record usage of concepts, terms, and philosophers to maintain coherence.
+        Record usage of concepts, terms, and philosophers, and dynamically adjust their weights.
+        Decays weight of used items and boosts related items with improved progressive decay.
+
+        Args:
+            concepts (list, optional): List of concepts used.
+            terms (list, optional): List of terms used.
+            philosophers (list, optional): List of philosophers used.
+            decay_factor (float): Multiplier to decay weight of used items (e.g., 0.8 for 20% decay).
+            related_boost_factor (float): Multiplier to boost weight of related concepts.
         """
         if concepts:
             for concept in concepts:
-                self.concept_weights[concept] += 1
-                self.used_concepts.add(concept)
-        
+                if concept and concept in self.concepts:
+                    self.used_concepts.add(concept)
+                    current_weight = self.concept_weights.get(concept, 1)
+                    
+                    # Progressive decay: repeated use increases decay
+                    usage_count = sum(1 for c in self.used_concepts if c == concept)
+                    progressive_decay = decay_factor ** usage_count
+                    self.concept_weights[concept] = max(0.05, current_weight * progressive_decay)
+                    
+                    # Boost related concepts with relationship-aware scaling
+                    if concept in self.concept_relationships:
+                        for related_concept, data in self.concept_relationships[concept].items():
+                            if related_concept in self.concepts and related_concept != concept:
+                                relation_strength = data.get("strength", 1)
+                                relation_type = data.get("type", "related")
+                                
+                                # Different boost factors based on relationship type
+                                if relation_type in ["is_foundational_to", "develops_from", "is_central_to"]:
+                                    type_boost = 1.4  # Strong structural relationships
+                                elif relation_type in ["critiques", "challenges", "rejects"]:
+                                    type_boost = 1.2  # Critical relationships
+                                elif relation_type == "oppositional":
+                                    type_boost = 0.9  # Slightly reduce oppositional concepts when using their pair
+                                else:
+                                    type_boost = related_boost_factor  # Default related boost
+                                
+                                strength_multiplier = (relation_strength / 10.0) + 0.5  # Scale from 0.5 to 1.5
+                                final_boost = (type_boost - 1) * strength_multiplier + 1
+                                
+                                current_related_weight = self.concept_weights.get(related_concept, 1)
+                                self.concept_weights[related_concept] = max(0.1, current_related_weight * final_boost)
+
         if terms:
             for term in terms:
-                self.term_weights[term] += 1
-                self.used_terms.add(term)
-                
+                if term and term in self.terms:
+                    self.used_terms.add(term)
+                    current_weight = self.term_weights.get(term, 1)
+                    
+                    # Progressive decay for terms too
+                    usage_count = sum(1 for t in self.used_terms if t == term)
+                    progressive_decay = decay_factor ** usage_count
+                    self.term_weights[term] = max(0.05, current_weight * progressive_decay)
+
         if philosophers:
             for philosopher in philosophers:
-                # Add a filter to ignore very short philosopher names
-                if philosopher and len(philosopher.strip().replace(".", "")) > 1:
-                    self.philosopher_weights[philosopher] += 1
+                if philosopher and philosopher in self.philosophers and len(philosopher.strip().replace(".", "")) > 1:
                     self.used_philosophers.add(philosopher)
-                # else: implicitly ignore the short/invalid philosopher name
-    
+                    current_weight = self.philosopher_weights.get(philosopher, 1)
+                    
+                    # Progressive decay for philosophers
+                    usage_count = sum(1 for p in self.used_philosophers if p == philosopher)
+                    progressive_decay = decay_factor ** usage_count
+                    self.philosopher_weights[philosopher] = max(0.05, current_weight * progressive_decay)
+                    
+                    # Boost concepts associated with this philosopher
+                    if philosopher in self.philosopher_concepts:
+                        for ph_concept in self.philosopher_concepts[philosopher]:
+                            if ph_concept in self.concepts:
+                                current_ph_concept_weight = self.concept_weights.get(ph_concept, 1)
+                                # Scale boost based on how often the philosopher has been used
+                                scaled_boost = related_boost_factor * (1.0 / (usage_count + 1))
+                                self.concept_weights[ph_concept] = max(0.1, current_ph_concept_weight * scaled_boost)
+
+    def refresh_theme_weights(self, boost_factor=1.3):
+        """
+        Refresh and boost weights for theme-specific items to maintain thematic coherence.
+        This can be called periodically during essay generation to prevent theme drift.
+        """
+        if not self.active_theme_key or not self.active_theme_data:
+            return
+
+        # Boost primary theme concepts
+        for concept in self.active_theme_data.get('key_concepts', []):
+            if concept in self.concept_weights:
+                self.concept_weights[concept] = min(10.0, self.concept_weights[concept] * boost_factor)
+
+        # Boost primary theme terms
+        for term in self.active_theme_data.get('relevant_terms', []):
+            if term in self.term_weights:
+                self.term_weights[term] = min(10.0, self.term_weights[term] * boost_factor)
+
+        # Boost primary theme philosophers
+        for philosopher in self.active_theme_data.get('core_philosophers', []):
+            if philosopher in self.philosopher_weights:
+                self.philosopher_weights[philosopher] = min(10.0, self.philosopher_weights[philosopher] * boost_factor)
+
     def _get_weighted_items(self, item_list, item_weights, exclude_set, theme_specific_items=None, subset=None):
         """Helper function to get weighted items, applying thematic boost if a theme is active.
            If subset is provided, only items from that subset are considered.

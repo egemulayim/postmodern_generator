@@ -100,21 +100,18 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
     forbidden_concepts_set = set(forbidden_concepts)
     forbidden_terms_set = set(forbidden_terms)
 
-    # Initialize sets to track what's actually used in the final selected sentences for this paragraph
     final_used_philosophers = set()
     final_used_concepts = set()
     final_used_terms = set()
 
-    # Determine primary thematic elements for this paragraph
-    # Priority: context -> coherence_manager active theme -> coherence_manager weighted choices -> random
     paragraph_theme_concept = None
     paragraph_theme_philosopher = None
     paragraph_theme_term = None
+    paragraph_expected_next_action = "develop_argument" # Default for general paragraphs
 
     if context:
         paragraph_theme_concept = context.get('theme_concept')
         paragraph_theme_philosopher = context.get('theme_philosopher')
-        # If context has primary concepts/terms from title themes, consider them
         if context.get('title_themes'):
             title_primary_concepts = context['title_themes'].get('primary_concepts', [])
             if title_primary_concepts and not paragraph_theme_concept:
@@ -123,21 +120,53 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
             if title_primary_terms:
                 paragraph_theme_term = random.choice(title_primary_terms)
 
-
     if coherence_manager:
         if not paragraph_theme_concept:
-            paragraph_theme_concept = coherence_manager.get_weighted_concept(exclude=forbidden_concepts_set)
-        if not paragraph_theme_philosopher:
-            # Try to get a philosopher related to the paragraph_theme_concept or active theme
-            if paragraph_theme_concept and paragraph_theme_concept in coherence_manager.philosopher_concepts:
-                 candidates = [p for p, c_list in coherence_manager.philosopher_concepts.items() if paragraph_theme_concept in c_list and p not in forbidden_philosophers_set]
-                 if candidates: paragraph_theme_philosopher = random.choice(candidates)
-            if not paragraph_theme_philosopher: # Fallback to weighted philosopher
-                 paragraph_theme_philosopher = coherence_manager.get_weighted_philosopher(exclude=forbidden_philosophers_set)
-        if not paragraph_theme_term:
-            paragraph_theme_term = coherence_manager.get_weighted_term(exclude=forbidden_terms_set.union({paragraph_theme_concept} if paragraph_theme_concept else set()))
+            paragraph_theme_concept = coherence_manager.get_weighted_concept(exclude=list(forbidden_concepts_set))
         
-        # Record initial thematic elements as used by coherence_manager for weighting
+        if not paragraph_theme_philosopher:
+            if paragraph_theme_concept:
+                # Prefer philosophers related to the chosen concept
+                candidate_philosophers = [p for p, concepts_list in coherence_manager.philosopher_concepts.items() \
+                                          if paragraph_theme_concept in concepts_list and \
+                                             p not in forbidden_philosophers_set and \
+                                             p not in coherence_manager.used_philosophers]
+                if candidate_philosophers:
+                    # Apply weights if possible, or choose randomly from candidates
+                    weighted_candidates = {p: coherence_manager.philosopher_weights.get(p, 1) for p in candidate_philosophers}
+                    if any(w > 0 for w in weighted_candidates.values()):
+                        paragraph_theme_philosopher = random.choices(list(weighted_candidates.keys()), weights=list(weighted_candidates.values()), k=1)[0]
+                    else:
+                        paragraph_theme_philosopher = random.choice(candidate_philosophers)
+            
+            if not paragraph_theme_philosopher: # Fallback to general weighted philosopher
+                 paragraph_theme_philosopher = coherence_manager.get_weighted_philosopher(exclude=list(forbidden_philosophers_set))
+        if not paragraph_theme_term:
+            # Prefer terms related to the theme concept if possible (simple check for now)
+            # A more robust way would be to check concept_relationships or active_theme_data
+            if paragraph_theme_concept and paragraph_theme_concept in coherence_manager.concept_relationships:
+                related_items = coherence_manager.concept_relationships[paragraph_theme_concept]
+                candidate_terms = [item for item in related_items if item in coherence_manager.terms and \
+                                     item not in forbidden_terms_set and \
+                                     item not in coherence_manager.used_terms and \
+                                     item != paragraph_theme_concept] # Ensure term is not the concept itself
+                if candidate_terms:
+                    paragraph_theme_term = random.choice(candidate_terms)
+            if not paragraph_theme_term: # Fallback to general weighted term
+                 paragraph_theme_term = coherence_manager.get_weighted_term(exclude=list(forbidden_terms_set.union({paragraph_theme_concept} if paragraph_theme_concept else set())))
+
+        # Determine expected_next_action based on paragraph template_type
+        if template_type == 'introduction':
+            paragraph_expected_next_action = "introduce_topic"
+        elif template_type == 'conclusion':
+            paragraph_expected_next_action = "summarize_or_conclude"
+        elif template_type == 'general':
+             # For general paragraphs, vary between development and contrast
+            if random.random() < 0.3: # Occasionally aim for contrast in general paragraphs
+                paragraph_expected_next_action = "contrast"
+            else:
+                paragraph_expected_next_action = "develop_argument" 
+
         coherence_manager.record_usage(
             concepts=[paragraph_theme_concept] if paragraph_theme_concept else [],
             terms=[paragraph_theme_term] if paragraph_theme_term else [],
@@ -344,7 +373,7 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
     paragraph_str = ensure_quote_has_citation(paragraph_str)
 
     # The returned concepts/terms should be what's *actually* in the final paragraph
-    return paragraph_str, final_used_concepts, final_used_terms
+    return paragraph_str, final_used_concepts, final_used_philosophers
 
 def _handle_mla_citation(paragraph_str, cited_references, note_system, context=None, coherence_manager=None):
     """

@@ -23,7 +23,9 @@ from json_data_provider import (
     conjunctions,
     title_templates,
     adjectives,
-    academic_vocab # Added academic_vocab as it's used in the file
+    academic_vocab, # Added academic_vocab as it's used in the file
+    citation_relationships,  # Now properly imported
+    philosophical_movements  # Now properly imported
 )
 from reference import generate_reference, generate_full_name # generate_full_name might be useful for some templates
 from postmodern_sentence import (enhanced_introduction_templates, enhanced_general_templates, 
@@ -40,8 +42,9 @@ CLEANED_PHILOSOPHERS = [
 if not CLEANED_PHILOSOPHERS:  # Fallback if cleaning results in an empty list
     CLEANED_PHILOSOPHERS = ["Michel Foucault", "Judith Butler", "Jacques Derrida", "Slavoj Žižek"]
 
-citation_relationships = {}
-philosophical_movements = {}
+# Remove these empty local definitions that were overriding the imports
+# citation_relationships = {}
+# philosophical_movements = {}
 
 quote_enhanced_templates = [
     "As {philosopher} writes, \"{quote},\" {citation} which fundamentally reconfigures our understanding of {concept} in relation to {term}.",
@@ -875,11 +878,11 @@ def _populate_term_fields(fields, data, forbidden_terms, used_terms, coherence_m
 
 def _populate_context_fields(fields, data):
     """Populate context and adjective fields if not already present."""
-    if 'context' not in data and '{context}' in fields:
+    if 'context' not in data and 'context' in fields:
         # This function is called from _format_sentence_from_template,
         # which should have coherence_manager if {context} is a placeholder.
         # However, to be safe, we check.
-        coherence_manager = data.get('_coherence_manager') # Assume coherence_manager is passed in data dict
+        coherence_manager = data.get('coherence_manager')  # Fixed: use correct key
         if coherence_manager:
             theme_context = coherence_manager.get_theme_context_phrase()
             if theme_context:
@@ -890,7 +893,7 @@ def _populate_context_fields(fields, data):
             # Fallback if coherence_manager is not available for some reason, though it should be.
             # This path should ideally not be taken if {context} placeholder is used.
             data['context'] = "a broad theoretical context" # Generic fallback
-    if 'adjective' not in data and '{adjective}' in fields:
+    if 'adjective' not in data and 'adjective' in fields:
         data['adjective'] = random.choice(["critical", "radical", "postmodern", "deconstructive", "theoretical", 
                                   "discursive", "dialectical", "phenomenological", "ontological", "epistemological"])
 
@@ -1142,12 +1145,12 @@ def _format_sentence_from_template(template, data, used_concepts, used_terms, no
     # have side effects or if we decide to conditionally use their results.
     working_data = data.copy()
     if coherence_manager:
-        working_data['_coherence_manager'] = coherence_manager
+        working_data['coherence_manager'] = coherence_manager  # Fixed: use consistent key
 
     # Populate context, adjective, metaphor, subfield if their placeholders are in the template
     # and they haven't been set by the calling function (e.g., _generate_general_sentence)
     if '{context}' in fields_in_template and 'context' not in working_data:
-        _populate_context_fields(fields_in_template, working_data) # Should use _coherence_manager from working_data
+        _populate_context_fields(fields_in_template, working_data) # Now uses correct key
     
     if '{adjective}' in fields_in_template and 'adjective' not in working_data:
         # A simplified version for adjectives if not pre-populated, can be expanded if needed

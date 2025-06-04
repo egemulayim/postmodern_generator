@@ -274,6 +274,10 @@ def generate_essay(theme_key=None):
         section_paragraphs = []
         num_paragraphs_in_section = random.randint(MIN_PARAGRAPHS_PER_SECTION, MAX_PARAGRAPHS_PER_SECTION)
         
+        # Refresh theme weights periodically to maintain thematic coherence
+        if i > 0 and i % 2 == 0:  # Every second section
+            coherence_manager.refresh_theme_weights()
+        
         # Context for this section, including the main concept for the section
         # and philosophers relevant to the overall essay title
         section_context = {
@@ -287,7 +291,7 @@ def generate_essay(theme_key=None):
         for j in range(num_paragraphs_in_section):
             num_sentences = random.randint(MIN_SENTENCES_PER_PARAGRAPH, MAX_SENTENCES_PER_PARAGRAPH)
             # Pass coherence_manager and section_context to paragraph generation
-            paragraph_text, _, _ = generate_paragraph(
+            paragraph_text, paragraph_concepts, paragraph_philosophers = generate_paragraph(
                 template_type='general', 
                 num_sentences=num_sentences, 
                 forbidden_philosophers=[], # Manage forbidden items at a higher level or within paragraph if needed
@@ -299,6 +303,12 @@ def generate_essay(theme_key=None):
                 coherence_manager=coherence_manager
             )
             section_paragraphs.append(paragraph_text)
+            
+            # Record usage of concepts and philosophers from the paragraph for weight adjustment
+            if paragraph_concepts:
+                coherence_manager.record_usage(concepts=paragraph_concepts)
+            if paragraph_philosophers:
+                coherence_manager.record_usage(philosophers=paragraph_philosophers)
             
             # Add a metafictional element with some probability
             if random.random() < 0.15: # 15% chance to add metafiction to a paragraph
@@ -326,7 +336,7 @@ def generate_essay(theme_key=None):
             'relevant_philosophers': relevant_philosophers
         }
         
-        conclusion_paragraph, _, _ = generate_paragraph(
+        conclusion_paragraph, conclusion_concepts, conclusion_philosophers = generate_paragraph(
             template_type='conclusion', 
             num_sentences=num_sentences, 
             mentioned_philosophers=note_system.get_mentioned_philosophers(),
@@ -336,11 +346,60 @@ def generate_essay(theme_key=None):
             coherence_manager=coherence_manager
         )
         essay_parts.append(conclusion_paragraph + "\n\n")
+        
+        # Record usage for conclusion elements too
+        if conclusion_concepts:
+            coherence_manager.record_usage(concepts=conclusion_concepts)
+        if conclusion_philosophers:
+            coherence_manager.record_usage(philosophers=conclusion_philosophers)
     
     # Add a final metafictional statement to the conclusion if desired
+    # Store the last conclusion paragraph without trailing newlines for potential concatenation
+    last_conclusion_paragraph = essay_parts.pop().rstrip() if essay_parts and essay_parts[-1].endswith("\n\n") else ""
+    
+    if num_conclusion_paragraphs > 0: # Ensure there was a conclusion paragraph to begin with
+        current_conclusion_content = last_conclusion_paragraph
+    else: # If no regular conclusion paragraphs were generated, start fresh
+        current_conclusion_content = ""
+        # Generate a basic conclusion paragraph if none exists and metafiction is added
+        if random.random() < 0.4: # Re-check condition for adding metafiction
+            num_sentences = random.randint(MIN_SENTENCES_PER_PARAGRAPH - 2, MAX_SENTENCES_PER_PARAGRAPH - 2)
+            if num_sentences < 2: num_sentences = 2
+            conclusion_context = {
+                'section_index': num_body_sections,
+                'total_sections': num_body_sections + 1,
+                'theme_concept': coherence_manager.get_weighted_concept(subset=coherence_manager.used_concepts or None),
+                'title_themes': title_themes,
+                'relevant_philosophers': relevant_philosophers
+            }
+            base_conclusion_paragraph, base_conclusion_concepts, base_conclusion_philosophers = generate_paragraph(
+                template_type='conclusion',
+                num_sentences=num_sentences,
+                mentioned_philosophers=note_system.get_mentioned_philosophers(),
+                used_quotes=used_quotes,
+                note_system=note_system,
+                context=conclusion_context,
+                coherence_manager=coherence_manager
+            )
+            current_conclusion_content = base_conclusion_paragraph
+            
+            # Record usage for fallback conclusion elements too
+            if base_conclusion_concepts:
+                coherence_manager.record_usage(concepts=base_conclusion_concepts)
+            if base_conclusion_philosophers:
+                coherence_manager.record_usage(philosophers=base_conclusion_philosophers)
+
     if random.random() < 0.4: # 40% chance for a final metafictional kicker
         final_meta = metafiction.generate_metafictional_conclusion(coherence_manager.used_concepts, coherence_manager.used_terms, theme_key=theme_key, coherence_manager=coherence_manager)
-        essay_parts.append(ensure_proper_capitalization_with_italics(italicize_terms_in_text(final_meta)) + "\n\n")
+        processed_final_meta = ensure_proper_capitalization_with_italics(italicize_terms_in_text(final_meta))
+        if current_conclusion_content:
+             # Add a space only if current_conclusion_content is not empty
+            current_conclusion_content += " " + processed_final_meta
+        else:
+            current_conclusion_content = processed_final_meta
+
+    if current_conclusion_content: # Only append if there's something to append
+        essay_parts.append(current_conclusion_content + "\n\n")
 
     # Works Cited / Bibliography
     notes_and_bibliography_section = note_system.generate_notes_section()
