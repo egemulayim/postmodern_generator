@@ -117,7 +117,7 @@ Version 0.1.2 focuses on enhancing the quality of generated text and improving p
 
 ### v0.1.15
 
-Version 0.1.15 introduced key enhancements to the generator's logical core and portability:
+Version 0.1.15 introduces key enhancements to the generator's logical core and portability:
 
 - **Advanced Concept Relationships**: Implemented a more advanced system for defining relationships between concepts. This includes various relationship types (e.g., 'critiques', 'is_foundational_to', 'complements') and strength modifiers, which allows for richer thematic development.
 - **Refined Dialectical Progression**: There is a new dialectical development system targeting concept relationship strengths and types to create a more nuanced and logically sound Thesis-Antithesis-Synthesis progression for essay sections. This is integrated for generating section themes.
@@ -126,7 +126,7 @@ Version 0.1.15 introduced key enhancements to the generator's logical core and p
 
 ### v0.1.1
 
-Version 0.1.1 focused on enhancing the robustness and accuracy of the citation system. Key improvements include:
+Version 0.1.1 focuses on enhancing the robustness and accuracy of the citation system. Key improvements include:
 
 - **Enhanced Citation Generation**: Significantly improved fallback mechanisms to prevent empty or incomplete bibliographic entries and in-text citations. This ensures that all generated citations are plausible and complete.
 - **MLA Punctuation Refinements**: Updated logic for precise adherence to MLA 9 style for punctuation within quotes and for sentence-ending punctuation following parenthetical citations.
