@@ -18,11 +18,6 @@ from json_data_provider import (
     concept_relation_details
 )
 
-# Placeholder definitions for variables previously imported but not found in data.py
-# philosopher_key_works = {}  # Will be imported from data.py
-# concept_clusters = {}       # We will use thematic_clusters from data.py instead
-# citation_relationships = {} # REMOVE - Now defined in data.py
-# philosophical_movements = {} # REMOVE - Now defined in data.py
 # oppositional_pairs = []     # Will be imported from data.py
 
 class EssayCoherence:
@@ -51,6 +46,14 @@ class EssayCoherence:
         self.concept_weights = Counter()
         self.philosopher_weights = Counter()
         self.term_weights = Counter()
+
+        # Enhanced dialectical tracking for metafiction integration
+        self.dialectical_history = []  # Track dialectical progressions
+        self.current_dialectical_stage = None  # thesis, antithesis, synthesis
+        self.last_oppositional_shift = None  # Track when oppositions were introduced
+        self.section_index = 0  # Track current section for positional awareness
+        self.dialectical_tensions = []  # Track conceptual tensions being developed
+        self.metafiction_count_per_section = defaultdict(int)  # Track metafiction frequency
 
         # Initialize philosopher_concepts and philosopher_key_works BEFORE building relationships
         self.philosopher_concepts = philosopher_concepts # Imported from data.py
@@ -780,3 +783,110 @@ class EssayCoherence:
         elif fallback_to_general:
             return self.get_weighted_term()
         return None
+
+    def advance_section(self):
+        """Advance to next section and reset section-specific tracking."""
+        self.section_index += 1
+        self.metafiction_count_per_section[self.section_index] = 0
+        
+    def get_dialectical_context(self):
+        """Get current dialectical context for metafiction decision-making."""
+        return {
+            'dialectical_stage': self.current_dialectical_stage,
+            'section_index': self.section_index,
+            'oppositional_shift': self.last_oppositional_shift is not None and 
+                                len(self.dialectical_history) - self.last_oppositional_shift <= 2,
+            'recent_tensions': self.dialectical_tensions[-3:] if len(self.dialectical_tensions) > 0 else [],
+            'metafiction_count_this_section': self.metafiction_count_per_section[self.section_index]
+        }
+        
+    def record_metafiction_usage(self):
+        """Record that metafiction was used in current section."""
+        self.metafiction_count_per_section[self.section_index] += 1
+        
+    def detect_dialectical_moment(self, concept_used, paragraph_content=None):
+        """
+        Detect if we're in a significant dialectical moment that would benefit from metafiction.
+        Returns tuple: (is_dialectical_moment, moment_type, intensity)
+        """
+        is_moment = False
+        moment_type = None
+        intensity = 0.0
+        
+        # Check if this concept introduces an opposition
+        oppositional_concept = self.get_oppositional_concept(concept_used)
+        if oppositional_concept and oppositional_concept in self.used_concepts:
+            is_moment = True
+            moment_type = 'oppositional_tension'
+            intensity = 0.7
+            self.last_oppositional_shift = len(self.dialectical_history)
+            self.dialectical_tensions.append((concept_used, oppositional_concept))
+            
+        # Check if we're developing a dialectical progression
+        if len(self.dialectical_history) > 0:
+            last_concept = self.dialectical_history[-1].get('concept')
+            if last_concept and self.get_oppositional_concept(last_concept) == concept_used:
+                is_moment = True
+                moment_type = 'dialectical_progression'
+                intensity = 0.8
+                
+        # Check for conceptual clusters that suggest synthesis
+        recent_concepts = [entry.get('concept') for entry in self.dialectical_history[-3:]]
+        if len(set(recent_concepts)) >= 2 and concept_used not in recent_concepts:
+            related_count = sum(1 for rc in recent_concepts 
+                              if self.get_related_concept(rc) == concept_used)
+            if related_count > 0:
+                is_moment = True
+                moment_type = 'synthetic_convergence'
+                intensity = 0.6
+                
+        # Record dialectical entry
+        self.dialectical_history.append({
+            'concept': concept_used,
+            'section_index': self.section_index,
+            'is_moment': is_moment,
+            'moment_type': moment_type,
+            'intensity': intensity
+        })
+        
+        # Update dialectical stage
+        if moment_type == 'oppositional_tension':
+            self.current_dialectical_stage = 'antithesis'
+        elif moment_type == 'synthetic_convergence':
+            self.current_dialectical_stage = 'synthesis'
+        elif not self.current_dialectical_stage:
+            self.current_dialectical_stage = 'thesis'
+            
+        return is_moment, moment_type, intensity
+        
+    def get_metafiction_templates_for_context(self, context_type, concept=None, term=None, philosopher=None):
+        """
+        Get contextually appropriate metafictional templates based on dialectical context.
+        """
+        templates = []
+        
+        if context_type == 'oppositional_tension':
+            templates.extend([
+                f"The tension between {concept} and its apparent opposite reveals the constructed nature of this theoretical framework.",
+                f"This analysis finds itself caught between {concept} and {term}, unable to resolve the contradiction it has generated.",
+                f"The binary logic that opposes {concept} to {term} is precisely what this investigation seeks to transcend, yet cannot escape.",
+                f"Here the argument encounters an aporia: the more we elaborate {concept}, the more it calls forth its own {term}."
+            ])
+            
+        elif context_type == 'dialectical_progression':
+            templates.extend([
+                f"This argumentative movement from {concept} to {term} enacts the very dialectical process it describes.",
+                f"The progression of this analysis mirrors the {concept} it seeks to theorize, perhaps too closely.",
+                f"In moving from {concept} to {term}, this investigation performs its own theoretical evolution.",
+                f"The reader will notice that this transition reveals the extent to which {philosopher}'s framework shapes the analysis."
+            ])
+            
+        elif context_type == 'synthetic_convergence':
+            templates.extend([
+                f"The convergence of these themes around {concept} suggests a synthesis that the analysis has been unconsciously developing.",
+                f"This apparent resolution of {concept} and {term} may conceal new contradictions that remain to be explored.",
+                f"The synthesis attempted here between {concept} and {term} remains provisional and open to further deconstruction.",
+                f"What appears as theoretical closure around {concept} may simply mark the displacement of the problem onto new terrain."
+            ])
+            
+        return templates if templates else None

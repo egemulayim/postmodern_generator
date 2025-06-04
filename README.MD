@@ -6,7 +6,7 @@ Welcome to The Postmodern Generator project. This repository contains the source
 
 - [Introduction](#introduction)
 - [Features](#features)
-- [Recent Changes (v0.1.2)](#recent-changes-v012)
+- [Recent Changes (v0.1.5)](#recent-changes-v015)
 - [Previous Changes](#previous-changes)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -38,10 +38,69 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 - **Proper Formatting**: Handles capitalization, italicization, and academic conventions
 - **Reproducible Output**: Flexible seed input (specific integer or random) for generating consistent or varied results
 - **Lightweight and Efficient**: Does not rely on large language models, ensuring quick and resource-efficient text generation
-- **Markdown Export**: Save generated essays as `.md` files with comprehensive metadata including seed, theme, and generation timestamp
+- **Markdown Export**: Save generated essays as `.md` files with comprehensive metadata including seed, theme, metafiction level, and generation timestamp
+- **Enhanced Export Metadata**: Exported essays include detailed YAML frontmatter with generation parameters for reproducibility and analysis
 - **JSON-Based Data Architecture**: Robust, extensible knowledge base with advanced error handling and dynamic data file path loading.
 
-## Recent Changes (v0.1.2)
+## Recent Changes (v0.1.5)
+
+Version 0.1.5 focuses on comprehensive code quality improvements and maintainability enhancements:
+
+### **Code Quality and Maintenance**
+- **Duplicate Function Elimination**: Removed redundant `_select_theme()` function in `main.py`, replacing it with a streamlined `_select_theme_simple()` wrapper while preserving all functionality and improving code organization
+- **Legacy Code Cleanup**: Removed commented-out legacy code in `sentence.py` and `coherence.py` that was previously overriding proper imports from `json_data_provider`
+- **Debug Code Removal**: Cleaned up commented debug print statements in `json_data_provider.py` for cleaner production code
+- **Import Consistency**: Ensured all modules properly use centralized imports from `json_data_provider.py` without local overrides
+- **Function Organization**: Streamlined theme selection logic with clear separation between interactive navigation and programmatic selection
+
+### **Technical Validation**
+- **Compilation Verification**: All core modules now compile cleanly without warnings or errors
+- **Citation System Integrity**: Verified that `citation_relationships` and `philosophical_movements` are properly imported from data provider
+- **Data Loading Robustness**: Maintained all error handling and fallback mechanisms
+- **Functionality Testing**: Confirmed all essay generation features work correctly after cleanup (16 themes, 91 philosophers, 97 concepts)
+- **CLI Compatibility**: Tested all command-line arguments and interactive features maintain full functionality
+
+### **Previous Changes (v0.1.4)**
+
+Version 0.1.4 introduces a comprehensive enhancement to the metafiction system, dramatically improving the sophistication and contextual awareness of self-reflexive elements:
+
+### **Enhanced Metafiction System**
+- **Contextual Awareness**: Metafiction now features strategic placement after bold claims, dense theoretical points, and dialectical transitions. The system detects these moments through linguistic analysis and adjusts placement accordingly.
+- **User-Controlled Intensity Levels**: New CLI option `--metafiction [subtle|moderate|highly_self_aware]` allows users to control the frequency and type of metafictional elements. Each level has different probability thresholds and section limits.
+- **Interactive Navigation**: Added complete navigation system allowing users to change seed, metafiction level, and theme selection with fallback options (`s`, `m`, `i`, `h`) during interactive mode.
+- **Enhanced Export Metadata**: Exported essays now include metafiction level in YAML frontmatter alongside seed, theme, and generation timestamp for complete reproducibility.
+- **Variety and Depth of Metafictional Tropes**: Significantly expanded METAFICTIONAL_TEMPLATES and METAFICTIONAL_CONCLUSIONS in data.json with 40+ new templates covering:
+  - **Authorial Intrusion**: Direct reader address ("Dear reader, you might be wondering...")
+  - **Critique of Form**: Commentary on essay structure and academic conventions
+  - **Dialectical Self-Reflexivity**: Recognition of the essay's own dialectical structure and limitations
+  - **Thematic Metafiction**: Theme-specific templates for each thematic cluster
+- **Enhanced CoherenceManager Integration**: The coherence system now tracks dialectical moments, oppositional concept usage, and provides contextual information for metafiction placement decisions.
+- **Dialectical Tracking**: New methods detect dialectical progression stages (thesis/antithesis/synthesis) and adjust metafiction frequency and type accordingly.
+
+### **Technical Implementation Details**
+- **Strategic Placement Detection**: New `detect_strategic_moment()` function analyzes paragraph text for bold claims, dense theoretical content, dialectical transitions, and oppositional moments, calculating strategic scores for optimal metafiction placement.
+- **Enhanced Decision Engine**: The `should_insert_metafiction()` function now considers multiple contextual factors including section length, essay position, existing metafiction count, and dialectical context to make sophisticated placement decisions.
+- **Dynamic Template Selection**: Context-aware template selection system that chooses appropriate metafictional elements based on the specific strategic moment type (bold claims, theoretical density, dialectical transitions).
+- **Integration with Essay Generation**: Seamless integration with the main essay generation pipeline through enhanced `section_context` and `dialectical_context` parameters passed to metafiction functions.
+- **Metafiction Usage Tracking**: New tracking system in CoherenceManager to prevent over-saturation and ensure balanced distribution of metafictional elements throughout essays.
+
+### **Data Architecture Enhancements**
+- **Expanded Template Library**: Over 50 new metafictional templates organized by context type and thematic relevance
+- **Strategic Placement Indicators**: New data structures defining linguistic patterns that signal optimal moments for metafictional insertion
+- **Metafiction Configuration**: Comprehensive configuration system defining probability thresholds, placement preferences, and section limits for each intensity level
+
+### **Previous Changes (v0.1.3)**
+
+Version 0.1.3 focuses on enhancing dialectical reasoning and conceptual sophistication:
+
+- **Expanded Oppositional Pairs**: Significantly enhanced the `oppositional_pairs` dataset in `data.json`, expanding from 20 to 60 high-quality philosophical oppositions. The new additions cover contemporary theoretical developments (2000-2024), including surveillance capitalism/digital commons, racial capitalism/abolition, cisnormativity/trans becoming, and numerous other cutting-edge dialectical pairs.
+- **Enhanced Dialectical Progression**: The `get_oppositional_concept` method and `develop_dialectic` feature now benefit from a much richer set of conceptual oppositions, enabling more sophisticated thesis-antithesis-synthesis progressions in essay structure and more nuanced theoretical argumentation.
+- **Contemporary Theory Integration**: Added oppositions spanning intersectional and decolonial theory, digital/technological dialectics, affect theory and new materialism, climate and Anthropocene studies, queer and trans studies, surveillance capitalism vs. commons concepts, Lacanian psychoanalysis, emergence vs. reductionism in scientific theory, and feminist epistemology.
+- **Improved Thematic Coherence**: The expanded oppositional pairs provide better support for contemporary themes like "Digital Subjectivity," "Decoloniality and Postcolonial Studies," and "Affect, Materiality, and the Posthuman," resulting in more theoretically sophisticated and current essays.
+
+## Previous Changes
+
+### v0.1.2
 
 Version 0.1.2 focuses on enhancing the quality of generated text and improving performance:
 
@@ -55,8 +114,6 @@ Version 0.1.2 focuses on enhancing the quality of generated text and improving p
 - **Sentence.py Integration Fixes**: Fixed critical import issues in sentence.py where `citation_relationships` and `philosophical_movements` were locally defined as empty dictionaries instead of importing from `json_data_provider.py`. This ensures proper philosopher relationship mapping and citation functionality.
 - **Enhanced Coherence Manager Integration**: Improved the integration between sentence generation and the coherence manager, ensuring consistent data key usage and proper thematic guidance throughout sentence construction.
 - **Markdown Export Fix**: Addressed a minor bug related to the formatting of very long titles in the metadata section of exported Markdown files, ensuring consistent output.
-
-## Previous Changes
 
 ### v0.1.15
 
@@ -153,8 +210,26 @@ python main.py --seed 123 --theme "Identity and Subjectivity" --export
 # Generate without exporting and skip export prompt
 python main.py --seed 456 --theme "Power and Knowledge" --no-export
 
-# Generate with random parameters and auto-export
+# Generate with random seed parameters and auto-export
 python main.py --theme "Speculative Realism and Object-Oriented Ontology" --export
+```
+
+**Control metafiction intensity:**
+```bash
+# Generate with subtle metafictional elements (minimal, strategic placement)
+python main.py --seed 789 --theme "Poststructuralism and Deconstruction" --metafiction subtle
+
+# Generate with moderate metafictional elements (default level)
+python main.py --seed 101 --theme "Digital Subjectivity" --metafiction moderate
+
+# Generate with highly self-aware metafictional elements (frequent, varied placement)
+python main.py --seed 202 --theme "Technology, Media, and Culture" --metafiction highly_self_aware
+```
+
+**Combine all options:**
+```bash
+# Full command with all parameters
+python main.py --seed 314 --theme "Power and Knowledge" --metafiction moderate --export
 ```
 
 Available themes can be found in the [Thematic Clusters](#thematic-clusters) section.
@@ -167,6 +242,8 @@ Available themes can be found in the [Thematic Clusters](#thematic-clusters) sec
 - If `--export` is added: Automatically exports the essay as Markdown without prompting
 - If `--no-export` is added: Skips export and doesn't prompt for export decision
 - Export arguments (`--export` and `--no-export`) are mutually exclusive
+- If `--metafiction` is not specified: Uses moderate level as default
+- Metafiction levels: `subtle` (minimal, strategic), `moderate` (balanced), `highly_self_aware` (frequent, varied)
 
 ### Generated Output
 
@@ -179,12 +256,85 @@ The generator produces a complete academic essay including:
 - **Notes** section with substantive academic commentary
 - **Works Cited** in MLA 9 format
 
+### Metafictional Elements
+
+One of the defining features of postmodern academic writing is its self-reflexive, metafictional quality. The generator incorporates sophisticated metafictional elements that can be customized through the `--metafiction` parameter:
+
+#### **Metafiction Intensity Levels**
+
+**Subtle (`--metafiction subtle`)**
+- **Frequency**: ~8% of paragraphs, 25% chance of metafictional conclusion
+- **Placement Strategy**: Strategic placement after bold theoretical claims or dense conceptual passages
+- **Style**: Understated self-awareness, academic restraint
+- **Use Case**: Professional academic writing with minimal self-reflexivity
+
+**Moderate (`--metafiction moderate`)** *(Default)*
+- **Frequency**: ~15% of paragraphs, 40% chance of metafictional conclusion
+- **Placement Strategy**: Balanced throughout essay sections
+- **Style**: Classical postmodern self-reflexivity
+- **Use Case**: Traditional postmodern academic discourse
+
+**Highly Self-Aware (`--metafiction highly_self_aware`)**
+- **Frequency**: ~25% of paragraphs, 60% chance of metafictional conclusion
+- **Placement Strategy**: Frequent, varied placement including experimental forms
+- **Style**: Maximum self-consciousness, experimental academic writing
+- **Use Case**: Avant-garde theoretical experiments, creative academic writing
+
+#### **Types of Metafictional Elements**
+
+**Authorial Intrusion**
+- Direct reader address ("Dear reader, you might be wondering...")
+- Commentary on the reading experience
+- Acknowledgment of theoretical difficulties
+
+**Critique of Academic Form**
+- Self-commentary on essay structure and conventions
+- Questioning of linear argumentation
+- Reflection on the limitations of academic prose
+
+**Methodological Self-Awareness**
+- Acknowledgment of theoretical complicity
+- Recognition of the impossibility of critical distance
+- Commentary on the conditions of knowledge production
+
+**Dialectical Self-Reflexivity**
+- Recognition of the essay's own dialectical structure
+- Commentary on the movement between thesis, antithesis, and synthesis
+- Reflection on the limitations of academic argumentation
+
+**Thematic Metafiction**
+- Theme-specific self-reflexive elements
+- Integration with the essay's chosen theoretical cluster
+- Contextually appropriate metafictional templates
+
+#### **Examples by Intensity Level**
+
+**Subtle Level Example:**
+> "The reflexive awareness that biopower both enables and delimits this analysis does not escape the author."
+
+**Moderate Level Example:**
+> "Dear reader, you might be wondering why this analysis keeps returning to the problem of representation. The author finds themselves in the uncomfortable position of critiquing discourse while employing the very framework that generates it."
+
+**Highly Self-Aware Level Example:**
+> "This theoretical meditation on posthumanism concludes with an awareness of its own discursive conditions of possibility. The literary architecture underlying this text participates in the very concepts it has attempted to theorize. The reader should know that this conclusion emerges from a tradition of theoretical inquiry rather than direct experiential knowledge."
+
 ### Markdown Export
 
 After generation, you can export the essay as a `.md` file with:
-- Comprehensive metadata (seed, theme, generation timestamp)
-- Clean formatting for easy editing and sharing
-- Automatic file management in `essays/` directory
+- **Comprehensive metadata**: YAML frontmatter including seed, theme, metafiction level, and generation timestamp
+- **Complete reproducibility**: All generation parameters are preserved for exact replication
+- **Clean formatting**: Optimized for easy editing and sharing
+- **Automatic file management**: Essays saved in dedicated `essays/` directory
+
+**Example metadata format:**
+```yaml
+---
+Seed: 42
+Theme: Digital Subjectivity  
+Metafiction Level: moderate
+Generated: 2024-01-15 14:30:22
+---
+```
 
 ## Thematic Clusters
 
@@ -227,11 +377,15 @@ Each theme includes specific philosophers, concepts, terms, and contextual frame
 ## Roadmap
 
 ### Completed Features
-- ✅ Enhanced thematic clustering system
-- ✅ Easy-to-use command-line interface
-- ✅ Markdown export functionality
-- ✅ JSON-based data architecture
-- ✅ MLA 9 citation compliance
+- Enhanced thematic clustering system
+- Easy-to-use command-line interface
+- Markdown export functionality
+- JSON-based data architecture
+- MLA 9 citation compliance
+- Sophisticated metafiction system with user-controlled intensity levels
+- Strategic placement detection for contextual metafiction
+- Dialectical progression tracking and oppositional concept development
+- Comprehensive code quality improvements and maintainability
 
 ### Planned Improvements
 - **Additional Citation Styles**: Support for APA, Chicago, and other academic citation formats
@@ -240,6 +394,11 @@ Each theme includes specific philosophers, concepts, terms, and contextual frame
 - **Advanced Configuration**: More extensive customization options for output length and complexity
 - **API Integration**: API for integration with other tools and services
 - **Expanded Knowledge Base**: Additional contemporary theorists and emerging concepts
+- **Advanced Metafiction Features**: 
+  - Reader response simulation and incorporation
+  - Dynamic metafictional dialogue between theoretical positions
+- **Collaborative Essay Generation**: Multi-perspective essay generation simulating academic debates
+- **Citation Network Analysis**: Visualization of conceptual relationships and citation patterns
 
 ## Contributing
 

@@ -56,7 +56,6 @@ _data_store = {}
 try:
     with open(ABSOLUTE_DATA_FILE_PATH, 'r', encoding='utf-8') as f:
         _data_store = json.load(f)
-    # print(f"Successfully loaded data from {ABSOLUTE_DATA_FILE_PATH}") # Optional: for debugging
 except FileNotFoundError:
     print(f"Warning: {ABSOLUTE_DATA_FILE_PATH} not found. Using default empty data structures for all keys.")
     _data_store = DEFAULT_DATA # Use all defaults if file not found

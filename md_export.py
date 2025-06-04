@@ -56,6 +56,7 @@ def export_to_markdown(essay_content, filename=None, essay_config=None):
                 config_header += f"---\n"
                 config_header += f"Seed: {essay_config.get('seed_used', 'N/A')}\n"
                 config_header += f"Theme: {essay_config.get('theme_selected', 'N/A')}\n"
+                config_header += f"Metafiction Level: {essay_config.get('metafiction_level', 'N/A')}\n"
                 config_header += f"Generated: {essay_config.get('generation_date', 'N/A')}\n"
                 config_header += f"---\n\n"
             

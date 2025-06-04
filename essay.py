@@ -190,7 +190,7 @@ def generate_title(coherence_manager):
     
     return raw_title
 
-def generate_essay(theme_key=None):
+def generate_essay(theme_key=None, metafiction_level='moderate'):
     """Generate the full essay with enhanced internal reasoning, proper capitalization, and coherent notes."""
     # Reset global citation state before generating a new essay
     reset_citation_globals()
@@ -274,6 +274,9 @@ def generate_essay(theme_key=None):
         section_paragraphs = []
         num_paragraphs_in_section = random.randint(MIN_PARAGRAPHS_PER_SECTION, MAX_PARAGRAPHS_PER_SECTION)
         
+        # Advance section tracking in coherence manager
+        coherence_manager.advance_section()
+        
         # Refresh theme weights periodically to maintain thematic coherence
         if i > 0 and i % 2 == 0:  # Every second section
             coherence_manager.refresh_theme_weights()
@@ -285,7 +288,9 @@ def generate_essay(theme_key=None):
             'total_sections': num_body_sections,
             'theme_concept': section_theme_concept, # The core concept for this section from dialectic
             'title_themes': title_themes, # Overall title themes for broader context
-            'relevant_philosophers': relevant_philosophers # Philosophers from title
+            'relevant_philosophers': relevant_philosophers, # Philosophers from title
+            'section_length': num_paragraphs_in_section,
+            'essay_length': num_body_sections + 2  # intro + body + conclusion
         }
 
         for j in range(num_paragraphs_in_section):
@@ -307,13 +312,31 @@ def generate_essay(theme_key=None):
             # Record usage of concepts and philosophers from the paragraph for weight adjustment
             if paragraph_concepts:
                 coherence_manager.record_usage(concepts=paragraph_concepts)
+                # Detect dialectical moments for each concept used
+                for concept in paragraph_concepts:
+                    coherence_manager.detect_dialectical_moment(concept, paragraph_text)
             if paragraph_philosophers:
                 coherence_manager.record_usage(philosophers=paragraph_philosophers)
             
-            # Add a metafictional element with some probability
-            if random.random() < 0.15: # 15% chance to add metafiction to a paragraph
-                meta_text = metafiction.insert_metafiction_in_paragraph(section_paragraphs[-1], theme_key=theme_key, coherence_manager=coherence_manager)
+            # Enhanced metafictional element insertion with contextual awareness
+            dialectical_context = coherence_manager.get_dialectical_context()
+            section_context_for_meta = {
+                'section_length': num_paragraphs_in_section,
+                'essay_length': num_body_sections + 2,
+                'metafiction_count_this_section': coherence_manager.metafiction_count_per_section[coherence_manager.section_index]
+            }
+            
+            meta_text = metafiction.insert_metafiction_in_paragraph(
+                section_paragraphs[-1], 
+                theme_key=theme_key, 
+                coherence_manager=coherence_manager,
+                metafiction_level=metafiction_level,
+                section_context=section_context_for_meta,
+                dialectical_context=dialectical_context
+            )
+            if meta_text != section_paragraphs[-1]:  # Metafiction was added
                 section_paragraphs[-1] = meta_text
+                coherence_manager.record_metafiction_usage()
 
         # Generate section title based on content and section theme
         section_title_text = generate_section_title(section_paragraphs, coherence_manager, section_theme_concept, title_themes)
@@ -322,6 +345,7 @@ def generate_essay(theme_key=None):
 
     # Conclusion
     essay_parts.append("## Conclusion\n\n")
+    coherence_manager.advance_section()  # Track conclusion section
     num_conclusion_paragraphs = random.randint(1, MAX_PARAGRAPHS_PER_SECTION -1) # Typically 1-2 paragraphs
     for _ in range(num_conclusion_paragraphs):
         num_sentences = random.randint(MIN_SENTENCES_PER_PARAGRAPH -1, MAX_SENTENCES_PER_PARAGRAPH -1)
@@ -362,7 +386,14 @@ def generate_essay(theme_key=None):
     else: # If no regular conclusion paragraphs were generated, start fresh
         current_conclusion_content = ""
         # Generate a basic conclusion paragraph if none exists and metafiction is added
-        if random.random() < 0.4: # Re-check condition for adding metafiction
+        final_meta = metafiction.generate_metafictional_conclusion(
+            coherence_manager.used_concepts, 
+            coherence_manager.used_terms, 
+            theme_key=theme_key, 
+            coherence_manager=coherence_manager,
+            metafiction_level=metafiction_level
+        )
+        if final_meta:  # Only proceed if metafiction was generated
             num_sentences = random.randint(MIN_SENTENCES_PER_PARAGRAPH - 2, MAX_SENTENCES_PER_PARAGRAPH - 2)
             if num_sentences < 2: num_sentences = 2
             conclusion_context = {
@@ -389,8 +420,15 @@ def generate_essay(theme_key=None):
             if base_conclusion_philosophers:
                 coherence_manager.record_usage(philosophers=base_conclusion_philosophers)
 
-    if random.random() < 0.4: # 40% chance for a final metafictional kicker
-        final_meta = metafiction.generate_metafictional_conclusion(coherence_manager.used_concepts, coherence_manager.used_terms, theme_key=theme_key, coherence_manager=coherence_manager)
+    # Enhanced metafictional conclusion generation
+    final_meta = metafiction.generate_metafictional_conclusion(
+        coherence_manager.used_concepts, 
+        coherence_manager.used_terms, 
+        theme_key=theme_key, 
+        coherence_manager=coherence_manager,
+        metafiction_level=metafiction_level
+    )
+    if final_meta:  # Only add if metafiction was generated
         processed_final_meta = ensure_proper_capitalization_with_italics(italicize_terms_in_text(final_meta))
         if current_conclusion_content:
              # Add a space only if current_conclusion_content is not empty

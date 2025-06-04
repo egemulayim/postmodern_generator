@@ -41,9 +41,6 @@ CLEANED_PHILOSOPHERS = [
 ]
 if not CLEANED_PHILOSOPHERS:  # Fallback if cleaning results in an empty list
     CLEANED_PHILOSOPHERS = ["Michel Foucault", "Judith Butler", "Jacques Derrida", "Slavoj Žižek"]
-
-# Remove these empty local definitions that were overriding the imports
-# citation_relationships = {}
 # philosophical_movements = {}
 
 quote_enhanced_templates = [
