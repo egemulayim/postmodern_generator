@@ -1,12 +1,13 @@
 # The Postmodern Generator
 
-Welcome to The Postmodern Generator project. This repository contains the source code for a text generator that produces postmodern-style academic essays with theoretical framing, proper citations, and thematic coherence. This README file will guide you through the setup, usage, and contribution process for the project.
+Welcome to The Postmodern Generator project. This repository contains the source code for a text generator that produces postmodern-style academic essays with theoretical framing, fictional MLA-like citations, and thematic coherence. This README file will guide you through the setup, usage, and contribution process for the project.
 
 ## Table of Contents
 
 - [Introduction](#introduction)
 - [Features](#features)
-- [Recent Changes (v0.1.6)](#recent-changes-v016)
+- [Release Highlights (0.2.0)](#release-highlights-020)
+- [Upgrade Notes](#upgrade-notes)
 - [Previous Changes](#previous-changes)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -21,6 +22,41 @@ Welcome to The Postmodern Generator project. This repository contains the source
 
 The Postmodern Generator is a tool designed to generate text that mimics the style of postmodern academic writing. It creates theoretical essays complete with citations, dialectical progressions, and self-referential elements characteristic of postmodern discourse. This project is inspired by the Dada Engine run The Postmodernism Generator that was developed by Andrew C. Bulhak. You can learn more about the original Dada Engine [here](https://dev.null.org/dadaengine/) and see a web-based preview of Bulhak's The Postmodernism Generator [here](https://www.elsewhere.org/journal/pomo).
 
+## Current Project Status
+
+- **Canonical theme contract**: All 16 themes now use one schema in `data.json` with `core_philosophers`, `key_concepts`, `relevant_terms`, `context_phrases`, `academic_sub_fields`, and `title_context_labels`.
+- **Theme-core corpus coverage**: All current theme-core philosophers now have supporting `philosopher_concepts`, `philosopher_key_works`, and `quotes` entries, and the active validation suite passes with no warnings.
+- **Non-interactive CLI flows**: Any CLI invocation now bypasses interactive setup. `--list-themes` prints the valid theme keys with descriptions, `--export` writes directly to `essays/`, and `--output <filename>` lets you choose the export filename explicitly.
+- **Selective notes**: Substantive notes are now capped and reused more aggressively so the essay body remains primary.
+- **Validation, smoke tests, and seeded regression fixtures**: `python3 scripts/validate_data.py` validates the data contract, `python3 -m unittest` covers schema validation, theme smoke tests, heading limits, note caps, CLI export behavior, and seeded surface regressions for historically noisy themes, and `python3 scripts/capture_surface_regressions.py` refreshes the local fixture baseline when intentional title/keyword changes are made.
+- **Normalized lexical contract**: `academic_vocab` is now treated consistently as a flat lexical pool (`list[str]`) across the loader, validator, and tests.
+- **Curated concept/term contract**: `concepts` now serve as the essay's argumentative spine, `terms` serve as the surrounding discursive vocabulary, and overlap is allowed only through an explicit `hybrid_concept_terms` set. Within each theme, `key_concepts` and `relevant_terms` are now locally disjoint.
+- **Complete movement coverage for theme-core philosophers**: `philosophical_movements` now covers every current theme-core philosopher with canonical names only, and movement-based related-philosopher selection now aggregates across multiple shared memberships instead of stopping at the first matching bucket.
+- **Canonical citation-relationship coverage**: `citation_relationships` now uses canonical philosopher names only, covers every current theme-core philosopher, and related-philosopher selection now prefers direct citation links before falling back to broader movement proximity.
+- **Theme-surface containment**: Titles, abstract keywords, introductions, and first body paragraphs now prefer theme-local concepts, terms, and philosophers before falling back to the global corpus.
+- **Stricter first-surface locality**: Quote fallback, paragraph-level companion concept/term selection, and abstract keyword selection now stay inside the active theme more aggressively, reducing residual bleed from adjacent corpora in first-section surfaces.
+- **Theme-aware fabricated references**: Generated citations now resolve key works through canonical philosopher names, reuse existing bibliography entries more aggressively, and keep paragraph-level filler citations closer to the active theme.
+- **Targeted corpus curation for noisy adjacent themes**: STS, speculative realism, media theory, and psychoanalysis now use narrower theme inventories and cleaner philosopher-concept mappings so they bleed into one another less often.
+- **Follow-up corpus tightening for residual drift**: `Power and Knowledge` and `Digital Subjectivity` now use cleaner core concept anchors, reducing recurrent title drift toward `decoloniality` and `cyborg`.
+- **Broader seeded review and later-section locality tuning**: Wider post-stabilization seed sweeps now feed targeted sentence and reference locality fixes so later fabricated references stay much closer to the active theme instead of drifting to detached outsider authors.
+- **Targeted sentence-layer cleanup**: `sentence.py` now centralizes active-theme/context philosopher selection through small helper utilities, reducing duplicated fallback logic while preserving the stabilized behavior.
+- **Citation stance**: Citations and works cited entries are intentionally fictional parody, not factual bibliography.
+
+## Upgrade Notes
+
+Version `0.2.0` is a substantial release. The data contract, validation layer, test suite, CLI surface, and several core generation paths were tightened or reorganized, and the repo now includes new tracked files under `scripts/`, `tests/`, and `tests/fixtures/` while some older paths were removed.
+
+If you already have an older version checked out:
+
+- A normal `git pull` is usually enough if your checkout is clean. Git will handle tracked file additions, deletions, and moves for you.
+- You do not need to wipe the codebase just because you are upgrading.
+- A fresh clone is only worth doing if your local checkout has extensive uncommitted changes, stale untracked artifacts, or a generally messy worktree that you do not want to reconcile manually.
+
+If you maintain local edits, run the current validation and test entry points after pulling:
+
+- `python3 scripts/validate_data.py`
+- `python3 -m unittest`
+
 ## Features
 
 - **Complete Essay Generation**: Produces fully-formed academic essays with title, abstract, introduction, body sections, conclusion, notes, and works cited sections
@@ -30,8 +66,9 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 - **Theme-Based Generation**: Choose from specialized themes like "Digital Subjectivity," "Decoloniality and Postcolonial Studies," or "Speculative Realism"
 - **Interactive Theme Selection**: User-friendly interface for selecting specific themes or random generation
 - **Command-Line Interface**: Easy-to-use CLI with seed and theme arguments for reproducible and targeted output
+- **CLI Theme Discovery**: `--list-themes` prints the currently available themes and their descriptions without entering interactive mode
 - **Theoretical Sophistication**: Incorporates postmodern concepts, philosophers, and theoretical frameworks with authentic relationships
-- **MLA 9 Compliant Citations**: Generates proper in-text citations, endnotes, and formatted works cited sections
+- **MLA-Like Parody Citations**: Generates in-text citations, endnotes, and works cited sections in a deliberately fictional scholarly-parody style
 - **Dialectical Progressions**: Develops ideas through dialectical movement across essay sections
 - **Metafictional Elements**: Includes self-referential passages typical of postmodern writing
 - **Academic Abstracts**: Generates abstracts with keywords and theoretical framing
@@ -42,39 +79,43 @@ The Postmodern Generator is a tool designed to generate text that mimics the sty
 - **Enhanced Export Metadata**: Exported essays include detailed YAML frontmatter with generation parameters for reproducibility and analysis
 - **JSON-Based Data Architecture**: Robust, extensible knowledge base with advanced error handling and dynamic data file path loading.
 
-## Recent Changes (v0.1.6)
+## Release Highlights (0.2.0)
 
-Version 0.1.6 addresses critical structural issues and dramatically enhances note quality and variety:
+Version `0.2.0` is a substantial stabilization and corpus-reconciliation release on top of the historical `0.1.6` baseline.
 
-### **Critical Fixes**
-- **Empty Introduction Section**: Resolved major issue where the Introduction section appeared with header but no content. Now generates substantial introduction paragraphs (4+ sentences each, 1-2 paragraphs total) with proper thematic context, relevant philosophers, and coherent connection to overall essay themes
-- **Essay Structure Completeness**: Introduction now properly follows the abstract and precedes body sections, ensuring all major essay components generate appropriate content
+### **Data Contract And Corpus**
+- **Canonical theme schema**: All 16 themes now use one enforced schema in `data.json`, and legacy theme keys are no longer part of the runtime contract.
+- **Validator-backed data discipline**: `scripts/validate_data.py` now enforces theme schema, corpus membership, title-label constraints, and root-key integrity.
+- **Theme-core philosopher support**: Current theme-core philosophers now have aligned `philosopher_concepts`, `philosopher_key_works`, and `quotes` coverage, eliminating validation warnings for active theme data.
+- **Theme restoration and corpus expansion**: Reintroduced and fully supported a number of removed or under-supported figures, including `Simone de Beauvoir`, `Sherry Turkle`, `Sheila Jasanoff`, `John Law`, `Andrew Pickering`, `Marshall McLuhan`, `Walter Benjamin`, `Max Horkheimer`, `Jack Halberstam`, `José Esteban Muñoz`, and `Jane Bennett`.
+- **Loader/schema normalization**: `academic_vocab` is now explicitly treated as a flat lexical pool (`list[str]`) in the loader, validator, and tests.
+- **Lexical-role curation**: `concepts` and `terms` now overlap only through an explicit `hybrid_concept_terms` set, and theme-local concept/term duplication is rejected by validation.
+- **Movement taxonomy normalization**: `philosophical_movements` now uses canonical philosopher names only, covers every active theme-core philosopher, and no longer contains dead runtime entries that were absent from the root philosopher pool.
+- **Citation-relationship normalization**: `citation_relationships` now uses canonical philosopher names only, covers every active theme-core philosopher, and no longer contains legacy aliases or sparse theme-core gaps.
 
-### **Enhanced Notes System**
-- **Dramatic Template Expansion**: Increased note template variety from 4 basic categories with minimal templates to 20+ comprehensive categories with 100+ diverse templates, including:
-  - **Elaboration & Analysis**: Sophisticated templates for expanding theoretical points and providing analytical depth
-  - **Contextualization**: Historical, political, and theoretical context templates for situating ideas
-  - **Critique & Comparison**: Templates for comparative analysis and critical theoretical engagement
-  - **Methodological Commentary**: Discussion of theoretical approaches, frameworks, and scholarly methods
-  - **Intertextual References**: Templates connecting different works and theoretical traditions
-  - **Contemporary Relevance**: Links between historical theory and current academic debates
-  - **Biographical Context**: Philosophical and historical background for key thinkers
-  - **Theoretical Implications**: Templates exploring broader significance and ramifications of ideas
-  - **Conceptual Clarification**: Templates for defining and refining complex theoretical concepts
-  - **Interdisciplinary Connections**: Templates linking insights across different academic fields
-- **Enhanced Template Selection Algorithm**: Completely redesigned `_select_unique_template` function with sophisticated tracking to avoid repetition of recently used categories and specific templates
-- **Advanced Variety Tracking**: Implemented comprehensive tracking system monitoring recently used note categories, specific templates, and formatted commentaries to maximize diversity across all generated notes
+### **Generator Behavior**
+- **Selective notes policy**: Notes are now capped and reused more aggressively, reducing note inflation and keeping the main essay body primary.
+- **Title and heading cleanup**: Section titles now use title-safe theme labels rather than raw context phrases, and the smoke tests enforce a body-heading length cap.
+- **Coherence fixes**: Repetition control now uses real usage counters instead of set-based pseudo-counting, and high-visibility essay surfaces lean more reliably on active-theme material.
+- **Related-philosopher selection cleanup**: Sentence generation now prefers direct outgoing and reverse incoming citation links before falling back to aggregated movement matches.
+- **Theme-surface containment pass**: Title generation, abstract keyword curation, introduction sentences, and opening body paragraphs now enforce stronger theme-local selection before allowing global fallback.
+- **Qualitative corpus-curation pass**: Pruned over-broad bridge-philosopher mappings and tightened STS, speculative realism, media-theory, and psychoanalytic inventories to reduce adjacent-theme bleed.
+- **Second corpus-tightening pass**: Removed the strongest residual title-anchor drift in `Power and Knowledge` and `Digital Subjectivity` by narrowing their active concept inventories.
+- **Surface-local fallback tightening**: Quote generation, paragraph setup, and abstract keyword selection now keep first-section companion concepts, terms, and philosophers inside the active theme before broader fallback is considered.
+- **Theme-aware reference generation**: `NoteSystem` now resolves curated key works through canonical philosopher names, reuses exact existing references when the same author/title recurs, and keeps generated bibliography titles closer to paragraph context.
+- **Broader seeded qualitative review**: A wider post-stabilization seed sweep now informs follow-up quality work instead of relying on isolated spot checks.
+- **Later-section bibliography locality fixes**: Sentence-level contextual reference generation now keeps detached fabricated references inside the active theme when the cited author is not actually present in the paragraph context.
+- **Sentence-layer cleanup**: `sentence.py` now uses shared helper utilities for active-theme and contextual philosopher selection, reducing duplicated fallback logic while preserving current output behavior.
+- **CLI/export cleanup**: Any CLI argument triggers non-interactive execution, `--export` no longer prompts, and `--output` supports explicit filenames while implying export.
+- **CLI surface organization**: The parser help, interactive help view, theme validation, and export argument rules now follow the same contract, including a dedicated `--list-themes` discovery path and explicit rejection of `--output` with `--no-export`.
 
-### **Technical Improvements**
-- **Introduction Generation Integration**: Added complete introduction section generation in `essay.py` with proper paragraph structure, sentence count management, and thematic coherence that connects title themes with relevant philosophers
-- **Note Template Architecture**: Expanded `master_template_list` in `notes.py` from basic templates to comprehensive categorized collection covering all aspects of academic commentary
-- **Sophisticated Tracking System**: Enhanced note system with multiple tracking arrays (`recently_used_note_categories`, `recently_used_note_templates`, `recently_used_formatted_commentaries`) for optimal variety distribution
-- **Context-Aware Content**: Introduction generation includes proper context passing with title themes, relevant philosophers, section positioning, and essay structure awareness
-
-### **Quality Enhancements**
-- **Complete Essay Structure**: All sections now generate substantial, relevant content (Abstract ✓, Introduction ✓, Body Sections ✓, Conclusion ✓, Notes ✓, Works Cited ✓)
-- **Authentic Academic Commentary**: Notes now sound like genuine scholarly commentary rather than generic placeholder text, with varied analytical approaches and theoretical sophistication
-- **Enhanced Thematic Consistency**: Introduction properly establishes essay themes and provides coherent foundation for subsequent dialectical development
+### **Validation And Testing**
+- **Data validation now passes cleanly**: `python3 scripts/validate_data.py` exits successfully with no warnings on the current dataset.
+- **Smoke and CLI tests**: `python3 -m unittest` verifies schema integrity, note budgets, heading limits, and non-interactive export behavior.
+- **Surface-local smoke tests**: The smoke suite now explicitly checks theme-local retention in titles, abstract keywords, introductions, and first body sections for historically noisy themes.
+- **Seeded regression fixtures**: `tests/fixtures/theme_surface_regressions.json` stores seeded title and keyword baselines plus reference first-heading/first-paragraph samples for the noisiest themes, and `tests/test_generation_regression.py` enforces exact title/keyword continuity alongside theme-retention floors for those surfaces.
+- **Relationship validation**: Validation and tests now enforce canonical `citation_relationships`, reject self-links and duplicate targets, and require citation coverage for every current theme-core philosopher.
+- **Documentation refresh**: `README.MD` and `CHANGELOG.md` now describe the stabilized generator rather than the earlier recovery-state codebase.
 
 ## Previous Changes
 
@@ -227,6 +268,11 @@ You can specify the seed and theme directly via command-line arguments:
 python main.py --help
 ```
 
+**List available themes:**
+```bash
+python main.py --list-themes
+```
+
 **Specify a seed:**
 ```bash
 python main.py --seed 42
@@ -250,7 +296,10 @@ python main.py --seed 123 --theme "Identity and Subjectivity" --export
 # Generate without exporting and skip export prompt
 python main.py --seed 456 --theme "Power and Knowledge" --no-export
 
-# Generate with random seed parameters and auto-export
+# Export to a specific filename
+python main.py --seed 202 --theme "Digital Subjectivity" --export --output digital-subjectivity.md
+
+# Generate with random seed parameters and auto-export using an auto-generated filename
 python main.py --theme "Speculative Realism and Object-Oriented Ontology" --export
 ```
 
@@ -272,16 +321,21 @@ python main.py --seed 202 --theme "Technology, Media, and Culture" --metafiction
 python main.py --seed 314 --theme "Power and Knowledge" --metafiction moderate --export
 ```
 
-Available themes can be found in the [Thematic Clusters](#thematic-clusters) section.
+Available themes can be found either in the [Thematic Clusters](#thematic-clusters) section or directly through:
+
+```bash
+python main.py --list-themes
+```
 
 **Argument behavior:**
-- If no arguments are provided: Interactive selection for both seed and theme, with export prompt
-- If only `--seed` is provided: Interactive theme selection with specified seed, with export prompt
-- If only `--theme` is provided: Random seed with specified theme, with export prompt
-- If both provided: Direct generation with specified parameters, with export prompt
+- If no arguments are provided: Interactive selection for seed, metafiction level, and theme, with export prompt
+- If any CLI argument is provided: The run is non-interactive
+- If `--list-themes` is added: Prints theme keys with descriptions and exits
 - If `--export` is added: Automatically exports the essay as Markdown without prompting
+- If `--output` is added: It implies export and writes to the provided filename inside `essays/`
 - If `--no-export` is added: Skips export and doesn't prompt for export decision
 - Export arguments (`--export` and `--no-export`) are mutually exclusive
+- `--output` and `--no-export` cannot be used together
 - If `--metafiction` is not specified: Uses moderate level as default
 - Metafiction levels: `subtle` (minimal, strategic), `moderate` (balanced), `highly_self_aware` (frequent, varied)
 
@@ -293,8 +347,8 @@ The generator produces a complete academic essay including:
 - **Introduction** with guiding questions and framework establishment
 - **Body Sections** with dialectical development and argumentation
 - **Conclusion** with metafictional elements and theoretical synthesis
-- **Notes** section with substantive academic commentary
-- **Works Cited** in MLA 9 format
+- **Notes** section with capped, selectively reused academic commentary
+- **Works Cited** in fictional MLA-like parody format
 
 ### Metafictional Elements
 
@@ -365,6 +419,7 @@ After generation, you can export the essay as a `.md` file with:
 - **Complete reproducibility**: All generation parameters are preserved for exact replication
 - **Clean formatting**: Optimized for easy editing and sharing
 - **Automatic file management**: Essays saved in dedicated `essays/` directory
+- **Non-interactive CLI export**: `--export` auto-generates a filename when `--output` is omitted
 
 **Example metadata format:**
 ```yaml
@@ -392,9 +447,9 @@ The generator features 16 thematic clusters, each providing a distinct theoretic
 
 6. **Psychoanalysis and Culture**: Applies psychoanalytic theories (Freudian, Lacanian, etc.) to interpret cultural phenomena, literature, film, art, and social dynamics, focusing on the unconscious, desire, trauma, and symbolic structures. (Core Philosophers: Sigmund Freud, Jacques Lacan, Julia Kristeva)
 
-7. **Feminist Epistemologies and Standpoint Theory**: Critiques traditional epistemologies as inherently biased and explores how gender and social location shape knowledge production, advocating for situated knowledges and perspectives from marginalized standpoints. (Core Philosophers: Sandra Harding, Donna Haraway, Nancy Hartsock)
+7. **Feminist Epistemologies and Standpoint Theory**: Critiques traditional epistemologies as inherently biased and explores how gender and social location shape knowledge production, advocating for situated knowledges and perspectives from marginalized standpoints. (Core Philosophers: Sandra Harding, Patricia Hill Collins, Donna Haraway)
 
-8. **Feminist Theory and Gender Studies**: Examines gender performativity, patriarchy, intersectionality, the social construction of gender, and challenges to traditional gender roles, drawing from diverse feminist traditions. (Core Philosophers: Judith Butler, Simone de Beauvoir, bell hooks)
+8. **Feminist Theory and Gender Studies**: Examines gender performativity, patriarchy, intersectionality, the social construction of gender, and challenges to traditional gender roles, drawing from diverse feminist traditions. (Core Philosophers: Judith Butler, bell hooks, Audre Lorde)
 
 9. **Queer Theory**: Challenges normativity, explores performativity, affect, destabilizing identity categories and challenging heteronormative assumptions while exploring the fluidity of desire and identification. (Core Philosophers: Judith Butler, Eve Kosofsky Sedgwick, Michel Foucault)
 
@@ -402,11 +457,11 @@ The generator features 16 thematic clusters, each providing a distinct theoretic
 
 11. **Technology, Media, and Culture**: Investigates the profound impact of technology and media on society, culture, perception, and the human condition, exploring surveillance, virtuality, the network society, and how technology shapes power and identity. (Core Philosophers: Jean Baudrillard, Paul Virilio, Donna Haraway)
 
-12. **Digital Subjectivity**: Examines how digital technologies, networked environments, and online interactions are reshaping concepts of the self, identity, and community, exploring the performative and datafied nature of digital existence. (Core Philosophers: Sherry Turkle, Byung-Chul Han, Wendy Hui Kyong Chun)
+12. **Digital Subjectivity**: Examines how digital technologies, networked environments, and online interactions are reshaping concepts of the self, identity, and community, exploring the performative and datafied nature of digital existence. (Core Philosophers: Katherine Hayles, Jodi Dean, Wendy Hui Kyong Chun)
 
 13. **Science and Technology Studies (STS)**: Investigates technoscience, cyborgs, Actor-Network Theory, focusing on the co-production of science and society rather than technological determinism, examining the entanglement of nature and culture. (Core Philosophers: Bruno Latour, Donna Haraway, Katherine Hayles)
 
-14. **Affect, Materiality, and the Posthuman**: Explores the role of affect, emotions, and bodily experience in shaping social and political life, engaging with new materialisms, posthumanism, and the entanglements of human and non-human entities. (Core Philosophers: Gilles Deleuze, Brian Massumi, Rosi Braidotti)
+14. **Affect, Materiality, and the Posthuman**: Explores the role of affect, emotions, and bodily experience in shaping social and political life, engaging with new materialisms, posthumanism, and the entanglements of human and non-human entities. (Core Philosophers: Félix Guattari, Brian Massumi, Rosi Braidotti)
 
 15. **Speculative Realism and Object-Oriented Ontology**: Rejects post-Kantian correlationism, arguing for the independent existence of objects beyond human perception and challenging the human-world correlate. (Core Philosophers: Quentin Meillassoux, Graham Harman, Ray Brassier)
 
@@ -422,12 +477,20 @@ Each theme includes specific philosophers, concepts, terms, and contextual frame
 - Markdown export functionality
 - JSON-based data architecture
 - MLA 9 citation compliance
+- Canonical theme schema across all 16 themes
+- Validator-backed data contract with local smoke tests
+- Full support coverage for current theme-core philosophers, including quotes
+- Canonical citation-relationship coverage for current theme-core philosophers
+- Seeded surface-regression fixtures for historically noisy themes
 - Sophisticated metafiction system with user-controlled intensity levels
 - Strategic placement detection for contextual metafiction
 - Dialectical progression tracking and oppositional concept development
 - Comprehensive code quality improvements and maintainability
 
 ### Planned Improvements
+- **Hybrid Lexicon Review**: Continue curating the `hybrid_concept_terms` set and the surrounding lexical pools as new themes and theorists are added
+- **Deeper Corpus Curation**: Continue tightening philosopher-concept associations and secondary theme inventories where residual adjacent-theme bleed still appears under wider seed coverage
+- **Seeded Quality Review**: Continue broad seeded generation review across all themes and refresh the local surface-regression fixtures only when intentional baseline changes are accepted
 - **Additional Citation Styles**: Support for APA, Chicago, and other academic citation formats
 - **Enhanced Output Formats**: HTML and LaTeX formatting options
 - **Web Interface**: Browser-based user interface for easier interaction
@@ -467,9 +530,11 @@ Contributions to The Postmodern Generator project are welcome! To contribute, fo
 
 ## Known Issues
 
-- **Citation Discrepancies**: While significantly improved, minor edge cases in complex in-text citation scenarios (e.g. deeply nested quotes or highly specific source types not yet fully modeled) might occasionally arise, though overall robustness and MLA adherence for common academic use cases are high.
-- **Thematic Coherence at Scale**: For very long essays, thematic coherence may diminish in later sections
-- **Template Repetition**: With extensive use, some template patterns may repeat, though the system actively manages variety
+- **Fictional Citation Output**: Citations are intentionally parody-oriented and should not be treated as factual bibliography.
+- **Movement Taxonomy Curation**: Coverage is now complete for theme-core philosophers, but the movement buckets remain a rhetorical proximity map rather than a final scholarly taxonomy and will need periodic curation as the corpus grows.
+- **Hybrid Lexical Judgment**: The concept/term boundary is now explicit, but the exact contents of `hybrid_concept_terms` will still need periodic curation as the corpus evolves.
+- **Broad Historical README**: This document is accurate at the feature and workflow level, but it is still a broad historical overview rather than a narrowly scoped operator manual.
+- **Thematic Coherence at Scale**: For very long essays, thematic coherence may still diminish in later sections.
 
 ## License
 
@@ -477,6 +542,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgements
 
-Special thanks to Andrew C. Bulhak, the original creator of The Postmodernism Generator, for the inspiration and foundational work that made this project possible. This project builds on that legacy to create a more sophisticated, coherent, and academically authentic text generator for postmodern discourse.
+Special thanks to Andrew C. Bulhak, the original creator of The Postmodernism Generator, for the inspiration and foundational work that made this project possible. This project builds on that legacy to create a more sophisticated, coherent, and academically styled text generator for postmodern discourse.
 
 Additional recognition to the open-source community and the philosophers whose work forms the theoretical foundation of this generator.

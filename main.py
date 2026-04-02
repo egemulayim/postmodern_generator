@@ -13,6 +13,113 @@ import random # Ensure random is imported for seed setting and potential random 
 import datetime # For timestamping the export
 import argparse # Import argparse
 import os # Add os import for clearing screen
+import re
+from textwrap import dedent
+
+
+def get_available_themes():
+    """Return the canonical CLI ordering for theme keys."""
+    return sorted(thematic_clusters.keys(), key=str.casefold)
+
+
+def format_theme_listing(available_themes=None, include_descriptions=False, numbered=False):
+    """Format available themes for CLI or interactive display."""
+    themes = available_themes or get_available_themes()
+    lines = []
+    for index, theme_key in enumerate(themes, start=1):
+        prefix = f"{index}. " if numbered else "- "
+        lines.append(f"{prefix}{theme_key}")
+        if include_descriptions:
+            description = thematic_clusters.get(theme_key, {}).get('description', 'No description available.')
+            lines.append(f"   {description}")
+    return "\n".join(lines)
+
+
+def build_parser():
+    """Build the canonical CLI parser for the essay generator."""
+    description = (
+        "Generate a postmodern essay. No arguments starts interactive setup; "
+        "any CLI argument runs non-interactively."
+    )
+    epilog = dedent(
+        """\
+        Mode rules:
+          No arguments: interactive setup
+          Any CLI argument: non-interactive run
+
+        Theme discovery:
+          python main.py --list-themes
+
+        Export behavior:
+          --export writes to essays/
+          --output <filename> implies --export and writes inside essays/
+          --no-export skips export entirely
+
+        Examples:
+          python main.py --help
+          python main.py --list-themes
+          python main.py --seed 42 --theme "Digital Subjectivity"
+          python main.py --theme "Queer Theory" --export
+          python main.py --theme "Digital Subjectivity" --export --output digital-subjectivity.md
+          python main.py --seed 314 --theme "Power and Knowledge" --metafiction subtle --no-export
+        """
+    )
+    parser = argparse.ArgumentParser(
+        description=description,
+        epilog=epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--seed", type=int, help="An integer seed for reproducible generation.")
+    parser.add_argument(
+        "--theme",
+        type=str,
+        help="A specific theme key for the essay. Use --list-themes to inspect valid keys.",
+    )
+    parser.add_argument(
+        "--list-themes",
+        action="store_true",
+        help="Print available themes with descriptions and exit.",
+    )
+    parser.add_argument(
+        "--metafiction",
+        type=str,
+        choices=['subtle', 'moderate', 'highly_self_aware'],
+        default='moderate',
+        help="Set the level of metafictional self-awareness (default: moderate).",
+    )
+
+    export_group = parser.add_mutually_exclusive_group()
+    export_group.add_argument(
+        "--export",
+        action="store_true",
+        help="Export the essay as Markdown to essays/ after generation.",
+    )
+    export_group.add_argument(
+        "--no-export",
+        action="store_true",
+        help="Skip export and do not prompt for export after generation.",
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        help="Filename only for Markdown export inside essays/. Implies --export.",
+    )
+    return parser
+
+
+def validate_output_filename_argument(parser, output_filename):
+    """Validate the --output CLI argument and keep its contract filename-only."""
+    if output_filename is None:
+        return None
+
+    candidate = output_filename.strip()
+    if not candidate:
+        parser.error("--output requires a non-empty filename.")
+
+    if os.path.basename(candidate) != candidate:
+        parser.error("--output expects a filename only; files are always written inside essays/.")
+
+    return candidate
 
 def get_user_seed():
     """Prompt the user to enter a seed or choose random generation."""
@@ -33,25 +140,13 @@ def show_theme_info(available_themes):
     if not available_themes:
         print("No themes available to display information for.")
     else:
-        # thematic_clusters is available globally from json_data_provider import
-        for i, theme_key in enumerate(available_themes):
-            description = thematic_clusters.get(theme_key, {}).get('description', 'No description available.')
-            print(f"\n{i+1}. Theme: {theme_key}")
-            print(f"  Description: {description}")
+        print(format_theme_listing(available_themes, include_descriptions=True, numbered=True))
     input("\nPress Enter to return to theme selection...")
 
 def show_help_info():
-    """Display CLI help information."""
-    print("\n--- CLI Help ---")
-    print("You can also use command-line arguments for faster generation:")
-    print("  python main.py --help                     Show all available options")
-    print("  python main.py --seed 42                  Use specific seed")
-    print("  python main.py --theme \"Digital Subjectivity\"  Use specific theme")
-    print("  python main.py --metafiction subtle       Set metafiction level")
-    print("  python main.py --export                   Auto-export as Markdown")
-    print("  python main.py --no-export               Skip export")
-    print("  python main.py --seed 42 --theme \"Queer Theory\" --export")
-    print("                                            Combine multiple options")
+    """Display CLI help information using the canonical parser output."""
+    print()
+    build_parser().print_help()
     input("\nPress Enter to continue...")
 
 def get_metafiction_level():
@@ -93,7 +188,7 @@ def get_metafiction_level():
 def interactive_setup():
     """Handle the complete interactive setup flow with navigation options."""
     print("=== Postmodern Essay Generator ===")
-    print("Tip: Use 'python main.py --help' to see all command-line options for faster generation.")
+    print("Tip: Use 'python main.py --help' or 'python main.py --list-themes' for the non-interactive interface.")
     print()
     
     # Get initial seed
@@ -103,7 +198,7 @@ def interactive_setup():
     user_metafiction_level = get_metafiction_level()
     
     # Theme selection with navigation options
-    available_themes = list(thematic_clusters.keys())
+    available_themes = get_available_themes()
     result = _select_theme_with_navigation(
         available_themes, None, user_seed, user_metafiction_level
     )
@@ -205,31 +300,38 @@ def _select_theme_simple(available_themes, current_theme_key=None):
         if current_theme_key in available_themes:
             print(f"Using chosen theme: {current_theme_key}")
             return current_theme_key, current_theme_key
-        else:
-            print(f"Warning: Theme '{current_theme_key}' not found. Available themes are: {available_themes}")
-            chosen_theme_key = random.choice(available_themes)
-            print(f"Falling back to random theme: {chosen_theme_key}")
-            return chosen_theme_key, chosen_theme_key
+        raise ValueError(f"Theme key '{current_theme_key}' is not valid.")
     else:
         # For non-interactive usage, just pick random
         chosen_theme_key = random.choice(available_themes)
-        print(f"No theme specified, randomly selected: {chosen_theme_key}")
+        print(f"No theme specified; randomly selected: {chosen_theme_key}")
         return chosen_theme_key, f"Randomly selected: {chosen_theme_key}"
 
-def generate_with_seed_and_theme(seed=None, theme_key=None, export_option=None, metafiction_level='moderate'):
+def slugify_filename_part(value):
+    """Convert a label into a filesystem-safe filename fragment."""
+    normalized = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    return normalized or "untitled"
+
+def build_output_filename(theme_key, seed, generation_time):
+    """Build a deterministic non-interactive export filename."""
+    theme_part = slugify_filename_part(theme_key or "random-theme")
+    timestamp = generation_time.strftime("%Y%m%d-%H%M%S")
+    return f"{theme_part}-seed-{seed}-{timestamp}.md"
+
+def generate_with_seed_and_theme(seed=None, theme_key=None, export_option=None, metafiction_level='moderate', output_filename=None, interactive=False):
     """Generate an essay with an optional random seed and theme."""
     final_seed_used = None # Initialize here
     if seed is not None: # Specific seed provided by user or args
         random.seed(seed)
-        print(f"Using random seed: {seed}")
+        print(f"Using provided seed: {seed}")
         final_seed_used = seed # Assign user-provided seed
     else: # No seed provided, generate one
         current_seed = random.randint(1, 1000000)
         random.seed(current_seed)
-        print(f"Using randomly generated seed for this run: {current_seed}")
+        print(f"Using generated seed: {current_seed}")
         final_seed_used = current_seed # Ensure the randomly generated seed is captured
 
-    available_themes = list(thematic_clusters.keys())
+    available_themes = get_available_themes()
     chosen_theme_key, theme_selection_prompt = _select_theme_simple(available_themes, theme_key)
 
     generation_time = datetime.datetime.now()
@@ -248,15 +350,24 @@ def generate_with_seed_and_theme(seed=None, theme_key=None, export_option=None, 
 
     # Handle export based on CLI option or prompt user
     if export_option == "export":
-        export_to_markdown(essay_content, essay_config=essay_config)
+        filename = output_filename or build_output_filename(chosen_theme_key, final_seed_used, generation_time)
+        export_to_markdown(
+            essay_content,
+            filename=filename,
+            essay_config=essay_config,
+            interactive=False
+        )
     elif export_option == "no-export":
         print("Essay not exported (--no-export specified).")
     else:
+        if not interactive:
+            print("Essay not exported (non-interactive CLI run without --export).")
+            return
         # Ask the user if they want to export the essay (interactive mode)
         while True:
             export_choice = input("Do you want to export this essay as a Markdown (.md) file? [y/n]: ").strip().lower()
             if export_choice.startswith('y'):
-                export_to_markdown(essay_content, essay_config=essay_config)
+                export_to_markdown(essay_content, essay_config=essay_config, interactive=True)
                 break
             elif export_choice.startswith('n'):
                 print("Essay not exported.")
@@ -264,43 +375,56 @@ def generate_with_seed_and_theme(seed=None, theme_key=None, export_option=None, 
             else:
                 print("Invalid choice. Please enter 'y' or 'n'.")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate a postmodern essay.")
-    parser.add_argument("--seed", type=int, help="An integer seed for random generation.")
-    parser.add_argument("--theme", type=str, help="A specific theme key for the essay.")
-    parser.add_argument("--metafiction", type=str, choices=['subtle', 'moderate', 'highly_self_aware'], 
-                       default='moderate', 
-                       help="Set the level of metafictional self-awareness (default: moderate).")
-    
-    # Add export control arguments (mutually exclusive)
-    export_group = parser.add_mutually_exclusive_group()
-    export_group.add_argument("--export", action="store_true", 
-                            help="Automatically export the essay as a Markdown file after generation.")
-    export_group.add_argument("--no-export", action="store_true", 
-                            help="Skip export and don't prompt for export after generation.")
-    
-    args = parser.parse_args()
+def main(argv=None):
+    """CLI entry point."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    cli_args_provided = len(argv) > 0 if argv is not None else len(sys.argv) > 1
+
+    if args.list_themes:
+        print("Available themes:\n")
+        print(format_theme_listing(include_descriptions=True, numbered=True))
+        return 0
 
     user_seed = args.seed
     user_theme_key = args.theme
     user_metafiction_level = args.metafiction
+    output_filename = validate_output_filename_argument(parser, args.output)
+
+    if args.no_export and output_filename:
+        parser.error("--output cannot be used with --no-export.")
     
     # Determine export option
     export_option = None
-    if args.export:
+    if output_filename:
+        export_option = "export"
+    elif args.export:
         export_option = "export"
     elif args.no_export:
         export_option = "no-export"
     
-    available_themes = list(thematic_clusters.keys())
+    available_themes = get_available_themes()
 
     if args.theme and args.theme not in available_themes:
-        print(f"Error: Theme key '{args.theme}' is not valid.")
-        print(f"Available themes are: {available_themes}")
-        sys.exit(1)
+        parser.error(
+            f"Theme key '{args.theme}' is not valid. "
+            f"Use --list-themes to see valid keys."
+        )
 
-    # If no CLI arguments are provided for seed, theme, and default metafiction, use interactive setup
-    if user_seed is None and user_theme_key is None and user_metafiction_level == 'moderate':
+    # Only fall back to interactive setup when the program is launched with no CLI arguments at all.
+    if not cli_args_provided:
         user_seed, user_metafiction_level, user_theme_key = interactive_setup()
 
-    generate_with_seed_and_theme(seed=user_seed, theme_key=user_theme_key, export_option=export_option, metafiction_level=user_metafiction_level)
+    generate_with_seed_and_theme(
+        seed=user_seed,
+        theme_key=user_theme_key,
+        export_option=export_option,
+        metafiction_level=user_metafiction_level,
+        output_filename=output_filename,
+        interactive=not cli_args_provided
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

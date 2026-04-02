@@ -41,7 +41,14 @@ def find_relevant_philosophers(current_concepts, current_terms, coherence_manage
     # If still not enough, get weighted philosophers from coherence manager
     attempts = 0
     while len(relevant_philosophers) < 2 and attempts < 5:
-        weighted_phil = coherence_manager_instance.get_weighted_philosopher(exclude=relevant_philosophers)
+        weighted_phil = None
+        if coherence_manager_instance.active_theme_key:
+            weighted_phil = coherence_manager_instance.get_surface_philosopher(
+                exclude=relevant_philosophers,
+                fallback_to_general=False
+            )
+        if not weighted_phil:
+            weighted_phil = coherence_manager_instance.get_surface_philosopher(exclude=relevant_philosophers)
         if weighted_phil:
             relevant_philosophers.add(weighted_phil)
         attempts += 1
@@ -87,13 +94,21 @@ def generate_enhanced_abstract(coherence_manager: EssayCoherence, title_themes=N
             coherence_manager.set_active_theme(inferred_theme_key)
             essay_theme_key = inferred_theme_key # Update for consistency
 
-    # Use title themes for consistency if provided, otherwise draw from coherence_manager
-    if title_themes and title_themes.get('primary_concepts'):
+    # Use theme-local selections first when a theme is active, otherwise fall back to title themes.
+    if coherence_manager.active_theme_key:
+        abstract_concept = coherence_manager.get_surface_concept(fallback_to_general=False)
+        if not abstract_concept:
+            abstract_concept = coherence_manager.get_surface_concept()
+    elif title_themes and title_themes.get('primary_concepts'):
         abstract_concept = random.choice(title_themes['primary_concepts'])
     else:
         abstract_concept = coherence_manager.get_weighted_concept()
         
-    if title_themes and title_themes.get('primary_terms'):
+    if coherence_manager.active_theme_key:
+        abstract_term = coherence_manager.get_surface_term(exclude={abstract_concept}, fallback_to_general=False)
+        if not abstract_term:
+            abstract_term = coherence_manager.get_surface_term(exclude={abstract_concept})
+    elif title_themes and title_themes.get('primary_terms'):
         abstract_term = random.choice(title_themes['primary_terms'])
     else:
         abstract_term = coherence_manager.get_weighted_term()
@@ -101,13 +116,31 @@ def generate_enhanced_abstract(coherence_manager: EssayCoherence, title_themes=N
     # Get primary philosophers for the abstract, guided by coherence_manager
     current_abstract_elements = [abstract_concept, abstract_term]
     # Add some more elements from coherence manager for broader philosopher search
-    current_abstract_elements.append(coherence_manager.get_weighted_concept(exclude=set(current_abstract_elements)))
-    current_abstract_elements.append(coherence_manager.get_weighted_term(exclude=set(current_abstract_elements)))
+    current_abstract_elements.append(
+        coherence_manager.get_surface_concept(exclude=set(current_abstract_elements), fallback_to_general=False)
+        if coherence_manager.active_theme_key else
+        coherence_manager.get_weighted_concept(exclude=set(current_abstract_elements))
+    )
+    if current_abstract_elements[-1] is None:
+        current_abstract_elements[-1] = coherence_manager.get_surface_concept(exclude=set(current_abstract_elements))
+    current_abstract_elements.append(
+        coherence_manager.get_surface_term(exclude=set(current_abstract_elements), fallback_to_general=False)
+        if coherence_manager.active_theme_key else
+        coherence_manager.get_weighted_term(exclude=set(current_abstract_elements))
+    )
+    if current_abstract_elements[-1] is None:
+        current_abstract_elements[-1] = coherence_manager.get_surface_term(exclude=set(current_abstract_elements))
     
     # Use the updated find_relevant_philosophers
     abstract_philosophers = find_relevant_philosophers(current_abstract_elements, [], coherence_manager)
     if not abstract_philosophers: # Fallback
-        abstract_philosophers = random.sample(philosophers, 2)
+        if coherence_manager.active_theme_key and coherence_manager.active_theme_data.get('core_philosophers'):
+            abstract_philosophers = random.sample(
+                coherence_manager.active_theme_data['core_philosophers'],
+                min(2, len(coherence_manager.active_theme_data['core_philosophers']))
+            )
+        else:
+            abstract_philosophers = random.sample(philosophers, 2)
     
     # Theoretical framing paragraph
     theme_description_intro = ""
@@ -143,7 +176,13 @@ def generate_enhanced_abstract(coherence_manager: EssayCoherence, title_themes=N
     theme_context_phrase = coherence_manager.get_theme_context_phrase() if coherence_manager.active_theme_key else "in a relevant theoretical framework"
     if not theme_context_phrase: theme_context_phrase = "within a significant discursive field" # Ensure fallback
 
-    methodology_concept_focus = coherence_manager.get_weighted_concept(exclude={abstract_concept, abstract_term})
+    methodology_concept_focus = (
+        coherence_manager.get_surface_concept(exclude={abstract_concept, abstract_term}, fallback_to_general=False)
+        if coherence_manager.active_theme_key else
+        coherence_manager.get_weighted_concept(exclude={abstract_concept, abstract_term})
+    )
+    if methodology_concept_focus is None:
+        methodology_concept_focus = coherence_manager.get_surface_concept(exclude={abstract_concept, abstract_term})
 
     methodology = (
         f"Through a methodology combining {chosen_methodology1} with {chosen_methodology2}, "
@@ -154,7 +193,13 @@ def generate_enhanced_abstract(coherence_manager: EssayCoherence, title_themes=N
     
     # Significance paragraph
     metafictional_sig = metafiction.generate_metafictional_element(theme_key=essay_theme_key, coherence_manager=coherence_manager)
-    significance_term_focus = coherence_manager.get_weighted_term(exclude={abstract_term})
+    significance_term_focus = (
+        coherence_manager.get_surface_term(exclude={abstract_term}, fallback_to_general=False)
+        if coherence_manager.active_theme_key else
+        coherence_manager.get_weighted_term(exclude={abstract_term})
+    )
+    if significance_term_focus is None:
+        significance_term_focus = coherence_manager.get_surface_term(exclude={abstract_term})
 
     significance = (
         f"The significance of this investigation lies in its potential to reconfigure conventional approaches to "
@@ -195,15 +240,64 @@ def generate_enhanced_abstract(coherence_manager: EssayCoherence, title_themes=N
              weight += coherence_manager.concept_weights.get(kw,0) + coherence_manager.term_weights.get(kw,0) + coherence_manager.philosopher_weights.get(kw,0)
         weighted_keywords[kw] = weight
     
-    # Select top 5 keywords
+    ranked_keywords = [kw for kw, _ in weighted_keywords.most_common()]
+
+    # Select top 5 keywords, exhausting theme-local/title-local material first.
     num_keywords = 5
-    selected_keywords = [kw for kw, count in weighted_keywords.most_common(num_keywords)]
+    preferred_keyword_order = []
+    preferred_keyword_order.extend(title_themes.get('primary_concepts', []) if title_themes else [])
+    preferred_keyword_order.extend(title_themes.get('related_concepts', []) if title_themes else [])
+    preferred_keyword_order.extend(title_themes.get('primary_terms', []) if title_themes else [])
+    if coherence_manager.active_theme_key:
+        preferred_keyword_order.extend(coherence_manager.active_theme_data.get('key_concepts', []))
+        preferred_keyword_order.extend(coherence_manager.active_theme_data.get('relevant_terms', []))
+        preferred_keyword_order.extend(coherence_manager.active_theme_data.get('core_philosophers', []))
+    preferred_keyword_order.extend([
+        abstract_concept,
+        abstract_term,
+        methodology_concept_focus,
+        significance_term_focus,
+    ])
+    preferred_keyword_order.extend(abstract_philosophers)
+
+    strict_theme_keyword_pool = []
+    if coherence_manager.active_theme_key:
+        strict_theme_keyword_pool.extend(coherence_manager.active_theme_data.get('key_concepts', []))
+        strict_theme_keyword_pool.extend(coherence_manager.active_theme_data.get('relevant_terms', []))
+        strict_theme_keyword_pool.extend(coherence_manager.active_theme_data.get('core_philosophers', []))
+    if title_themes:
+        strict_theme_keyword_pool.extend(title_themes.get('primary_concepts', []))
+        strict_theme_keyword_pool.extend(title_themes.get('related_concepts', []))
+        strict_theme_keyword_pool.extend(title_themes.get('primary_terms', []))
+
+    selected_keywords = []
+    if coherence_manager.active_theme_key:
+        for keyword in strict_theme_keyword_pool:
+            if keyword and keyword in weighted_keywords and keyword not in selected_keywords:
+                selected_keywords.append(keyword)
+            if len(selected_keywords) == num_keywords:
+                break
+
+    for keyword in preferred_keyword_order:
+        if keyword and keyword in weighted_keywords and keyword not in selected_keywords:
+            selected_keywords.append(keyword)
+        if len(selected_keywords) == num_keywords:
+            break
+
+    if len(selected_keywords) < num_keywords:
+        for keyword in ranked_keywords:
+            if keyword not in selected_keywords:
+                selected_keywords.append(keyword)
+            if len(selected_keywords) == num_keywords:
+                break
     
     # Ensure we have exactly 5 keywords if possible, otherwise pad with random keywords
     if len(selected_keywords) < num_keywords:
         additional_needed = num_keywords - len(selected_keywords)
         # Fallback: add from concepts, terms, or philosophers not already selected
-        fallback_pool = list((set(concepts) | set(terms) | set(philosophers)) - set(selected_keywords))
+        preferred_keyword_set = set(strict_theme_keyword_pool)
+        preferred_fallback_pool = list(preferred_keyword_set - set(selected_keywords))
+        fallback_pool = preferred_fallback_pool or list((set(concepts) | set(terms) | set(philosophers)) - set(selected_keywords))
         if fallback_pool:
              selected_keywords.extend(random.sample(fallback_pool, min(additional_needed, len(fallback_pool))))
     

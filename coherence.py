@@ -39,10 +39,14 @@ class EssayCoherence:
         self.active_theme_key = None
         self.active_theme_data = {}
         self.primary_concepts = []
+        self.primary_terms = []
         self.primary_philosophers = []
         self.used_concepts = set()
         self.used_philosophers = set()
         self.used_terms = set()
+        self.concept_usage_counts = Counter()
+        self.term_usage_counts = Counter()
+        self.philosopher_usage_counts = Counter()
         self.concept_weights = Counter()
         self.philosopher_weights = Counter()
         self.term_weights = Counter()
@@ -81,6 +85,12 @@ class EssayCoherence:
             self.primary_concepts = []
             self.primary_terms = []
             self.primary_philosophers = []
+            self.used_concepts.clear()
+            self.used_terms.clear()
+            self.used_philosophers.clear()
+            self.concept_usage_counts.clear()
+            self.term_usage_counts.clear()
+            self.philosopher_usage_counts.clear()
             self.concept_weights.clear()
             self.term_weights.clear()
             self.philosopher_weights.clear()
@@ -122,8 +132,6 @@ class EssayCoherence:
                  if term not in self.primary_terms: # Avoid double counting
                     self.term_weights[term] = 7
             
-            self.record_usage(concepts=self.primary_concepts, terms=self.primary_terms, philosophers=self.primary_philosophers)
-
         else:
             print(f"Warning: Theme key '{theme_key}' not found or invalid. Coherence manager remains on generic themes or previous theme.")
             if not self.active_theme_key: # If no theme was previously active, initialize generically
@@ -179,8 +187,6 @@ class EssayCoherence:
             # Ensure only valid philosophers get weights
             if philosopher_item and len(philosopher_item.strip().replace(".", "")) > 1:
                 self.philosopher_weights[philosopher_item] = 5
-        
-        self.record_usage(concepts=self.primary_concepts, terms=self.primary_terms, philosophers=self.primary_philosophers)
         print("Coherence manager initialized with generic themes.")
 
     def prioritize_title_themes(self, title_themes):
@@ -278,7 +284,9 @@ class EssayCoherence:
                     relationships[c2][c1]["strength"] += strength_mod
         return relationships
     
-    def record_usage(self, concepts=None, terms=None, philosophers=None, decay_factor=0.8, related_boost_factor=1.2):
+    def record_usage(self, concepts=None, terms=None, philosophers=None,
+                     concept_decay_factor=0.9, term_decay_factor=0.92,
+                     philosopher_decay_factor=0.9, related_boost_factor=1.2):
         """
         Record usage of concepts, terms, and philosophers, and dynamically adjust their weights.
         Decays weight of used items and boosts related items with improved progressive decay.
@@ -287,18 +295,18 @@ class EssayCoherence:
             concepts (list, optional): List of concepts used.
             terms (list, optional): List of terms used.
             philosophers (list, optional): List of philosophers used.
-            decay_factor (float): Multiplier to decay weight of used items (e.g., 0.8 for 20% decay).
             related_boost_factor (float): Multiplier to boost weight of related concepts.
         """
         if concepts:
             for concept in concepts:
                 if concept and concept in self.concepts:
                     self.used_concepts.add(concept)
+                    self.concept_usage_counts[concept] += 1
                     current_weight = self.concept_weights.get(concept, 1)
                     
                     # Progressive decay: repeated use increases decay
-                    usage_count = sum(1 for c in self.used_concepts if c == concept)
-                    progressive_decay = decay_factor ** usage_count
+                    usage_count = self.concept_usage_counts[concept]
+                    progressive_decay = concept_decay_factor ** usage_count
                     self.concept_weights[concept] = max(0.05, current_weight * progressive_decay)
                     
                     # Boost related concepts with relationship-aware scaling
@@ -328,22 +336,24 @@ class EssayCoherence:
             for term in terms:
                 if term and term in self.terms:
                     self.used_terms.add(term)
+                    self.term_usage_counts[term] += 1
                     current_weight = self.term_weights.get(term, 1)
                     
                     # Progressive decay for terms too
-                    usage_count = sum(1 for t in self.used_terms if t == term)
-                    progressive_decay = decay_factor ** usage_count
+                    usage_count = self.term_usage_counts[term]
+                    progressive_decay = term_decay_factor ** usage_count
                     self.term_weights[term] = max(0.05, current_weight * progressive_decay)
 
         if philosophers:
             for philosopher in philosophers:
                 if philosopher and philosopher in self.philosophers and len(philosopher.strip().replace(".", "")) > 1:
                     self.used_philosophers.add(philosopher)
+                    self.philosopher_usage_counts[philosopher] += 1
                     current_weight = self.philosopher_weights.get(philosopher, 1)
                     
                     # Progressive decay for philosophers
-                    usage_count = sum(1 for p in self.used_philosophers if p == philosopher)
-                    progressive_decay = decay_factor ** usage_count
+                    usage_count = self.philosopher_usage_counts[philosopher]
+                    progressive_decay = philosopher_decay_factor ** usage_count
                     self.philosopher_weights[philosopher] = max(0.05, current_weight * progressive_decay)
                     
                     # Boost concepts associated with this philosopher
@@ -388,7 +398,7 @@ class EssayCoherence:
             subset_as_set = set(subset)
             target_item_list = [item for item in item_list if item in subset_as_set]
 
-        exclude_set = exclude_set or set()
+        exclude_set = set(exclude_set or set())
         available_items = [item for item in target_item_list if item not in exclude_set]
 
         if not available_items: # Fallback if all items are excluded or list is empty
@@ -430,6 +440,51 @@ class EssayCoherence:
         theme_philosophers = self.active_theme_data.get('core_philosophers', []) if self.active_theme_data else []
         return self._get_weighted_items(self.philosophers, self.philosopher_weights, exclude, theme_philosophers, subset=subset)
 
+    def get_theme_concept(self, exclude=None, fallback_to_general=True):
+        """Get a concept from the active theme, or fall back to a general weighted concept."""
+        theme_concepts = self.active_theme_data.get('key_concepts', []) if self.active_theme_data else []
+        if theme_concepts:
+            return self.get_weighted_concept(exclude=exclude, subset=theme_concepts)
+        if fallback_to_general:
+            return self.get_weighted_concept(exclude=exclude)
+        return None
+
+    def get_theme_term(self, exclude=None, fallback_to_general=True):
+        """Get a term from the active theme, or fall back to a general weighted term."""
+        theme_terms = self.active_theme_data.get('relevant_terms', []) if self.active_theme_data else []
+        if theme_terms:
+            return self.get_weighted_term(exclude=exclude, subset=theme_terms)
+        if fallback_to_general:
+            return self.get_weighted_term(exclude=exclude)
+        return None
+
+    def get_theme_philosopher(self, exclude=None, fallback_to_general=True):
+        """Get a philosopher from the active theme, or fall back to a general weighted philosopher."""
+        theme_philosophers = self.active_theme_data.get('core_philosophers', []) if self.active_theme_data else []
+        if theme_philosophers:
+            return self.get_weighted_philosopher(exclude=exclude, subset=theme_philosophers)
+        if fallback_to_general:
+            return self.get_weighted_philosopher(exclude=exclude)
+        return None
+
+    def get_surface_concept(self, exclude=None, fallback_to_general=True):
+        """Get a concept for a high-visibility essay surface, strongly preferring theme-local material."""
+        if self.active_theme_key:
+            return self.get_theme_concept(exclude=exclude, fallback_to_general=fallback_to_general)
+        return self.get_weighted_concept(exclude=exclude)
+
+    def get_surface_term(self, exclude=None, fallback_to_general=True):
+        """Get a term for a high-visibility essay surface, strongly preferring theme-local material."""
+        if self.active_theme_key:
+            return self.get_theme_term(exclude=exclude, fallback_to_general=fallback_to_general)
+        return self.get_weighted_term(exclude=exclude)
+
+    def get_surface_philosopher(self, exclude=None, fallback_to_general=True):
+        """Get a philosopher for a high-visibility essay surface, strongly preferring theme-local material."""
+        if self.active_theme_key:
+            return self.get_theme_philosopher(exclude=exclude, fallback_to_general=fallback_to_general)
+        return self.get_weighted_philosopher(exclude=exclude)
+
     def get_related_concept(self, concept_name, exclude=None): # Renamed arg from concept to concept_name
         """Get a concept related to concept_name, favoring stronger relationships."""
         if concept_name not in self.concept_relationships:
@@ -462,6 +517,51 @@ class EssayCoherence:
             return random.choice([c for c in self.concepts if c != concept_name and (not exclude or c not in exclude)] or [None])
 
         return random.choices(choices, weights=weights, k=1)[0]
+
+    def get_theme_related_concept(self, concept_name, exclude=None, fallback_to_general=True):
+        """Get a concept related to concept_name, constrained to the active theme when possible."""
+        theme_concepts = self.active_theme_data.get('key_concepts', []) if self.active_theme_data else []
+        if theme_concepts and concept_name in self.concept_relationships:
+            related_options = self.concept_relationships[concept_name]
+            valid_options = {
+                rel_concept: data
+                for rel_concept, data in related_options.items()
+                if (
+                    rel_concept != concept_name
+                    and rel_concept in theme_concepts
+                    and (not exclude or rel_concept not in exclude)
+                    and data.get("type", "related") == "related"
+                )
+            }
+
+            if valid_options:
+                choices = []
+                weights = []
+                for concept, data in valid_options.items():
+                    choices.append(concept)
+                    weights.append(data.get("strength", 1))
+                return random.choices(choices, weights=weights, k=1)[0]
+
+            fallback_theme_concepts = [
+                concept for concept in theme_concepts
+                if concept != concept_name and (not exclude or concept not in exclude)
+            ]
+            if fallback_theme_concepts:
+                return self.get_weighted_concept(exclude=exclude, subset=fallback_theme_concepts)
+
+        if fallback_to_general:
+            return self.get_related_concept(concept_name, exclude=exclude)
+        return None
+
+    def get_surface_related_concept(self, concept_name, exclude=None, fallback_to_general=True):
+        """Get a related concept for a high-visibility essay surface, strongly preferring theme-local material."""
+        if self.active_theme_key:
+            return self.get_theme_related_concept(
+                concept_name,
+                exclude=exclude,
+                fallback_to_general=fallback_to_general,
+            )
+        return self.get_related_concept(concept_name, exclude=exclude)
 
     def get_oppositional_concept(self, concept_name, exclude=None): # Renamed arg
         """Get a concept oppositional to concept_name."""
@@ -721,6 +821,12 @@ class EssayCoherence:
             return random.choice(self.active_theme_data.get('related_adjectives', []))
         return None
 
+    def get_theme_title_context_label(self):
+        """Returns a short, title-safe context label for the active theme."""
+        if self.active_theme_data and self.active_theme_data.get('title_context_labels'):
+            return random.choice(self.active_theme_data.get('title_context_labels', []))
+        return None
+
     def get_theme_common_metaphor(self):
         """Returns a common metaphor related to the active theme, or None if not available."""
         if self.active_theme_data:
@@ -732,7 +838,7 @@ class EssayCoherence:
     def get_theme_academic_subfield(self):
         """Returns a specific academic sub-field related to the active theme, or None if not available."""
         if self.active_theme_data:
-            subfields = self.active_theme_data.get('academic_subfields', [])
+            subfields = self.active_theme_data.get('academic_sub_fields', [])
             if subfields:
                 return random.choice(subfields)
         return None

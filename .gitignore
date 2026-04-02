@@ -3,14 +3,8 @@ __pycache__/
 *.pyc
 *.pyo
 *pycache*
-__pycache__/data.cpython-313.pyc
-__pycache__/essay.cpython-313.pyc
-__pycache__/paragraph.cpython-313.pyc
-__pycache__/sentence.cpython-313.pyc
-__pycache__/reference.cpython-313.pyc
-__pycache__/citation_utils.cpython-313.pyc
-__pycache__/quotes.cpython-313.pyc
-__pycache__/__init__.cpython-313.pyc
+.pytest_cache/
+.mypy_cache/
 
 # Byte-compiled files
 *.py[cod]

@@ -15,7 +15,7 @@ from json_data_provider import academic_journals, bibliography_title_templates
 from json_data_provider import NON_STANDARD_AUTHOR_FORMATS
 from json_data_provider import publishers as data_publishers, philosopher_key_works as data_philosopher_key_works
 from capitalization import ensure_proper_capitalization_with_italics, italicize_terms_in_text, apply_title_case
-from reference import strip_markdown_italics
+from reference import strip_markdown_italics, generate_title as generate_reference_title
 
 # Placeholder definitions for variables used in this module but not sourced from data.py
 # philosopher_key_works = {}  # REMOVE - Will use data_philosopher_key_works from data.py
@@ -28,12 +28,17 @@ class NoteSystem:
     Now implements MLA 9 style citations with Markdown footnote support.
     """
     
-    def __init__(self):
+    def __init__(self, coherence_manager=None):
         """Initialize the note system."""
+        self.coherence_manager = coherence_manager
+        self.max_substantive_notes_per_essay = 36
+        self.max_new_notes_per_section = 8
         self.notes = [] # Stores tuples of (note_number, commentary_text, full_reference_string)
         self.works_cited = []
         self.citation_markers = {}  # Maps reference to note number for substantive notes
         self.page_numbers = {}  # Maps reference to page number(s)
+        self.notes_per_section = {}
+        self.paragraphs_with_new_note = set()
         # Track which authors have multiple works
         self.author_work_count = {}  # Maps author to count of their works
         self.author_works = {}  # Maps author to dict of their works (title -> full reference)
@@ -50,6 +55,8 @@ class NoteSystem:
         self.works_cited = []
         self.citation_markers = {}
         self.page_numbers = {}
+        self.notes_per_section = {}
+        self.paragraphs_with_new_note = set()
         self.author_work_count = {}
         self.author_works = {}
         self.recently_used_note_templates = [] # Reset for new essay
@@ -57,9 +64,161 @@ class NoteSystem:
         # Reset enhanced template variety tracking
         self.recently_used_categories = []
         self.recently_used_template_content = []
+
+    def _get_context_ids(self, context=None):
+        """Extract section and paragraph identifiers from a citation context."""
+        if not isinstance(context, dict):
+            return 0, None
+        section_index = context.get('section_index', 0)
+        paragraph_id = context.get('paragraph_id')
+        return section_index, paragraph_id
+
+    def _extract_reference_context_hints(self, context=None):
+        """Collect concept/term hints from the local citation context."""
+        if not isinstance(context, dict):
+            return [], []
+
+        concept_candidates = []
+        term_candidates = []
+
+        if context.get('theme_concept'):
+            concept_candidates.append(context.get('theme_concept'))
+        concept_candidates.extend(context.get('current_concepts_in_paragraph', []) or [])
+
+        if context.get('theme_term'):
+            term_candidates.append(context.get('theme_term'))
+        term_candidates.extend(context.get('current_terms_in_paragraph', []) or [])
+
+        # Allow strong paragraph concepts to act as fallback term/context hints only if needed downstream.
+        return (
+            [item for item in dict.fromkeys(concept_candidates) if item],
+            [item for item in dict.fromkeys(term_candidates) if item],
+        )
+
+    def _normalize_author_lookup_name(self, author_name):
+        """Resolve bibliography-formatted or display-formatted names to canonical corpus names."""
+        if not author_name or not isinstance(author_name, str):
+            return None
+
+        candidate = author_name.strip()
+        if not candidate:
+            return None
+
+        if candidate == "hooks, bell":
+            return "bell hooks"
+
+        if (
+            candidate in data_philosopher_key_works
+            or candidate in philosopher_concepts
+            or candidate in philosophers
+        ):
+            return candidate
+
+        if "," in candidate:
+            last_name, remainder = [part.strip() for part in candidate.split(",", 1)]
+            reordered = re.sub(r"\s+", " ", f"{remainder} {last_name}").strip()
+            if (
+                reordered in data_philosopher_key_works
+                or reordered in philosopher_concepts
+                or reordered in philosophers
+            ):
+                return reordered
+
+        for philosopher in philosophers:
+            if philosopher.lower() == candidate.lower():
+                return philosopher
+
+        return candidate
+
+    def _format_author_for_bibliography(self, author_name):
+        """Format an author name into the bibliography display form used by MLA entries."""
+        canonical_author = self._normalize_author_lookup_name(author_name) or str(author_name).strip()
+        if not canonical_author:
+            return "Scholar, Anonymous"
+
+        if canonical_author.lower() in NON_STANDARD_AUTHOR_FORMATS:
+            return NON_STANDARD_AUTHOR_FORMATS[canonical_author.lower()]
+
+        if "," in canonical_author:
+            return canonical_author
+
+        parts = canonical_author.split()
+        if len(parts) > 1:
+            return f"{parts[-1]}, {' '.join(parts[:-1])}"
+        return canonical_author
+
+    def _parse_key_work_entry(self, key_work_entry, fallback_is_article):
+        """Normalize key-work entries from data.json into a common title/year/type shape."""
+        title = None
+        year = None
+        is_article = fallback_is_article
+
+        if isinstance(key_work_entry, dict):
+            title = key_work_entry.get("title")
+            year = key_work_entry.get("year")
+            if key_work_entry.get("type"):
+                is_article = key_work_entry.get("type") == "article"
+        elif isinstance(key_work_entry, (list, tuple)):
+            if key_work_entry:
+                title = key_work_entry[0]
+            if len(key_work_entry) > 1 and isinstance(key_work_entry[1], int):
+                year = key_work_entry[1]
+            if len(key_work_entry) > 2 and isinstance(key_work_entry[2], str):
+                is_article = key_work_entry[2].strip().lower() == "article"
+        elif isinstance(key_work_entry, str):
+            title = key_work_entry
+
+        return title, year, is_article
+
+    def _get_existing_references_for_author(self, formatted_author):
+        """Return previously generated bibliography entries for a formatted author name."""
+        author_works = self.author_works.get(formatted_author, {})
+        return list(author_works.values()) if author_works else []
+
+    def _get_existing_reference_for_author(self, formatted_author, preferred_title=None):
+        """Return an existing exact reference for an author, optionally matching a preferred title."""
+        existing_references = self._get_existing_references_for_author(formatted_author)
+        if not existing_references:
+            return None
+
+        if preferred_title:
+            for reference in existing_references:
+                existing_title = self._extract_title_sorting_key(reference)
+                if self._titles_are_similar(preferred_title, existing_title):
+                    return reference
+
+        return random.choice(existing_references)
+
+    def _can_create_substantive_note(self, context=None):
+        """Determine whether the current citation may create a new substantive note."""
+        if len(self.notes) >= self.max_substantive_notes_per_essay:
+            return False
+
+        section_index, paragraph_id = self._get_context_ids(context)
+        if self.notes_per_section.get(section_index, 0) >= self.max_new_notes_per_section:
+            return False
+        if paragraph_id and paragraph_id in self.paragraphs_with_new_note:
+            return False
+        return True
+
+    def _register_substantive_note(self, note_number, reference, context, commentary):
+        """Store a new substantive note and update per-section tracking."""
+        section_index, paragraph_id = self._get_context_ids(context)
+        self.citation_markers[reference] = note_number
+        self.notes.append((note_number, commentary, reference))
+        self.notes_per_section[section_index] = self.notes_per_section.get(section_index, 0) + 1
+        if paragraph_id:
+            self.paragraphs_with_new_note.add(paragraph_id)
     
     def get_mentioned_philosophers(self):
         """Returns a list of philosophers who have been cited."""
+        return list(self.author_work_count.keys())
+
+    def get_authors_in_current_note(self):
+        """
+        Return authors already cited in the current essay.
+        This supports local citation selection paths that want to avoid immediate repetition.
+        """
         return list(self.author_work_count.keys())
 
     def _ensure_work_in_bibliography(self, reference_string):
@@ -171,26 +330,15 @@ class NoteSystem:
 
         if is_quote_citation:
             citation_to_embed_in_text = self._create_parenthetical_citation_string(reference)
-            
-            # Even for quotes, if this is the first time we see this reference for note purposes,
-            # and it's not yet in citation_markers, create a background substantive note.
-            # This ensures _generate_substantive_note can still be called if other parts 
-            # of the code expect a note to exist (e.g. for general commentary).
-            if reference not in self.citation_markers:
-                note_number = len(self.notes) + 1
-                self.citation_markers[reference] = note_number # Mark as "seen" for footnote purposes
-                commentary = self._generate_substantive_note(reference, context, note_number)
-                self.notes.append((note_number, commentary, reference))
-        else: # This is for general commentary notes (substantive footnotes)
+        elif reference in self.citation_markers:
+            citation_to_embed_in_text = f"[^{self.citation_markers[reference]}]"
+        elif self._can_create_substantive_note(context):
             note_number = len(self.notes) + 1
-            # For general notes, we always create a new note entry.
-            # The citation_markers will point to the *first* note for that reference.
-            if reference not in self.citation_markers:
-                 self.citation_markers[reference] = note_number
-            
             commentary = self._generate_substantive_note(reference, context, note_number)
-            self.notes.append((note_number, commentary, reference))
+            self._register_substantive_note(note_number, reference, context, commentary)
             citation_to_embed_in_text = f"[^{note_number}]"
+        else:
+            citation_to_embed_in_text = self._create_parenthetical_citation_string(reference)
         
         # Ultimate fallback if somehow citation_to_embed_in_text is empty
         if not citation_to_embed_in_text:
@@ -905,19 +1053,15 @@ class NoteSystem:
         return unique_related
 
     def get_enhanced_citation(self, author_name, is_article, year, 
-                              title_override=None, specific_year_override=None, is_article_override=None):
+                              title_override=None, specific_year_override=None, is_article_override=None,
+                              context=None):
         """
         Generates a full bibliographic reference string.
         Accepts overrides for title, year, and article/book status for specific citations (e.g., from key works).
         Otherwise, tries to reuse existing work titles for an author or generates new ones.
         """
-        formatted_author = author_name
-        if author_name.lower() == "bell hooks":
-            formatted_author = "hooks, bell"
-        elif "," not in author_name:
-            parts = author_name.split()
-            if len(parts) > 1:
-                formatted_author = f"{parts[-1]}, {' '.join(parts[:-1])}"
+        canonical_author = self._normalize_author_lookup_name(author_name) or author_name
+        formatted_author = self._format_author_for_bibliography(canonical_author)
         
         author_period = "" if formatted_author.endswith(".") else "."
 
@@ -929,29 +1073,39 @@ class NoteSystem:
         else:
             is_definitely_article = is_article
 
+        existing_titles_for_author = []
+        existing_references_for_author = self._get_existing_references_for_author(formatted_author)
+
         title_to_use = None
         if title_override:
             title_to_use = apply_title_case(title_override)
         else:
+            if existing_references_for_author and random.random() < 0.7:
+                return random.choice(existing_references_for_author)
+
             # Attempt to get a key work first
-            key_work_details = None
-            # Ensure author_name is in the format expected by data_philosopher_key_works (usually "Last, First M.")
-            # The `formatted_author` variable should already be in this format or a special format like "hooks, bell"
-            if formatted_author in data_philosopher_key_works:
-                author_key_works = data_philosopher_key_works[formatted_author]
+            if canonical_author in data_philosopher_key_works:
+                author_key_works = data_philosopher_key_works[canonical_author]
                 if author_key_works:
                     chosen_key_work = random.choice(author_key_works)
-                    title_to_use = apply_title_case(chosen_key_work.get("title"))
-                    # Override year and type if available from key work
-                    if chosen_key_work.get("year"): # Ensure year is present
-                        current_year = chosen_key_work.get("year")
-                    if chosen_key_work.get("type"):
-                        is_definitely_article = chosen_key_work.get("type") == "article"
-                    # Store this choice to prevent immediate re-generation if possible
-                    key_work_details = chosen_key_work # Keep details for later
+                    key_work_title, key_work_year, key_work_is_article = self._parse_key_work_entry(
+                        chosen_key_work,
+                        is_definitely_article,
+                    )
+                    if key_work_title:
+                        title_to_use = apply_title_case(key_work_title)
+                    if key_work_year:
+                        current_year = key_work_year
+                    is_definitely_article = key_work_is_article
+
+                    existing_key_work_reference = self._get_existing_reference_for_author(
+                        formatted_author,
+                        preferred_title=title_to_use,
+                    )
+                    if existing_key_work_reference:
+                        return existing_key_work_reference
 
             if not title_to_use: # If no key work was found or used
-                existing_titles_for_author = []
                 if formatted_author in self.author_works:
                     author_s_works_dict = self.author_works[formatted_author]
                     if author_s_works_dict:
@@ -959,11 +1113,29 @@ class NoteSystem:
                             existing_titles_for_author.append(title_key)
                         if existing_titles_for_author and random.random() < 0.75:
                             reused_title_key = random.choice(existing_titles_for_author)
+                            matching_existing_reference = self._get_existing_reference_for_author(
+                                formatted_author,
+                                preferred_title=reused_title_key,
+                            )
+                            if matching_existing_reference:
+                                return matching_existing_reference
                             title_to_use = apply_title_case(reused_title_key)
 
         if is_definitely_article:
             if not title_to_use:
-                title_to_use = self._generate_article_title(author_name=formatted_author, existing_titles=existing_titles_for_author if not title_override else [], philosopher_real_name=author_name)
+                title_to_use = self._generate_article_title(
+                    author_name=formatted_author,
+                    existing_titles=existing_titles_for_author if not title_override else [],
+                    philosopher_real_name=author_name,
+                    context=context,
+                )
+
+            matching_article_reference = self._get_existing_reference_for_author(
+                formatted_author,
+                preferred_title=title_to_use,
+            )
+            if matching_article_reference:
+                return matching_article_reference
             
             journal_name = random.choice(academic_journals)
             volume = random.randint(1, 50)
@@ -973,7 +1145,19 @@ class NoteSystem:
             reference = f"{formatted_author}{author_period} \"{apply_title_case(strip_markdown_italics(title_to_use))}.\" *{apply_title_case(strip_markdown_italics(journal_name))}*, vol. {volume}, no. {issue}, {current_year}, pp. {start_page}-{end_page}."
         else:
             if not title_to_use:
-                title_to_use = self._generate_book_title(author_name=formatted_author, existing_titles=existing_titles_for_author if not title_override else [], philosopher_real_name=author_name)
+                title_to_use = self._generate_book_title(
+                    author_name=formatted_author,
+                    existing_titles=existing_titles_for_author if not title_override else [],
+                    philosopher_real_name=author_name,
+                    context=context,
+                )
+
+            matching_book_reference = self._get_existing_reference_for_author(
+                formatted_author,
+                preferred_title=title_to_use,
+            )
+            if matching_book_reference:
+                return matching_book_reference
             
             publisher = random.choice(data_publishers)
             reference = f"{formatted_author}{author_period} *{apply_title_case(strip_markdown_italics(title_to_use))}*. {publisher}, {current_year}."
@@ -1007,103 +1191,60 @@ class NoteSystem:
         
         return notes_string + works_cited_string
 
-    def _generate_article_title(self, author_name=None, existing_titles=None, philosopher_real_name=None):
+    def _generate_article_title(self, author_name=None, existing_titles=None, philosopher_real_name=None, context=None):
         """Generates a plausible academic article title, avoiding existing ones for the author if possible."""
         if existing_titles is None:
             existing_titles = []
-        
-        # Try to use concepts/terms related to the actual philosopher if available
-        author_specific_concepts = []
-        author_specific_terms = []
-        if philosopher_real_name and philosopher_real_name in data_philosopher_key_works: # Check against the name used in data
-            if philosopher_real_name in philosopher_concepts: # Direct check now
-                author_data = philosopher_concepts[philosopher_real_name]
-                if isinstance(author_data, dict):
-                    author_specific_concepts = author_data.get('concepts', [])
-                    author_specific_terms = author_data.get('terms', [])
-                elif isinstance(author_data, list):
-                    # If it's a flat list, assume all are concepts for now
-                    # Or, you could try to distinguish them if there's a pattern or use all as concepts.
-                    author_specific_concepts = author_data
-                    # No specific terms identified from a flat list this way
+
+        context_concepts, context_terms = self._extract_reference_context_hints(context)
 
         chosen_title = ""
         attempts = 0
         while attempts < 10:
-            template = random.choice(bibliography_title_templates)
-            core_concept = random.choice(author_specific_concepts) if author_specific_concepts else (random.choice(concepts) if concepts else "a key concept")
-            core_term = random.choice(author_specific_terms) if author_specific_terms else (random.choice(terms) if terms else "a central term")
-            
-            philosopher_for_template_text = random.choice(philosophers) if philosophers else "a prominent thinker"
-            if author_name and author_name != "Unknown Author" and philosophers and len(philosophers) > 1:
-                formatted_author_of_work = self._format_author_for_commentary(author_name)
-                possible_others = [p for p in philosophers if self._format_author_for_commentary(p) != formatted_author_of_work]
-                if possible_others:
-                    philosopher_for_template_text = random.choice(possible_others)
-            
-            formatted_philosopher_in_title = self._format_author_for_commentary(philosopher_for_template_text)
-
-            title = template.format(
-                concept=core_concept,
-                term=core_term,
-                philosopher=formatted_philosopher_in_title, 
-                adj=random.choice(adjectives) if adjectives else "critical"
+            title = generate_reference_title(
+                fixed_philosopher=philosopher_real_name or author_name,
+                concept_hint=context_concepts[0] if context_concepts else None,
+                term_hint=context_terms[0] if context_terms else None,
+                coherence_manager=self.coherence_manager,
+                context_concepts=context_concepts,
+                context_terms=context_terms,
             )
             chosen_title = apply_title_case(title)
             
             is_new_theme = True 
             if existing_titles:
-                 is_new_theme = not any(ex_title for ex_title in existing_titles if core_concept.lower() in ex_title or core_term.lower() in ex_title)
+                 lowered_title = chosen_title.lower()
+                 is_new_theme = not any(ex_title for ex_title in existing_titles if lowered_title == ex_title.lower())
             
             if is_new_theme or not existing_titles:
                 break
             attempts += 1
         return chosen_title if chosen_title else apply_title_case(f"A Study on {random.choice(concepts if concepts else ['the topic'])}")
 
-    def _generate_book_title(self, author_name=None, existing_titles=None, philosopher_real_name=None):
+    def _generate_book_title(self, author_name=None, existing_titles=None, philosopher_real_name=None, context=None):
         """Generates a plausible academic book title, avoiding existing ones for the author if possible."""
         if existing_titles is None:
             existing_titles = []
 
-        # Try to use concepts/terms related to the actual philosopher if available
-        author_specific_concepts = []
-        author_specific_terms = []
-        if philosopher_real_name and philosopher_real_name in data_philosopher_key_works: # Check against the name used in data
-            if philosopher_real_name in philosopher_concepts: # Direct check now
-                author_data = philosopher_concepts[philosopher_real_name]
-                if isinstance(author_data, dict):
-                    author_specific_concepts = author_data.get('concepts', [])
-                    author_specific_terms = author_data.get('terms', [])
-                elif isinstance(author_data, list):
-                    author_specific_concepts = author_data
+        context_concepts, context_terms = self._extract_reference_context_hints(context)
 
         chosen_title = ""
         attempts = 0
         while attempts < 10:
-            template = random.choice(bibliography_title_templates)
-            core_concept = random.choice(author_specific_concepts) if author_specific_concepts else (random.choice(concepts) if concepts else "a major theme")
-            core_term = random.choice(author_specific_terms) if author_specific_terms else (random.choice(terms) if terms else "an important debate")
-
-            philosopher_for_template_text = random.choice(philosophers) if philosophers else "a key figure"
-            if author_name and author_name != "Unknown Author" and philosophers and len(philosophers) > 1:
-                formatted_author_of_work = self._format_author_for_commentary(author_name)
-                possible_others = [p for p in philosophers if self._format_author_for_commentary(p) != formatted_author_of_work]
-                if possible_others:
-                    philosopher_for_template_text = random.choice(possible_others)
-            
-            formatted_philosopher_in_title = self._format_author_for_commentary(philosopher_for_template_text)
-
-            title = template.format(
-                concept=core_concept,
-                term=core_term,
-                philosopher=formatted_philosopher_in_title, 
-                adj=random.choice(adjectives) if adjectives else "significant"
+            title = generate_reference_title(
+                fixed_philosopher=philosopher_real_name or author_name,
+                concept_hint=context_concepts[0] if context_concepts else None,
+                term_hint=context_terms[0] if context_terms else None,
+                coherence_manager=self.coherence_manager,
+                context_concepts=context_concepts,
+                context_terms=context_terms,
             )
             chosen_title = apply_title_case(title)
 
             is_new_theme = True
             if existing_titles:
-                is_new_theme = not any(ex_title for ex_title in existing_titles if core_concept.lower() in ex_title or core_term.lower() in ex_title)
+                lowered_title = chosen_title.lower()
+                is_new_theme = not any(ex_title for ex_title in existing_titles if lowered_title == ex_title.lower())
 
             if is_new_theme or not existing_titles:
                 break

@@ -13,6 +13,7 @@ All citations follow MLA 9 style guidelines.
 import random
 import string
 import re
+from collections import Counter
 from json_data_provider import (
     philosophers as RAW_PHILOSOPHERS_FROM_DATA, concepts, terms, philosopher_concepts, # Renamed main import
     quotes,
@@ -281,21 +282,45 @@ def _generate_introduction_sentence(mentioned_philosophers, forbidden_philosophe
                                   note_system, # Add note_system here
                                   coherence_manager=None):
     """Generate an introduction-type sentence."""
+    surface_local = bool(context.get('force_theme_local') or context.get('is_introduction'))
+
     # If primary_concept is provided, use it. Otherwise, select one.
     # Simplified logic: always try to use primary concept if available
     primary_concept = context.get('primary_concept')
     if not primary_concept:
-        available_concepts = [c for c in concepts if c not in forbidden_concepts]
-        if not available_concepts:
-            available_concepts = concepts # Fallback to all concepts
-        primary_concept = random.choice(available_concepts) if available_concepts else "an intriguing concept"
+        if coherence_manager:
+            primary_concept = (
+                coherence_manager.get_surface_concept(
+                    exclude=set(forbidden_concepts),
+                    fallback_to_general=False
+                ) if surface_local else None
+            )
+            if not primary_concept:
+                primary_concept = coherence_manager.get_surface_concept(exclude=set(forbidden_concepts))
+        if not primary_concept:
+            available_concepts = [c for c in concepts if c not in forbidden_concepts]
+            if not available_concepts:
+                available_concepts = concepts # Fallback to all concepts
+            primary_concept = random.choice(available_concepts) if available_concepts else "an intriguing concept"
 
     primary_term = context.get('primary_term')
     if not primary_term:
-        available_terms = [t for t in terms if t not in forbidden_terms]
-        if not available_terms:
-            available_terms = terms # Fallback to all terms
-        primary_term = random.choice(available_terms) if available_terms else "a significant term"
+        if coherence_manager:
+            primary_term = (
+                coherence_manager.get_surface_term(
+                    exclude=set(forbidden_terms).union({primary_concept} if primary_concept else set()),
+                    fallback_to_general=False
+                ) if surface_local else None
+            )
+            if not primary_term:
+                primary_term = coherence_manager.get_surface_term(
+                    exclude=set(forbidden_terms).union({primary_concept} if primary_concept else set())
+                )
+        if not primary_term:
+            available_terms = [t for t in terms if t not in forbidden_terms and t != primary_concept]
+            if not available_terms:
+                available_terms = [t for t in terms if t != primary_concept] or terms
+            primary_term = random.choice(available_terms) if available_terms else "a significant term"
     
     if coherence_manager and coherence_manager.active_theme_data:
         context_text = coherence_manager.get_theme_context_phrase()
@@ -306,7 +331,20 @@ def _generate_introduction_sentence(mentioned_philosophers, forbidden_philosophe
 
     template = random.choice(get_introduction_templates())
     fields_in_template = {fn for _, fn, _, _ in string.Formatter().parse(template) if fn is not None}
-    available_philosophers_intro = [p for p in CLEANED_PHILOSOPHERS if p not in forbidden_philosophers]
+    available_philosophers_intro = []
+    if coherence_manager and coherence_manager.active_theme_key:
+        active_theme_philosophers = [
+            philosopher
+            for philosopher in coherence_manager.active_theme_data.get('core_philosophers', [])
+            if philosopher in CLEANED_PHILOSOPHERS and philosopher not in forbidden_philosophers
+        ]
+        if surface_local and active_theme_philosophers:
+            available_philosophers_intro.extend(active_theme_philosophers)
+        elif active_theme_philosophers:
+            available_philosophers_intro.extend(active_theme_philosophers)
+
+    if not available_philosophers_intro:
+        available_philosophers_intro = [p for p in CLEANED_PHILOSOPHERS if p not in forbidden_philosophers]
     if not available_philosophers_intro: # Ensure there's always a pool
         available_philosophers_intro = CLEANED_PHILOSOPHERS[:5]
 
@@ -335,10 +373,25 @@ def _generate_introduction_sentence(mentioned_philosophers, forbidden_philosophe
     _populate_philosopher_fields(fields_in_template, sentence_data, available_philosophers_intro, [], mentioned_philosophers, coherence_manager)
     
     # Populate concept fields
-    _populate_concept_fields(fields_in_template, sentence_data, sentence_data.get('used_philosophers', []), forbidden_concepts, [primary_concept], coherence_manager)
+    _populate_concept_fields(
+        fields_in_template,
+        sentence_data,
+        sentence_data.get('used_philosophers', []),
+        forbidden_concepts,
+        [primary_concept],
+        coherence_manager,
+        surface_local=surface_local
+    )
     
     # Populate term fields
-    _populate_term_fields(fields_in_template, sentence_data, forbidden_terms, [primary_term], coherence_manager)
+    _populate_term_fields(
+        fields_in_template,
+        sentence_data,
+        forbidden_terms,
+        [primary_term],
+        coherence_manager,
+        surface_local=surface_local
+    )
     
     # Populate context fields (now uses _coherence_manager from sentence_data if present)
     _populate_context_fields(fields_in_template, sentence_data) # sentence_data should have _coherence_manager if coherence_manager is passed
@@ -470,6 +523,8 @@ def _generate_general_sentence(mentioned_philosophers, forbidden_philosophers,
                              note_system, context,
                              coherence_manager=None):
     """Generates a general sentence using a template, populating fields dynamically."""
+    surface_local = bool(context.get('force_theme_local'))
+
     # Determine what type of general sentence to generate
     # Adjusted probabilities: more quote and citation, slightly less standard
     sentence_type_pool = [
@@ -484,12 +539,85 @@ def _generate_general_sentence(mentioned_philosophers, forbidden_philosophers,
     
     # Get available philosophers - prioritize from context or coherence_manager if available
     if coherence_manager:
-        # Try to get a thematically relevant philosopher first
-        # This is a simple approach; could be refined to pick from a pool of theme philosophers
-        main_philosopher_candidate = coherence_manager.get_weighted_philosopher(exclude=forbidden_philosophers)
+        theme_philosophers = [
+            philosopher
+            for philosopher in coherence_manager.active_theme_data.get("core_philosophers", [])
+            if philosopher in CLEANED_PHILOSOPHERS and philosopher not in forbidden_philosophers
+        ]
+
+        available_philosophers = list(theme_philosophers)
+
+        # Try to get a thematically relevant philosopher first.
+        main_philosopher_candidate = (
+            coherence_manager.get_surface_philosopher(
+                exclude=forbidden_philosophers,
+                fallback_to_general=False
+            ) if surface_local else None
+        )
+        if not main_philosopher_candidate:
+            main_philosopher_candidate = coherence_manager.get_surface_philosopher(exclude=forbidden_philosophers)
         if main_philosopher_candidate:
-            available_philosophers = [main_philosopher_candidate] + [p for p in CLEANED_PHILOSOPHERS if p not in forbidden_philosophers and p != main_philosopher_candidate] # MODIFIED
-        else: # Fallback if no specific philosopher from coherence_manager
+            if main_philosopher_candidate not in available_philosophers:
+                available_philosophers.insert(0, main_philosopher_candidate)
+
+        if not surface_local:
+            if theme_philosophers:
+                spillover_cap = 0
+            else:
+                spillover_cap = 8 if sentence_type == "dialogue" else 16
+
+            spillover_philosophers = []
+            if theme_philosophers:
+                spillover_scores = Counter()
+                theme_set = set(theme_philosophers)
+
+                for theme_philosopher in theme_philosophers:
+                    for philosopher in citation_relationships.get(theme_philosopher, []):
+                        if philosopher not in theme_set:
+                            spillover_scores[philosopher] += 4
+
+                    for philosopher, related_philosophers in citation_relationships.items():
+                        if theme_philosopher in related_philosophers and philosopher not in theme_set:
+                            spillover_scores[philosopher] += 2
+
+                    for movement_philosophers in philosophical_movements.values():
+                        if theme_philosopher in movement_philosophers:
+                            for philosopher in movement_philosophers:
+                                if philosopher not in theme_set:
+                                    spillover_scores[philosopher] += 1
+
+                prioritized_spillover = []
+                if spillover_scores:
+                    ranked_candidates = sorted(
+                        spillover_scores.items(),
+                        key=lambda item: (
+                            item[1] + coherence_manager.philosopher_weights.get(item[0], 0),
+                            random.random(),
+                        ),
+                        reverse=True,
+                    )
+                    prioritized_spillover = [
+                        philosopher
+                        for philosopher, _ in ranked_candidates
+                        if philosopher not in forbidden_philosophers and philosopher not in available_philosophers
+                    ]
+
+                spillover_philosophers.extend(prioritized_spillover)
+
+            fallback_spillover = [
+                philosopher
+                for philosopher in CLEANED_PHILOSOPHERS
+                if philosopher not in forbidden_philosophers
+                and philosopher not in available_philosophers
+                and philosopher not in spillover_philosophers
+            ]
+            random.shuffle(fallback_spillover)
+            spillover_philosophers.extend(fallback_spillover)
+
+            if spillover_cap:
+                available_philosophers.extend(spillover_philosophers[:spillover_cap])
+
+        if not available_philosophers:
             available_philosophers = [p for p in CLEANED_PHILOSOPHERS if p not in forbidden_philosophers] # MODIFIED
     else: # Original logic if no coherence_manager
         available_philosophers = [p for p in CLEANED_PHILOSOPHERS if p not in forbidden_philosophers] # MODIFIED
@@ -498,6 +626,14 @@ def _generate_general_sentence(mentioned_philosophers, forbidden_philosophers,
     relevant_philosophers = context.get('relevant_philosophers', []) if context else []
     if relevant_philosophers and random.random() < 0.7:  # 70% chance to use title-relevant philosophers
         prioritized_philosophers = [p for p in relevant_philosophers if p not in forbidden_philosophers]
+        if coherence_manager and coherence_manager.active_theme_key:
+            active_theme_philosophers = set(coherence_manager.active_theme_data.get('core_philosophers', []))
+            theme_prioritized_philosophers = [
+                philosopher for philosopher in prioritized_philosophers
+                if philosopher in active_theme_philosophers
+            ]
+            if theme_prioritized_philosophers:
+                prioritized_philosophers = theme_prioritized_philosophers
         if prioritized_philosophers:
             available_philosophers = prioritized_philosophers + available_philosophers
     
@@ -566,18 +702,64 @@ def _generate_general_sentence(mentioned_philosophers, forbidden_philosophers,
     # Prioritize title concepts or use coherence_manager if available
     if coherence_manager:
         if 'concept' in fields:
-            data['concept'] = coherence_manager.get_weighted_concept(exclude=set(forbidden_concepts).union(used_concepts))
+            concept_exclusions = set(forbidden_concepts).union(used_concepts)
+            if surface_local:
+                data['concept'] = (
+                    coherence_manager.get_surface_concept(
+                        exclude=concept_exclusions,
+                        fallback_to_general=False
+                    )
+                    or coherence_manager.get_surface_concept(exclude=concept_exclusions)
+                )
+            else:
+                data['concept'] = coherence_manager.get_weighted_concept(exclude=concept_exclusions)
             if data['concept']: used_concepts.append(data['concept'])
         if 'other_concept' in fields:
             # For other_concept, try to get a related one or another weighted one
             primary_concept_for_related = data.get('concept')
             current_exclusions = set(forbidden_concepts).union(used_concepts)
             if primary_concept_for_related:
-                 data['other_concept'] = coherence_manager.get_related_concept(primary_concept_for_related, exclude=current_exclusions)
-                 if not data['other_concept']: # Fallback if no related found
-                     data['other_concept'] = coherence_manager.get_weighted_concept(exclude=current_exclusions.union({primary_concept_for_related} if primary_concept_for_related else set()))
+                if surface_local and coherence_manager.active_theme_key:
+                    theme_related_candidates = [
+                        concept for concept in coherence_manager.active_theme_data.get('key_concepts', [])
+                        if concept != primary_concept_for_related and concept not in current_exclusions
+                    ]
+                    if primary_concept_for_related in coherence_manager.concept_relationships:
+                        related_map = coherence_manager.concept_relationships[primary_concept_for_related]
+                        theme_related_candidates = [
+                            concept for concept in theme_related_candidates
+                            if concept in related_map
+                        ]
+                    if theme_related_candidates:
+                        data['other_concept'] = random.choice(theme_related_candidates)
+                if not data.get('other_concept'):
+                    data['other_concept'] = coherence_manager.get_related_concept(primary_concept_for_related, exclude=current_exclusions)
+                if not data.get('other_concept'): # Fallback if no related found
+                    if surface_local:
+                        data['other_concept'] = (
+                            coherence_manager.get_surface_concept(
+                                exclude=current_exclusions.union({primary_concept_for_related}),
+                                fallback_to_general=False
+                            )
+                            or coherence_manager.get_surface_concept(
+                                exclude=current_exclusions.union({primary_concept_for_related})
+                            )
+                        )
+                    else:
+                        data['other_concept'] = coherence_manager.get_weighted_concept(
+                            exclude=current_exclusions.union({primary_concept_for_related})
+                        )
             else: # If no primary concept, just get a weighted one
-                 data['other_concept'] = coherence_manager.get_weighted_concept(exclude=current_exclusions)
+                if surface_local:
+                    data['other_concept'] = (
+                        coherence_manager.get_surface_concept(
+                            exclude=current_exclusions,
+                            fallback_to_general=False
+                        )
+                        or coherence_manager.get_surface_concept(exclude=current_exclusions)
+                    )
+                else:
+                    data['other_concept'] = coherence_manager.get_weighted_concept(exclude=current_exclusions)
             if data.get('other_concept'): used_concepts.append(data['other_concept'])
 
     elif 'concept' in fields and title_concepts and random.random() < 0.7: # Original logic if no coherence_manager
@@ -593,10 +775,27 @@ def _generate_general_sentence(mentioned_philosophers, forbidden_philosophers,
     # Prioritize title terms or use coherence_manager if available
     if coherence_manager:
         if 'term' in fields:
-            data['term'] = coherence_manager.get_weighted_term(exclude=set(forbidden_terms).union(used_terms))
+            term_exclusions = set(forbidden_terms).union(used_terms)
+            term_exclusions.update({data.get('concept'), data.get('other_concept')})
+            term_exclusions.discard(None)
+            if surface_local:
+                data['term'] = (
+                    coherence_manager.get_surface_term(
+                        exclude=term_exclusions,
+                        fallback_to_general=False
+                    )
+                    or coherence_manager.get_surface_term(exclude=term_exclusions)
+                )
+            else:
+                data['term'] = coherence_manager.get_weighted_term(exclude=term_exclusions)
             if data['term']: used_terms.append(data['term'])
     elif 'term' in fields and title_terms and random.random() < 0.7: # Original logic if no coherence_manager
-        available_title_terms = [t for t in title_terms if t not in forbidden_terms and t not in used_terms]
+        available_title_terms = [
+            t for t in title_terms
+            if t not in forbidden_terms
+            and t not in used_terms
+            and t not in {data.get('concept'), data.get('other_concept')}
+        ]
         if available_title_terms:
             data['term'] = random.choice(available_title_terms)
             used_terms.append(data['term'])
@@ -729,34 +928,204 @@ def _populate_philosopher_fields(fields, data, available_philosophers, used_phil
             used_philosophers.append(phil)
 
 
+def _get_active_theme_philosophers(coherence_manager):
+    """Return valid active-theme philosophers in corpus order."""
+    if not coherence_manager:
+        return []
+    return [
+        philosopher
+        for philosopher in coherence_manager.active_theme_data.get("core_philosophers", [])
+        if philosopher in CLEANED_PHILOSOPHERS
+    ]
+
+
+def _get_contextual_philosophers(context):
+    """Return valid philosopher names already present in local sentence/paragraph context."""
+    if not context:
+        return []
+
+    contextual_candidates = []
+    for key in ("theme_philosopher", "primary_philosopher", "philosopher"):
+        candidate = context.get(key)
+        if (
+            isinstance(candidate, str)
+            and len(candidate.strip().replace(".", "")) > 1
+            and candidate in CLEANED_PHILOSOPHERS
+        ):
+            contextual_candidates.append(candidate)
+
+    contextual_candidates.extend(
+        philosopher
+        for philosopher in (context.get("current_philosophers_in_paragraph", []) or [])
+        if (
+            isinstance(philosopher, str)
+            and len(philosopher.strip().replace(".", "")) > 1
+            and philosopher in CLEANED_PHILOSOPHERS
+        )
+    )
+
+    return list(dict.fromkeys(contextual_candidates))
+
+
+def _choose_weighted_philosopher(candidates, coherence_manager=None):
+    """Choose a philosopher from a candidate pool, using coherence weights when available."""
+    if not candidates:
+        return None
+    if coherence_manager:
+        return random.choices(
+            candidates,
+            weights=[
+                max(1, coherence_manager.philosopher_weights.get(philosopher, 0))
+                for philosopher in candidates
+            ],
+            k=1,
+        )[0]
+    return random.choice(candidates)
+
+
 def _select_related_philosopher(first_phil, available_pool, all_philosophers, coherence_manager=None):
     """Select a philosopher related to the first philosopher in the sentence."""
-    # Check citation relationships for possible related philosophers
-    if first_phil in citation_relationships and citation_relationships[first_phil]:
-        related_phils = [p for p in citation_relationships[first_phil] 
-                        if p in available_pool]
-        if related_phils:
-            return random.choice(related_phils)
-        # No direct citation relationship found, fall through to movement/coherence_manager logic
-    
-    # Try philosophical movements next
-    for movement, movement_phils in philosophical_movements.items():
+    available_candidates = [philosopher for philosopher in available_pool if philosopher != first_phil]
+    if not available_candidates:
+        available_candidates = [philosopher for philosopher in CLEANED_PHILOSOPHERS if philosopher != first_phil]
+
+    active_theme_philosophers = set()
+    if coherence_manager:
+        active_theme_philosophers = set(
+            coherence_manager.active_theme_data.get("core_philosophers", [])
+        )
+
+    # Prefer philosophers that are explicitly connected to the first philosopher
+    # in the citation graph. Outgoing links are strongest, but reverse links also
+    # provide a useful fallback for dialogue-style pairings.
+    outgoing_citation_weights = Counter()
+    for philosopher in citation_relationships.get(first_phil, []):
+        if philosopher in available_candidates:
+            outgoing_citation_weights[philosopher] += 4
+
+    incoming_citation_weights = Counter()
+    for philosopher, related_philosophers in citation_relationships.items():
+        if first_phil in related_philosophers and philosopher in available_candidates:
+            incoming_citation_weights[philosopher] += 2
+
+    citation_candidate_weights = Counter()
+    if active_theme_philosophers:
+        active_outgoing = Counter(
+            {
+                philosopher: weight
+                for philosopher, weight in outgoing_citation_weights.items()
+                if philosopher in active_theme_philosophers
+            }
+        )
+        active_incoming = Counter(
+            {
+                philosopher: weight
+                for philosopher, weight in incoming_citation_weights.items()
+                if philosopher in active_theme_philosophers
+            }
+        )
+
+        if active_outgoing:
+            citation_candidate_weights.update(active_outgoing)
+            citation_candidate_weights.update(active_incoming)
+        elif outgoing_citation_weights:
+            citation_candidate_weights.update(outgoing_citation_weights)
+        elif active_incoming:
+            citation_candidate_weights.update(active_incoming)
+        else:
+            citation_candidate_weights.update(incoming_citation_weights)
+    else:
+        citation_candidate_weights.update(outgoing_citation_weights)
+        citation_candidate_weights.update(incoming_citation_weights)
+
+    if citation_candidate_weights:
+        if coherence_manager:
+            for philosopher in list(citation_candidate_weights.keys()):
+                if philosopher in active_theme_philosophers:
+                    citation_candidate_weights[philosopher] += 3
+                citation_candidate_weights[philosopher] += coherence_manager.philosopher_weights.get(
+                    philosopher, 0
+                )
+
+        philosophers = list(citation_candidate_weights.keys())
+        weights = [max(1, citation_candidate_weights[philosopher]) for philosopher in philosophers]
+        return random.choices(philosophers, weights=weights, k=1)[0]
+
+    # Aggregate philosophical movement matches rather than stopping at the first bucket.
+    movement_candidate_weights = Counter()
+    for movement_phils in philosophical_movements.values():
         if first_phil in movement_phils:
-            movement_options = [p for p in movement_phils if p in available_pool and p != first_phil]
-            if movement_options:
-                return random.choice(movement_options)
+            for philosopher in movement_phils:
+                if philosopher in available_candidates:
+                    movement_candidate_weights[philosopher] += 1
+
+    if movement_candidate_weights:
+        if coherence_manager:
+            active_movement_candidates = Counter(
+                {
+                    philosopher: weight
+                    for philosopher, weight in movement_candidate_weights.items()
+                    if philosopher in active_theme_philosophers
+                }
+            )
+            if active_movement_candidates:
+                movement_candidate_weights = active_movement_candidates
+
+            for philosopher in list(movement_candidate_weights.keys()):
+                if philosopher in active_theme_philosophers:
+                    movement_candidate_weights[philosopher] += 3
+                movement_candidate_weights[philosopher] += coherence_manager.philosopher_weights.get(philosopher, 0)
+
+        philosophers = list(movement_candidate_weights.keys())
+        weights = [max(1, movement_candidate_weights[philosopher]) for philosopher in philosophers]
+        return random.choices(philosophers, weights=weights, k=1)[0]
+
+    if active_theme_philosophers:
+        theme_available_candidates = [
+            philosopher for philosopher in available_candidates
+            if philosopher in active_theme_philosophers
+        ]
+        if theme_available_candidates:
+            if coherence_manager:
+                theme_weights = [
+                    max(1, coherence_manager.philosopher_weights.get(philosopher, 0))
+                    for philosopher in theme_available_candidates
+                ]
+                return random.choices(theme_available_candidates, weights=theme_weights, k=1)[0]
+            return random.choice(theme_available_candidates)
 
     # Fallback to coherence_manager or random selection
     if coherence_manager:
         candidate = coherence_manager.get_weighted_philosopher(exclude=[first_phil] + ([p for p in CLEANED_PHILOSOPHERS if p not in available_pool]))
         if candidate: return candidate
 
-    return random.choice(available_pool) if available_pool else random.choice(CLEANED_PHILOSOPHERS)
+    return random.choice(available_candidates) if available_candidates else random.choice(CLEANED_PHILOSOPHERS)
 
 
 def _select_first_philosopher(available_pool, mentioned_philosophers, all_philosophers, coherence_manager=None):
     """Select the first philosopher for a sentence, favoring new philosophers or from coherence_manager."""
     if coherence_manager:
+        active_theme_philosophers = set(
+            coherence_manager.active_theme_data.get("core_philosophers", [])
+        )
+        theme_pool = [philosopher for philosopher in available_pool if philosopher in active_theme_philosophers]
+        unmentioned_theme_pool = [philosopher for philosopher in theme_pool if philosopher not in mentioned_philosophers]
+
+        if unmentioned_theme_pool:
+            theme_weights = [
+                max(1, coherence_manager.philosopher_weights.get(philosopher, 0))
+                for philosopher in unmentioned_theme_pool
+            ]
+            if random.random() < 0.85:
+                return random.choices(unmentioned_theme_pool, weights=theme_weights, k=1)[0]
+
+        if theme_pool and random.random() < 0.7:
+            theme_weights = [
+                max(1, coherence_manager.philosopher_weights.get(philosopher, 0))
+                for philosopher in theme_pool
+            ]
+            return random.choices(theme_pool, weights=theme_weights, k=1)[0]
+
         # Prefer a philosopher from coherence_manager, possibly unmentioned
         unmentioned_in_pool = [p for p in available_pool if p not in mentioned_philosophers]
         candidate_from_coherence = coherence_manager.get_weighted_philosopher(
@@ -768,6 +1137,13 @@ def _select_first_philosopher(available_pool, mentioned_philosophers, all_philos
             elif random.random() < 0.5: # Still a good chance to pick if mentioned
                  return candidate_from_coherence
 
+        if theme_pool:
+            theme_weights = [
+                max(1, coherence_manager.philosopher_weights.get(philosopher, 0))
+                for philosopher in theme_pool
+            ]
+            return random.choices(theme_pool, weights=theme_weights, k=1)[0]
+
     # Fallback to original logic if coherence_manager didn't yield a good pick
     unmention_phils = [p for p in available_pool if p not in mentioned_philosophers]
     if unmention_phils and random.random() < 0.7:  # 70% chance to use new philosopher from pool
@@ -776,24 +1152,49 @@ def _select_first_philosopher(available_pool, mentioned_philosophers, all_philos
         return random.choice(available_pool) if available_pool else random.choice(CLEANED_PHILOSOPHERS)
 
 
-def _populate_concept_fields(fields, data, used_philosophers, forbidden_concepts, used_concepts, coherence_manager=None):
+def _populate_concept_fields(fields, data, used_philosophers, forbidden_concepts, used_concepts, coherence_manager=None, surface_local=False):
     """Populate concept-related fields in the template data dictionary."""
+    active_theme_concepts = set()
+    if surface_local and coherence_manager and coherence_manager.active_theme_key:
+        active_theme_concepts = set(coherence_manager.active_theme_data.get('key_concepts', []))
+
     for field in fields:
         if field == 'concept':
             concept = None
             if coherence_manager:
-                concept = coherence_manager.get_weighted_concept(exclude=set(forbidden_concepts).union(used_concepts))
+                if surface_local:
+                    concept = coherence_manager.get_surface_concept(
+                        exclude=set(forbidden_concepts).union(used_concepts),
+                        fallback_to_general=False
+                    )
+                    if not concept:
+                        concept = coherence_manager.get_surface_concept(
+                            exclude=set(forbidden_concepts).union(used_concepts)
+                        )
+                else:
+                    concept = coherence_manager.get_weighted_concept(exclude=set(forbidden_concepts).union(used_concepts))
             
             if not concept: # Fallback to original logic
                 main_phil = data.get('philosopher', data.get('philosopher1'))
                 if main_phil and main_phil in philosopher_concepts:
                     related_concepts = [c for c in philosopher_concepts[main_phil] 
                                       if c not in forbidden_concepts and c not in used_concepts]
+                    if active_theme_concepts:
+                        theme_related_concepts = [
+                            concept_name for concept_name in related_concepts
+                            if concept_name in active_theme_concepts
+                        ]
+                        if theme_related_concepts:
+                            related_concepts = theme_related_concepts
                     if related_concepts:
                         concept = random.choice(related_concepts)
                 if not concept: # Further fallback
-                    concept = random.choice([c for c in concepts 
-                                             if c not in forbidden_concepts and c not in used_concepts] or concepts)
+                    fallback_pool = [c for c in concepts if c not in forbidden_concepts and c not in used_concepts]
+                    if active_theme_concepts:
+                        theme_fallback_pool = [concept_name for concept_name in fallback_pool if concept_name in active_theme_concepts]
+                        if theme_fallback_pool:
+                            fallback_pool = theme_fallback_pool
+                    concept = random.choice(fallback_pool or concepts)
             if concept:
                 data[field] = concept
                 used_concepts.append(concept)
@@ -804,18 +1205,61 @@ def _populate_concept_fields(fields, data, used_philosophers, forbidden_concepts
                 primary_concept_for_related = data.get('concept')
                 current_exclusions = set(forbidden_concepts).union(used_concepts)
                 if primary_concept_for_related:
-                    concept = coherence_manager.get_related_concept(primary_concept_for_related, exclude=current_exclusions)
+                    if surface_local and coherence_manager.active_theme_key:
+                        theme_related_candidates = [
+                            item for item in coherence_manager.active_theme_data.get('key_concepts', [])
+                            if item != primary_concept_for_related and item not in current_exclusions
+                        ]
+                        if primary_concept_for_related in coherence_manager.concept_relationships:
+                            related_map = coherence_manager.concept_relationships[primary_concept_for_related]
+                            theme_related_candidates = [
+                                item for item in theme_related_candidates if item in related_map
+                            ]
+                        if theme_related_candidates:
+                            concept = random.choice(theme_related_candidates)
+                    if not concept:
+                        if surface_local:
+                            concept = coherence_manager.get_surface_related_concept(
+                                primary_concept_for_related,
+                                exclude=current_exclusions,
+                                fallback_to_general=False
+                            )
+                        else:
+                            concept = coherence_manager.get_related_concept(primary_concept_for_related, exclude=current_exclusions)
                 if not concept: # Fallback to weighted if no related found or no primary concept
-                    concept = coherence_manager.get_weighted_concept(exclude=current_exclusions.union({primary_concept_for_related} if primary_concept_for_related else set()))
+                    if surface_local:
+                        concept = coherence_manager.get_surface_concept(
+                            exclude=current_exclusions.union({primary_concept_for_related} if primary_concept_for_related else set()),
+                            fallback_to_general=False
+                        )
+                        if not concept:
+                            concept = coherence_manager.get_surface_concept(
+                                exclude=current_exclusions.union({primary_concept_for_related} if primary_concept_for_related else set())
+                            )
+                    else:
+                        concept = coherence_manager.get_weighted_concept(exclude=current_exclusions.union({primary_concept_for_related} if primary_concept_for_related else set()))
 
             if not concept: # Fallback to original logic
                 if used_concepts:
-                    concept = _select_related_concept(used_concepts[0], used_philosophers, 
-                                                   data, forbidden_concepts, used_concepts, coherence_manager) # Pass coherence_manager
+                    if surface_local and coherence_manager:
+                        concept = coherence_manager.get_surface_related_concept(
+                            used_concepts[0],
+                            exclude=set(forbidden_concepts).union(used_concepts),
+                            fallback_to_general=False
+                        )
+                    if not concept:
+                        concept = _select_related_concept(used_concepts[0], used_philosophers, 
+                                                       data, forbidden_concepts, used_concepts, coherence_manager) # Pass coherence_manager
                 else:
-                    concept = random.choice([c for c in concepts 
-                                         if c not in forbidden_concepts 
-                                         and c not in used_concepts] or concepts)
+                    fallback_pool = [
+                        c for c in concepts
+                        if c not in forbidden_concepts and c not in used_concepts
+                    ]
+                    if active_theme_concepts:
+                        theme_fallback_pool = [concept_name for concept_name in fallback_pool if concept_name in active_theme_concepts]
+                        if theme_fallback_pool:
+                            fallback_pool = theme_fallback_pool
+                    concept = random.choice(fallback_pool or concepts)
             if concept:
                 data[field] = concept
                 used_concepts.append(concept)
@@ -858,15 +1302,34 @@ def _select_related_concept(primary_concept, used_philosophers, data, forbidden_
     return random.choice(potential_concepts)
 
 
-def _populate_term_fields(fields, data, forbidden_terms, used_terms, coherence_manager=None):
+def _populate_term_fields(fields, data, forbidden_terms, used_terms, coherence_manager=None, surface_local=False):
     """Populate term-related fields in the template data dictionary."""
     if 'term' in fields:
         term = None
+        concept_exclusions = {data.get('concept'), data.get('other_concept')}
+        concept_exclusions.discard(None)
         if coherence_manager:
-            term = coherence_manager.get_weighted_term(exclude=set(forbidden_terms).union(used_terms))
+            if surface_local:
+                term = coherence_manager.get_surface_term(
+                    exclude=set(forbidden_terms).union(used_terms).union(concept_exclusions),
+                    fallback_to_general=False
+                )
+                if not term:
+                    term = coherence_manager.get_surface_term(
+                        exclude=set(forbidden_terms).union(used_terms).union(concept_exclusions)
+                    )
+            else:
+                term = coherence_manager.get_weighted_term(
+                    exclude=set(forbidden_terms).union(used_terms).union(concept_exclusions)
+                )
         
         if not term: # Fallback to random if coherence_manager doesn't provide or not available
-            term = random.choice([t for t in terms if t not in forbidden_terms and t not in used_terms] or terms)
+            term = random.choice(
+                [
+                    t for t in terms
+                    if t not in forbidden_terms and t not in used_terms and t not in concept_exclusions
+                ] or terms
+            )
         
         if term:
             data['term'] = term
@@ -970,10 +1433,27 @@ def _handle_quote_in_template(data, quote_source_field, used_quotes,
     title_concepts = title_themes.get('primary_concepts', []) if title_themes else []
     title_terms = title_themes.get('primary_terms', []) if title_themes else []
     relevant_philosophers = context.get('relevant_philosophers', [])
+    surface_local = bool(context.get('force_theme_local') or context.get('is_introduction'))
 
     # Use coherence_manager to pick quote_source_name if not strongly indicated by context
     if coherence_manager and (not quote_source_name or quote_source_name not in relevant_philosophers or random.random() < 0.3): # 30% chance to override with thematic
-        candidate_philosopher = coherence_manager.get_weighted_philosopher(exclude=[p for p in CLEANED_PHILOSOPHERS if match_philosopher_to_quotes(p) is None]) # MODIFIED Exclude those with no quotes
+        quote_eligible_exclusions = [p for p in CLEANED_PHILOSOPHERS if match_philosopher_to_quotes(p) is None]
+        if surface_local:
+            candidate_philosopher = (
+                coherence_manager.get_surface_philosopher(
+                    exclude=quote_eligible_exclusions,
+                    fallback_to_general=False
+                )
+                or coherence_manager.get_surface_philosopher(exclude=quote_eligible_exclusions)
+            )
+        else:
+            candidate_philosopher = (
+                coherence_manager.get_surface_philosopher(
+                    exclude=quote_eligible_exclusions,
+                    fallback_to_general=False,
+                )
+                or coherence_manager.get_weighted_philosopher(exclude=quote_eligible_exclusions)
+            )
         if candidate_philosopher:
             # Update the philosopher in the main data dict if it was the source of the quote
             if data.get('philosopher') == quote_source_name: data['philosopher'] = candidate_philosopher
@@ -982,7 +1462,15 @@ def _handle_quote_in_template(data, quote_source_field, used_quotes,
             quote_source_name = candidate_philosopher # Use the thematic philosopher
     
     elif (title_concepts or title_terms) and relevant_philosophers and random.random() < 0.7: # Original logic for title theme relevance
-        if quote_source_name not in relevant_philosophers:
+        if coherence_manager and coherence_manager.active_theme_key:
+            active_theme_philosophers = set(coherence_manager.active_theme_data.get('core_philosophers', []))
+            theme_relevant_philosophers = [
+                philosopher for philosopher in relevant_philosophers
+                if philosopher in active_theme_philosophers
+            ]
+            if theme_relevant_philosophers:
+                relevant_philosophers = theme_relevant_philosophers
+        if relevant_philosophers and quote_source_name not in relevant_philosophers:
             new_quote_source = random.choice(relevant_philosophers)
             # Update the philosopher in the main data dict if it was the source of the quote
             if data.get('philosopher') == quote_source_name: data['philosopher'] = new_quote_source
@@ -1025,27 +1513,45 @@ def _handle_quote_in_template(data, quote_source_field, used_quotes,
                             year=year if year is not None else random.randint(1970, 2010), # Positional default
                             is_article_override=is_article_from_work, 
                             specific_year_override=year, 
-                            title_override=work_title
+                            title_override=work_title,
+                            context=context,
                         )
                     else:
                         # Fallback to more generic citation if no key work found or data incomplete
                         is_article_fallback = random.random() < 0.3
                         year_fallback = random.randint(1950, 2010)
                         # Call with positional is_article and year for the fallback case
-                        reference_for_quote = note_system.get_enhanced_citation(full_name, is_article_fallback, year_fallback)
+                        reference_for_quote = note_system.get_enhanced_citation(full_name, is_article_fallback, year_fallback, context=context)
 
     if not selected_quote_text: # Fallback to generic quote if no specific one was found
         if coherence_manager:
-            concept_for_generic = coherence_manager.get_weighted_concept()
-            term_for_generic = coherence_manager.get_weighted_term()
+            if surface_local:
+                concept_for_generic = (
+                    data.get('concept')
+                    or coherence_manager.get_surface_concept(fallback_to_general=False)
+                    or coherence_manager.get_surface_concept()
+                )
+                term_for_generic = (
+                    data.get('term')
+                    or coherence_manager.get_surface_term(
+                        exclude={concept_for_generic} if concept_for_generic else None,
+                        fallback_to_general=False
+                    )
+                    or coherence_manager.get_surface_term(
+                        exclude={concept_for_generic} if concept_for_generic else None
+                    )
+                )
+            else:
+                concept_for_generic = coherence_manager.get_weighted_concept()
+                term_for_generic = coherence_manager.get_weighted_term()
         else:
             concept_for_generic = data.get('concept', random.choice(concepts))
             term_for_generic = data.get('term', random.choice(terms))
         selected_quote_text = f"the relationship between {concept_for_generic} and {term_for_generic} is always already mediated by power"
         if quote_source_name and note_system: # Generate reference for the generic quote's attributed author
-            reference_for_quote = note_system.get_enhanced_citation(quote_source_name, False, random.randint(1950, 2010))
+            reference_for_quote = note_system.get_enhanced_citation(quote_source_name, False, random.randint(1950, 2010), context=context)
         elif note_system: # Absolute fallback if no quote_source_name somehow
-             reference_for_quote = note_system.get_enhanced_citation("Smith, John", False, random.randint(1950,2010))
+             reference_for_quote = note_system.get_enhanced_citation("Smith, John", False, random.randint(1950,2010), context=context)
 
 
     data['quote'] = selected_quote_text
@@ -1081,7 +1587,7 @@ def _process_citation_placeholders(sentence, note_system, context, philosopher_n
 
             year = random.randint(1950, 2010)
             is_article = random.random() < 0.3
-            reference = note_system.get_enhanced_citation(name_to_cite, is_article, year)
+            reference = note_system.get_enhanced_citation(name_to_cite, is_article, year, context=context)
             citation_text_to_insert = note_system.add_citation(reference, context)
         else:
             citation_text_to_insert = '' # Fallback if no note_system, changed from '(Generic Citation)'
@@ -1208,24 +1714,90 @@ def _format_sentence_from_template(template, data, used_concepts, used_terms, no
         if '{citation}' in sentence and note_system:
             # The philosopher_name for a general {citation} not tied to a specific quote
             # could come from data['philosopher'] or a general context.
-            philosopher_for_general_citation = data.get('philosopher', data.get('philosopher1'))
+            philosopher_for_general_citation = (
+                data.get('philosopher')
+                or data.get('philosopher1')
+                or current_context.get('primary_philosopher')
+                or current_context.get('theme_philosopher')
+            )
             if not philosopher_for_general_citation and coherence_manager: # Added fallback
-                philosopher_for_general_citation = coherence_manager.get_weighted_philosopher()
+                active_theme_philosophers = [
+                    philosopher
+                    for philosopher in coherence_manager.active_theme_data.get('core_philosophers', [])
+                    if philosopher in CLEANED_PHILOSOPHERS
+                ]
+                if active_theme_philosophers:
+                    philosopher_for_general_citation = random.choices(
+                        active_theme_philosophers,
+                        weights=[
+                            max(1, coherence_manager.philosopher_weights.get(philosopher, 0))
+                            for philosopher in active_theme_philosophers
+                        ],
+                        k=1,
+                    )[0]
+                else:
+                    philosopher_for_general_citation = (
+                        coherence_manager.get_surface_philosopher(fallback_to_general=False)
+                        or coherence_manager.get_weighted_philosopher()
+                    )
             philosopher_for_general_citation = philosopher_for_general_citation or "Smith, John" # Ensure it's not None
             sentence = _process_citation_placeholders(sentence, note_system, current_context, philosopher_for_general_citation, coherence_manager)
         
     except KeyError as e:
         # Fallback if template has missing fields
         missing_key = str(e).strip("'")
+        surface_local = bool(context.get('force_theme_local') or context.get('is_introduction')) if context else False
         if coherence_manager:
             if missing_key.startswith('philosopher'):
-                data[missing_key] = coherence_manager.get_weighted_philosopher() or random.choice(CLEANED_PHILOSOPHERS)
+                active_theme_philosophers = [
+                    philosopher
+                    for philosopher in coherence_manager.active_theme_data.get('core_philosophers', [])
+                    if philosopher in CLEANED_PHILOSOPHERS
+                ]
+                if active_theme_philosophers:
+                    data[missing_key] = random.choices(
+                        active_theme_philosophers,
+                        weights=[
+                            max(1, coherence_manager.philosopher_weights.get(philosopher, 0))
+                            for philosopher in active_theme_philosophers
+                        ],
+                        k=1,
+                    )[0]
+                elif surface_local:
+                    data[missing_key] = (
+                        coherence_manager.get_surface_philosopher(fallback_to_general=False)
+                        or coherence_manager.get_surface_philosopher()
+                        or random.choice(CLEANED_PHILOSOPHERS)
+                    )
+                else:
+                    data[missing_key] = coherence_manager.get_weighted_philosopher() or random.choice(CLEANED_PHILOSOPHERS)
             elif missing_key == 'concept' or missing_key == 'other_concept':
-                data[missing_key] = coherence_manager.get_weighted_concept() or random.choice(concepts)
+                if surface_local:
+                    data[missing_key] = (
+                        coherence_manager.get_surface_concept(fallback_to_general=False)
+                        or coherence_manager.get_surface_concept()
+                        or random.choice(concepts)
+                    )
+                else:
+                    data[missing_key] = coherence_manager.get_weighted_concept() or random.choice(concepts)
             elif missing_key == 'term':
-                available_terms = [t for t in terms if t not in data.get('used_terms', [])]
-                if not available_terms: available_terms = terms
-                data[missing_key] = random.choice(available_terms) if available_terms else "a relevant notion"
+                concept_exclusions = {data.get('concept'), data.get('other_concept')}
+                concept_exclusions.discard(None)
+                if surface_local:
+                    data[missing_key] = (
+                        coherence_manager.get_surface_term(
+                            exclude=concept_exclusions,
+                            fallback_to_general=False
+                        )
+                        or coherence_manager.get_surface_term(exclude=concept_exclusions)
+                    )
+                if missing_key not in data:
+                    available_terms = [
+                        t for t in terms
+                        if t not in data.get('used_terms', []) and t not in concept_exclusions
+                    ]
+                    if not available_terms: available_terms = terms
+                    data[missing_key] = random.choice(available_terms) if available_terms else "a relevant notion"
             elif missing_key == 'context':
                 # If context is still missing, it implies that coherence_manager was not available,
                 # or it was available but get_theme_context_phrase() returned None, 
@@ -1236,7 +1808,29 @@ def _format_sentence_from_template(template, data, used_concepts, used_terms, no
                 data[missing_key] = random.choice(adjectives) if adjectives else "relevant"
             elif missing_key == 'author':
                  # Try to get a philosopher name for author if it's missing.
-                data[missing_key] = (coherence_manager.get_weighted_philosopher() or "Smith").split()[0] # Use last name
+                active_theme_philosophers = [
+                    philosopher
+                    for philosopher in coherence_manager.active_theme_data.get('core_philosophers', [])
+                    if philosopher in CLEANED_PHILOSOPHERS
+                ]
+                if active_theme_philosophers:
+                    author_source = random.choices(
+                        active_theme_philosophers,
+                        weights=[
+                            max(1, coherence_manager.philosopher_weights.get(philosopher, 0))
+                            for philosopher in active_theme_philosophers
+                        ],
+                        k=1,
+                    )[0]
+                elif surface_local:
+                    author_source = (
+                        coherence_manager.get_surface_philosopher(fallback_to_general=False)
+                        or coherence_manager.get_surface_philosopher()
+                        or "Smith"
+                    )
+                else:
+                    author_source = coherence_manager.get_weighted_philosopher() or "Smith"
+                data[missing_key] = author_source.split()[0] # Use last name
             elif missing_key == 'year':
                 data[missing_key] = str(random.randint(1950, 2023))
             elif missing_key == 'citation':
@@ -1270,9 +1864,17 @@ def _format_sentence_from_template(template, data, used_concepts, used_terms, no
             
             # Process citation placeholders if present
             if '{citation}' in sentence and note_system:
-                philosopher_name = data.get('philosopher', data.get('philosopher1'))
+                philosopher_name = (
+                    data.get('philosopher')
+                    or data.get('philosopher1')
+                    or (context.get('primary_philosopher') if context else None)
+                    or (context.get('theme_philosopher') if context else None)
+                )
                 if not philosopher_name and coherence_manager: # Added fallback
-                    philosopher_name = coherence_manager.get_weighted_philosopher()
+                    philosopher_name = (
+                        coherence_manager.get_surface_philosopher(fallback_to_general=False)
+                        or coherence_manager.get_weighted_philosopher()
+                    )
                 philosopher_name = philosopher_name or "Smith, John" # Ensure it's not None
                 sentence = _process_citation_placeholders(sentence, note_system, context, philosopher_name, coherence_manager)
                 
@@ -1400,6 +2002,9 @@ def _finalize_sentence(sentence):
 
 def _generate_contextual_reference(context, concepts=None, terms=None, philosopher_name=None, coherence_manager=None):
     target_author_name = None
+    surface_local = bool(context.get('force_theme_local') or context.get('is_introduction')) if context else False
+    active_theme_philosophers = set(_get_active_theme_philosophers(coherence_manager))
+    contextual_candidates = _get_contextual_philosophers(context)
     
     # Path 1: Validate philosopher_name argument
     if philosopher_name and isinstance(philosopher_name, str) and \
@@ -1414,10 +2019,35 @@ def _generate_contextual_reference(context, concepts=None, terms=None, philosoph
            len(context_philosopher.strip().replace(".", "")) > 1 and context_philosopher in CLEANED_PHILOSOPHERS:
             target_author_name = context_philosopher
     # If context_philosopher is invalid, target_author_name remains None.
+
+    # Path 2b: Prefer philosophers already present in the local paragraph/theme context.
+    if not target_author_name and context:
+        if contextual_candidates:
+            if active_theme_philosophers:
+                theme_local_candidates = [
+                    philosopher for philosopher in contextual_candidates
+                    if philosopher in active_theme_philosophers
+                ]
+                if theme_local_candidates:
+                    target_author_name = _choose_weighted_philosopher(theme_local_candidates, coherence_manager)
+            if not target_author_name:
+                target_author_name = _choose_weighted_philosopher(contextual_candidates, coherence_manager)
             
     # Path 3: Use coherence_manager if target_author_name is still None
     if not target_author_name and coherence_manager:
-        themed_philosopher = coherence_manager.get_weighted_philosopher()
+        if active_theme_philosophers:
+            theme_candidates = _get_active_theme_philosophers(coherence_manager)
+            if theme_candidates:
+                themed_philosopher = _choose_weighted_philosopher(theme_candidates, coherence_manager)
+            else:
+                themed_philosopher = None
+        elif surface_local:
+            themed_philosopher = (
+                coherence_manager.get_surface_philosopher(fallback_to_general=False)
+                or coherence_manager.get_surface_philosopher()
+            )
+        else:
+            themed_philosopher = coherence_manager.get_weighted_philosopher()
         # We trust coherence_manager.get_weighted_philosopher() to return a clean name or None
         # based on previous fixes in coherence.py.
         if themed_philosopher: # themed_philosopher should already be full name
@@ -1443,6 +2073,15 @@ def _generate_contextual_reference(context, concepts=None, terms=None, philosoph
         else:
             target_author_name = "Jacques Derrida" # Ultimate fallback if CLEANED_PHILOSOPHERS is empty
 
+    if (
+        active_theme_philosophers
+        and target_author_name not in active_theme_philosophers
+        and target_author_name not in contextual_candidates
+    ):
+        theme_candidates = _get_active_theme_philosophers(coherence_manager) if coherence_manager else []
+        if theme_candidates:
+            target_author_name = _choose_weighted_philosopher(theme_candidates, coherence_manager)
+
     # Gather potential hints for the title
     title_hint_parts = []
     if concepts: title_hint_parts.extend(concepts)
@@ -1466,7 +2105,17 @@ def _generate_contextual_reference(context, concepts=None, terms=None, philosoph
     # And if it is complex, the necessary data is available.
 
     # The actual reference string is generated here using the determined author and hint.
-    return generate_reference(author_name=target_author_name, title_hint=final_title_hint, coherence_manager=coherence_manager)
+    concept_hint = context.get('concept') if context else None
+    term_hint = context.get('term') if context else None
+    return generate_reference(
+        author_name=target_author_name,
+        title_hint=None,
+        coherence_manager=coherence_manager,
+        concept_hint=concept_hint,
+        term_hint=term_hint,
+        context_concepts=concepts,
+        context_terms=terms,
+    )
 
 
 def _handle_author_citation(template, data, context, used_concepts, used_terms, used_philosophers, note_system, coherence_manager=None):
@@ -1493,21 +2142,69 @@ def _handle_author_citation(template, data, context, used_concepts, used_terms, 
     year_for_ref = data.get('year', str(random.randint(1950,2023)))
     
     # If author is generic, try to get a thematic one
+    contextual_candidates = _get_contextual_philosophers(context)
+    active_theme_philosophers = set(_get_active_theme_philosophers(coherence_manager))
+
     if author_name_for_ref == "Unknown Author" or author_name_for_ref == "Smith":
+        if context:
+            pass
+
+        if active_theme_philosophers:
+            contextual_candidates = [
+                philosopher
+                for philosopher in contextual_candidates
+                if philosopher in active_theme_philosophers
+            ] or contextual_candidates
+
+        if contextual_candidates:
+            author_name_for_ref = _choose_weighted_philosopher(contextual_candidates, coherence_manager)
+            data['author'] = author_name_for_ref.split()[-1] if ' ' in author_name_for_ref else author_name_for_ref
+
+        if (author_name_for_ref == "Unknown Author" or author_name_for_ref == "Smith") and coherence_manager:
+            if active_theme_philosophers:
+                theme_candidates = _get_active_theme_philosophers(coherence_manager)
+                if theme_candidates:
+                    themed_author = _choose_weighted_philosopher(theme_candidates, coherence_manager)
+                else:
+                    themed_author = None
+            else:
+                themed_author = None
+        else:
+            themed_author = None
+
         if coherence_manager:
-            themed_author = coherence_manager.get_weighted_philosopher()
+            if themed_author is None:
+                surface_local = bool(context.get('force_theme_local') or context.get('is_introduction')) if context else False
+                if surface_local:
+                    themed_author = (
+                        coherence_manager.get_surface_philosopher(fallback_to_general=False)
+                        or coherence_manager.get_surface_philosopher()
+                    )
+                else:
+                    themed_author = coherence_manager.get_weighted_philosopher()
             if themed_author:
                 # Assuming data['author'] stores last name for template
                 data['author'] = themed_author.split()[-1] if ' ' in themed_author else themed_author
                 author_name_for_ref = themed_author # Full name for reference generation
-    
+
+    if (
+        coherence_manager
+        and active_theme_philosophers
+        and author_name_for_ref not in active_theme_philosophers
+        and author_name_for_ref not in contextual_candidates
+    ):
+        theme_candidates = _get_active_theme_philosophers(coherence_manager)
+        if theme_candidates:
+            author_name_for_ref = _choose_weighted_philosopher(theme_candidates, coherence_manager)
+            data['author'] = author_name_for_ref.split()[-1] if ' ' in author_name_for_ref else author_name_for_ref
+
     is_article_guess = random.random() < 0.5 
     try:
         # Ensure year_for_ref is an int for get_enhanced_citation if it expects one
         year_int = int(year_for_ref)
-        reference_string = note_system.get_enhanced_citation(author_name_for_ref, is_article_guess, year_int)
+        reference_string = note_system.get_enhanced_citation(author_name_for_ref, is_article_guess, year_int, context=context)
     except ValueError: 
-        reference_string = note_system.get_enhanced_citation(author_name_for_ref, is_article_guess, random.randint(1950,2023))
+        reference_string = note_system.get_enhanced_citation(author_name_for_ref, is_article_guess, random.randint(1950,2023), context=context)
 
     citation_context = context.copy() if context else {}
     if coherence_manager: citation_context['coherence_manager'] = coherence_manager

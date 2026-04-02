@@ -6,7 +6,7 @@ It also includes essay generation configuration at the top of the file.
 
 import os
 
-def export_to_markdown(essay_content, filename=None, essay_config=None):
+def export_to_markdown(essay_content, filename=None, essay_config=None, interactive=True):
     """Exports the given essay content to a .md file in the 'essays' directory.
 
     The 'essays' directory will be created if it doesn't exist.
@@ -14,11 +14,15 @@ def export_to_markdown(essay_content, filename=None, essay_config=None):
 
     Args:
         essay_content (str): The content of the essay to export.
-        filename (str, optional): The desired filename. If None, prompts the user.
+        filename (str, optional): The desired filename. If None, prompts the user when interactive.
         essay_config (dict, optional): Dictionary containing generation config (seed, theme, date).
+        interactive (bool, optional): Whether export may prompt on missing filename or I/O failures.
     """
     while True:
         if not filename:
+            if not interactive:
+                print("Markdown export skipped: no filename provided for non-interactive export.")
+                return False
             fn_input = input("Enter the filename for the .md file (e.g., my_essay.md), or leave blank to skip: ").strip()
             if not fn_input: # User skipped
                 print("Markdown export skipped.")
@@ -33,6 +37,8 @@ def export_to_markdown(essay_content, filename=None, essay_config=None):
                 print(f"Created directory: {output_dir}")
             except OSError as e:
                 print(f"Error creating directory {output_dir}: {e}")
+                if not interactive:
+                    return False
                 # Allow user to skip if directory creation fails
                 skip_choice = input("Failed to create output directory. Skip export? (yes/no): ").strip().lower()
                 if skip_choice in ["yes", "y"]:
@@ -68,6 +74,8 @@ def export_to_markdown(essay_content, filename=None, essay_config=None):
             return True # Indicate success
         except IOError as e:
             print(f"Error exporting essay to {filepath}: {e}")
+            if not interactive:
+                return False
             # Allow user to retry with a different filename or skip
             retry_choice = input("Would you like to try a different filename or skip exporting? (retry/skip): ").strip().lower()
             if retry_choice == "skip":

@@ -20,6 +20,7 @@ DEFAULT_DATA = {
     "thematic_clusters": {},
     "philosophers": [],
     "concepts": [],
+    "hybrid_concept_terms": [],
     "italicized_terms": [],
     "terms": [],
     "LOWERCASE_WORDS": [],
@@ -39,7 +40,7 @@ DEFAULT_DATA = {
     "prepositions": [],
     "conjunctions": [],
     "title_templates": [],
-    "academic_vocab": {"verbs": [], "nouns": [], "adjectives": [], "adverbs": []},
+    "academic_vocab": [],
     "oppositional_pairs": [],
     "citation_relationships": {},
     "philosophical_movements": {},
@@ -93,6 +94,7 @@ def _get_data(key, default_value_from_master_default):
 thematic_clusters = _get_data("thematic_clusters", DEFAULT_DATA["thematic_clusters"])
 philosophers = _get_data("philosophers", DEFAULT_DATA["philosophers"])
 concepts = _get_data("concepts", DEFAULT_DATA["concepts"])
+hybrid_concept_terms = _get_data("hybrid_concept_terms", DEFAULT_DATA["hybrid_concept_terms"])
 italicized_terms = _get_data("italicized_terms", DEFAULT_DATA["italicized_terms"])
 terms = _get_data("terms", DEFAULT_DATA["terms"])
 LOWERCASE_WORDS = _get_data("LOWERCASE_WORDS", DEFAULT_DATA["LOWERCASE_WORDS"])
@@ -131,9 +133,15 @@ if philosophers is None:
 if concepts is None:
     print(f"Warning: 'concepts' was null in {DATA_FILE_NAME}. Defaulting to an empty list.")
     concepts = []
+if hybrid_concept_terms is None:
+    print(f"Warning: 'hybrid_concept_terms' was null in {DATA_FILE_NAME}. Defaulting to an empty list.")
+    hybrid_concept_terms = []
 if terms is None:
     print(f"Warning: 'terms' was null in {DATA_FILE_NAME}. Defaulting to an empty list.")
     terms = []
+if academic_vocab is None or not isinstance(academic_vocab, list):
+    print(f"Warning: 'academic_vocab' was invalid in {DATA_FILE_NAME}. Defaulting to an empty list.")
+    academic_vocab = []
 if PROPER_NOUNS is None:
     print(f"Warning: 'PROPER_NOUNS' was null in {DATA_FILE_NAME}. Defaulting to an empty list.")
     PROPER_NOUNS = []

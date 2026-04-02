@@ -9,6 +9,7 @@ as well as a function to generate a complete works cited.
 """
 
 import random
+import re
 import string
 from json_data_provider import (philosophers as RAW_PHILOSOPHERS_FROM_DATA, concepts, terms, adjectives,
                                bibliography_title_templates, publishers, academic_journals,
@@ -47,7 +48,94 @@ def generate_full_name():
     last = random.choice(last_names) if last_names else "Researcher"
     return f"{last}, {first}"
 
-def generate_title(fixed_philosopher=None, concept_hint=None, term_hint=None, coherence_manager=None):
+def _dedupe_strings(items):
+    """Return a list of unique non-empty strings, preserving order."""
+    seen = set()
+    cleaned = []
+    for item in items or []:
+        if not item:
+            continue
+        value = str(item).strip()
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        cleaned.append(value)
+    return cleaned
+
+
+def _normalize_author_lookup_name(author_name):
+    """Resolve formatted author strings back to philosopher_concepts keys when possible."""
+    if not author_name or not isinstance(author_name, str):
+        return None
+
+    candidate = author_name.strip()
+    if candidate in philosopher_concepts:
+        return candidate
+
+    if "," in candidate:
+        last_name, remainder = [part.strip() for part in candidate.split(",", 1)]
+        reordered = re.sub(r"\s+", " ", f"{remainder} {last_name}").strip()
+        if reordered in philosopher_concepts:
+            return reordered
+
+    for philosopher in CLEANED_PHILOSOPHERS_REF:
+        if philosopher.lower() == candidate.lower():
+            return philosopher
+
+    return None
+
+
+def _get_author_specific_vocab(author_name):
+    """Return author-specific concept and term pools in a normalized form."""
+    lookup_name = _normalize_author_lookup_name(author_name) or author_name
+    raw_author_data = philosopher_concepts.get(lookup_name, [])
+
+    author_specific_concepts = []
+    author_specific_terms = []
+    if isinstance(raw_author_data, dict):
+        author_specific_concepts = raw_author_data.get("concepts", []) or []
+        author_specific_terms = raw_author_data.get("terms", []) or []
+    elif isinstance(raw_author_data, list):
+        author_specific_concepts = raw_author_data
+        author_specific_terms = [item for item in raw_author_data if item in terms]
+
+    return (
+        lookup_name,
+        _dedupe_strings(author_specific_concepts),
+        _dedupe_strings(author_specific_terms),
+    )
+
+
+def _build_priority_pool(*pools, exclude=None):
+    """Combine prioritized pools into a unique ordered list."""
+    exclusions = {item for item in (exclude or []) if item}
+    ordered_pool = []
+    seen = set(exclusions)
+    for pool in pools:
+        for item in _dedupe_strings(pool):
+            if item in seen:
+                continue
+            seen.add(item)
+            ordered_pool.append(item)
+    return ordered_pool
+
+
+def _pick_prioritized_item(pool):
+    """Sample from a priority-ordered pool while strongly preferring earlier entries."""
+    if not pool:
+        return None
+    weights = list(range(len(pool), 0, -1))
+    return random.choices(pool, weights=weights, k=1)[0]
+
+
+def generate_title(
+    fixed_philosopher=None,
+    concept_hint=None,
+    term_hint=None,
+    coherence_manager=None,
+    context_concepts=None,
+    context_terms=None,
+):
     """
     Generate an authentic, academic-sounding title using templates and word pools.
     Allows specifying a philosopher and concept to guide title generation.
@@ -61,48 +149,95 @@ def generate_title(fixed_philosopher=None, concept_hint=None, term_hint=None, co
         else: # Absolute fallback for philosopher_for_title
             philosopher_for_title = "A. N. Thinker"
 
+    _, author_specific_concepts, author_specific_terms = _get_author_specific_vocab(philosopher_for_title)
 
-    # Get concepts and terms specific to this philosopher
-    philosopher_specific_concepts = philosopher_concepts.get(philosopher_for_title, [])
-    # Using philosopher_specific_concepts also for terms for now, assuming terms are a subset or similar
-    philosopher_specific_terms = philosopher_specific_concepts
+    theme_concepts = []
+    theme_terms = []
+    theme_philosophers = []
+    if coherence_manager and coherence_manager.active_theme_key:
+        theme_concepts = coherence_manager.active_theme_data.get("key_concepts", [])
+        theme_terms = coherence_manager.active_theme_data.get("relevant_terms", [])
+        theme_philosophers = coherence_manager.active_theme_data.get("core_philosophers", [])
 
-    concept_choice = "a key concept" # Default fallback
-    if concept_hint and philosopher_specific_concepts and concept_hint in philosopher_specific_concepts:
-        concept_choice = concept_hint
-    elif concept_hint and not philosopher_specific_concepts: # Philosopher has no specific concepts, but hint given
-        if concepts and concept_hint in concepts: # Check if hint is a globally known concept
-             concept_choice = concept_hint
-        else: # If hint is not in global concepts, use it as is (could be a general word)
-             concept_choice = concept_hint if concept_hint else "an idea" # Ensure hint is not empty
-    elif philosopher_specific_concepts:
-        concept_choice = random.choice(philosopher_specific_concepts)
-    elif concepts: # Fallback to global concepts if philosopher has none and no valid hint
-        concept_choice = random.choice(concepts)
-    else: # Absolute fallback if no concepts available
-        concept_choice = "an important notion"
+    context_concepts = _dedupe_strings(context_concepts)
+    context_terms = _dedupe_strings(context_terms)
 
+    theme_author_concepts = [item for item in author_specific_concepts if item in theme_concepts]
+    theme_author_terms = [item for item in author_specific_terms if item in theme_terms]
+    theme_context_concepts = [item for item in context_concepts if item in theme_concepts]
+    theme_context_terms = [item for item in context_terms if item in theme_terms]
 
-    term_choice = "a central term" # Default fallback
-    if term_hint and philosopher_specific_terms and term_hint in philosopher_specific_terms:
-        term_choice = term_hint
-    elif term_hint and not philosopher_specific_terms:
-        if terms and term_hint in terms: # Check if hint is a globally known term
-            term_choice = term_hint
-        else:
-            term_choice = term_hint if term_hint else "a subject" # Ensure hint is not empty
-    elif philosopher_specific_terms:
-        term_choice = random.choice(philosopher_specific_terms)
-    elif terms: # Fallback to global terms
-        term_choice = random.choice(terms)
-    else: # Absolute fallback
-        term_choice = "a core subject"
+    concept_hint_pool = []
+    if concept_hint and (
+        not theme_concepts
+        or concept_hint in theme_concepts
+        or concept_hint in author_specific_concepts
+        or concept_hint in context_concepts
+    ):
+        concept_hint_pool = [concept_hint]
+
+    term_hint_pool = []
+    if term_hint and (
+        not theme_terms
+        or term_hint in theme_terms
+        or term_hint in author_specific_terms
+        or term_hint in context_terms
+    ):
+        term_hint_pool = [term_hint]
+
+    if theme_concepts:
+        concept_pool = _build_priority_pool(
+            concept_hint_pool,
+            theme_author_concepts,
+            theme_context_concepts,
+            theme_concepts,
+        )
+        if not concept_pool:
+            concept_pool = _build_priority_pool(
+                concept_hint_pool,
+                author_specific_concepts,
+                context_concepts,
+                concepts,
+            )
+    else:
+        concept_pool = _build_priority_pool(
+            concept_hint_pool,
+            author_specific_concepts,
+            context_concepts,
+            concepts,
+        )
+
+    if theme_terms:
+        term_pool = _build_priority_pool(
+            term_hint_pool,
+            theme_author_terms,
+            theme_context_terms,
+            theme_terms,
+        )
+        if not term_pool:
+            term_pool = _build_priority_pool(
+                term_hint_pool,
+                author_specific_terms,
+                context_terms,
+                terms,
+            )
+    else:
+        term_pool = _build_priority_pool(
+            term_hint_pool,
+            author_specific_terms,
+            context_terms,
+            terms,
+        )
+
+    concept_choice = _pick_prioritized_item(concept_pool) or "an important notion"
+    term_pool_without_concept = [item for item in term_pool if item != concept_choice]
+    term_choice = _pick_prioritized_item(term_pool_without_concept or term_pool) or "a core subject"
 
     # Ensure template list is not empty
     current_title_templates = bibliography_title_templates if bibliography_title_templates else ["{Philosopher} on {Concept}: A Study of {Term}"]
     
     chosen_template = None
-    if not philosopher_specific_concepts or not philosopher_specific_terms:
+    if not author_specific_concepts or not author_specific_terms:
         simple_templates = [t for t in current_title_templates if '{concept}' not in t.lower() and '{term}' not in t.lower()]
         if simple_templates:
             chosen_template = random.choice(simple_templates)
@@ -134,28 +269,34 @@ def generate_title(fixed_philosopher=None, concept_hint=None, term_hint=None, co
     if 'term1' in keys_in_template: format_args['term1'] = term_choice if term_choice else "perspective"
 
     if 'concept2' in keys_in_template:
-        concept2_options = []
-        if philosopher_specific_concepts and len(philosopher_specific_concepts) > 1:
-            concept2_options = [c for c in philosopher_specific_concepts if c != concept_choice]
-        if not concept2_options and concepts:
-             concept2_options = [c for c in concepts if c != concept_choice]
+        concept2_options = _build_priority_pool(
+            [item for item in theme_author_concepts if item != concept_choice],
+            [item for item in theme_context_concepts if item != concept_choice],
+            [item for item in theme_concepts if item != concept_choice],
+            [item for item in author_specific_concepts if item != concept_choice],
+            [item for item in context_concepts if item != concept_choice],
+            [item for item in concepts if item != concept_choice],
+        )
         
         if concept2_options:
-            format_args['concept2'] = random.choice(concept2_options)
+            format_args['concept2'] = _pick_prioritized_item(concept2_options)
         elif concepts: # if concept_choice was the only one, or no philosopher_specific
             format_args['concept2'] = random.choice(concepts)
         else: # absolute fallback for concept2
             format_args['concept2'] = "another key idea"
     
     if 'term2' in keys_in_template:
-        term2_options = []
-        if philosopher_specific_terms and len(philosopher_specific_terms) > 1:
-            term2_options = [t for t in philosopher_specific_terms if t != term_choice]
-        if not term2_options and terms:
-            term2_options = [t for t in terms if t != term_choice]
+        term2_options = _build_priority_pool(
+            [item for item in theme_author_terms if item != term_choice and item != concept_choice],
+            [item for item in theme_context_terms if item != term_choice and item != concept_choice],
+            [item for item in theme_terms if item != term_choice and item != concept_choice],
+            [item for item in author_specific_terms if item != term_choice and item != concept_choice],
+            [item for item in context_terms if item != term_choice and item != concept_choice],
+            [item for item in terms if item != term_choice and item != concept_choice],
+        )
 
         if term2_options:
-            format_args['term2'] = random.choice(term2_options)
+            format_args['term2'] = _pick_prioritized_item(term2_options)
         elif terms:
             format_args['term2'] = random.choice(terms)
         else: # absolute fallback for term2
@@ -163,9 +304,12 @@ def generate_title(fixed_philosopher=None, concept_hint=None, term_hint=None, co
 
 
     if 'philosopher2' in keys_in_template:
-        other_philosophers = [p for p in CLEANED_PHILOSOPHERS_REF if p != philosopher_for_title] if CLEANED_PHILOSOPHERS_REF else []
+        other_philosophers = _build_priority_pool(
+            [philosopher for philosopher in theme_philosophers if philosopher != philosopher_for_title],
+            [philosopher for philosopher in CLEANED_PHILOSOPHERS_REF if philosopher != philosopher_for_title],
+        )
         if other_philosophers:
-            format_args['philosopher2'] = random.choice(other_philosophers)
+            format_args['philosopher2'] = _pick_prioritized_item(other_philosophers)
         elif CLEANED_PHILOSOPHERS_REF: # Only one philosopher in list
             format_args['philosopher2'] = random.choice(CLEANED_PHILOSOPHERS_REF)
         else: # Absolute fallback
@@ -197,7 +341,17 @@ def generate_title(fixed_philosopher=None, concept_hint=None, term_hint=None, co
     title = apply_title_case(raw_title if raw_title else "A Notable Contribution") # Ensure raw_title is not empty
     return title if title else "Untitled Work" # Final fallback for title
 
-def generate_reference(author_name=None, title_hint=None, work_year=None, specific_work_type=None, coherence_manager=None):
+def generate_reference(
+    author_name=None,
+    title_hint=None,
+    work_year=None,
+    specific_work_type=None,
+    coherence_manager=None,
+    concept_hint=None,
+    term_hint=None,
+    context_concepts=None,
+    context_terms=None,
+):
     """
     Generate a reference with a randomly selected work type in MLA 9 style format.
     If author_name is provided, that author will be used.
@@ -270,7 +424,14 @@ def generate_reference(author_name=None, title_hint=None, work_year=None, specif
     if title_concept_for_generation and len(title_concept_for_generation.split()) > 4 : # Arbitrary threshold for "substantial"
         final_title_raw = title_concept_for_generation
     else: # Otherwise, generate a title based on hints or defaults.
-        final_title_raw = generate_title(fixed_philosopher=philosopher_for_title_gen, concept_hint=title_concept_for_generation, term_hint=None, coherence_manager=coherence_manager)
+        final_title_raw = generate_title(
+            fixed_philosopher=philosopher_for_title_gen,
+            concept_hint=concept_hint or title_concept_for_generation,
+            term_hint=term_hint,
+            coherence_manager=coherence_manager,
+            context_concepts=context_concepts,
+            context_terms=context_terms,
+        )
 
     final_title = apply_title_case(final_title_raw if final_title_raw else "An Important Study")
     final_title = strip_markdown_italics(final_title) # Ensure stripping always happens

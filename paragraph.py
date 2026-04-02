@@ -108,10 +108,13 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
     paragraph_theme_philosopher = None
     paragraph_theme_term = None
     paragraph_expected_next_action = "develop_argument" # Default for general paragraphs
+    force_theme_local = bool(context.get('force_theme_local')) if context else False
+    surface_local = force_theme_local or template_type == 'introduction'
 
     if context:
         paragraph_theme_concept = context.get('theme_concept')
         paragraph_theme_philosopher = context.get('theme_philosopher')
+        paragraph_theme_term = context.get('theme_term')
         if context.get('title_themes'):
             title_primary_concepts = context['title_themes'].get('primary_concepts', [])
             if title_primary_concepts and not paragraph_theme_concept:
@@ -121,16 +124,58 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
                 paragraph_theme_term = random.choice(title_primary_terms)
 
     if coherence_manager:
+        if surface_local:
+            paragraph_theme_concept = (
+                paragraph_theme_concept
+                or coherence_manager.get_surface_concept(
+                    exclude=list(forbidden_concepts_set),
+                    fallback_to_general=False
+                )
+                or coherence_manager.get_surface_concept(exclude=list(forbidden_concepts_set))
+            )
+            paragraph_theme_term = (
+                paragraph_theme_term
+                or coherence_manager.get_surface_term(
+                    exclude=list(forbidden_terms_set.union({paragraph_theme_concept} if paragraph_theme_concept else set())),
+                    fallback_to_general=False
+                )
+                or coherence_manager.get_surface_term(
+                    exclude=list(forbidden_terms_set.union({paragraph_theme_concept} if paragraph_theme_concept else set()))
+                )
+            )
+            paragraph_theme_philosopher = (
+                paragraph_theme_philosopher
+                or coherence_manager.get_surface_philosopher(
+                    exclude=list(forbidden_philosophers_set),
+                    fallback_to_general=False
+                )
+                or coherence_manager.get_surface_philosopher(exclude=list(forbidden_philosophers_set))
+            )
+
         if not paragraph_theme_concept:
-            paragraph_theme_concept = coherence_manager.get_weighted_concept(exclude=list(forbidden_concepts_set))
+            if surface_local:
+                paragraph_theme_concept = coherence_manager.get_surface_concept(exclude=list(forbidden_concepts_set))
+            else:
+                paragraph_theme_concept = coherence_manager.get_weighted_concept(exclude=list(forbidden_concepts_set))
         
         if not paragraph_theme_philosopher:
             if paragraph_theme_concept:
                 # Prefer philosophers related to the chosen concept
-                candidate_philosophers = [p for p, concepts_list in coherence_manager.philosopher_concepts.items() \
-                                          if paragraph_theme_concept in concepts_list and \
-                                             p not in forbidden_philosophers_set and \
-                                             p not in coherence_manager.used_philosophers]
+                candidate_philosophers = [
+                    p for p, concepts_list in coherence_manager.philosopher_concepts.items()
+                    if paragraph_theme_concept in concepts_list
+                    and p not in forbidden_philosophers_set
+                    and p not in coherence_manager.used_philosophers
+                ]
+                if surface_local and coherence_manager.active_theme_key:
+                    active_theme_philosophers = set(
+                        coherence_manager.active_theme_data.get('core_philosophers', [])
+                    )
+                    theme_candidate_philosophers = [
+                        philosopher for philosopher in candidate_philosophers
+                        if philosopher in active_theme_philosophers
+                    ]
+                    candidate_philosophers = theme_candidate_philosophers
                 if candidate_philosophers:
                     # Apply weights if possible, or choose randomly from candidates
                     weighted_candidates = {p: coherence_manager.philosopher_weights.get(p, 1) for p in candidate_philosophers}
@@ -139,21 +184,49 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
                     else:
                         paragraph_theme_philosopher = random.choice(candidate_philosophers)
             
-            if not paragraph_theme_philosopher: # Fallback to general weighted philosopher
-                 paragraph_theme_philosopher = coherence_manager.get_weighted_philosopher(exclude=list(forbidden_philosophers_set))
+            if not paragraph_theme_philosopher: # Fallback to weighted philosopher
+                if surface_local:
+                    paragraph_theme_philosopher = (
+                        coherence_manager.get_surface_philosopher(
+                            exclude=list(forbidden_philosophers_set),
+                            fallback_to_general=False
+                        )
+                        or coherence_manager.get_surface_philosopher(exclude=list(forbidden_philosophers_set))
+                    )
+                else:
+                    paragraph_theme_philosopher = coherence_manager.get_weighted_philosopher(exclude=list(forbidden_philosophers_set))
         if not paragraph_theme_term:
             # Prefer terms related to the theme concept if possible (simple check for now)
             # A more robust way would be to check concept_relationships or active_theme_data
             if paragraph_theme_concept and paragraph_theme_concept in coherence_manager.concept_relationships:
                 related_items = coherence_manager.concept_relationships[paragraph_theme_concept]
-                candidate_terms = [item for item in related_items if item in coherence_manager.terms and \
-                                     item not in forbidden_terms_set and \
-                                     item not in coherence_manager.used_terms and \
-                                     item != paragraph_theme_concept] # Ensure term is not the concept itself
+                candidate_terms = [
+                    item for item in related_items
+                    if item in coherence_manager.terms
+                    and item not in forbidden_terms_set
+                    and item not in coherence_manager.used_terms
+                    and item != paragraph_theme_concept
+                ]
+                if surface_local and coherence_manager.active_theme_key:
+                    theme_candidate_terms = [
+                        term for term in candidate_terms
+                        if term in coherence_manager.active_theme_data.get('relevant_terms', [])
+                    ]
+                    candidate_terms = theme_candidate_terms
                 if candidate_terms:
                     paragraph_theme_term = random.choice(candidate_terms)
-            if not paragraph_theme_term: # Fallback to general weighted term
-                 paragraph_theme_term = coherence_manager.get_weighted_term(exclude=list(forbidden_terms_set.union({paragraph_theme_concept} if paragraph_theme_concept else set())))
+            if not paragraph_theme_term: # Fallback to weighted term
+                term_exclusions = list(forbidden_terms_set.union({paragraph_theme_concept} if paragraph_theme_concept else set()))
+                if surface_local:
+                    paragraph_theme_term = (
+                        coherence_manager.get_surface_term(
+                            exclude=term_exclusions,
+                            fallback_to_general=False
+                        )
+                        or coherence_manager.get_surface_term(exclude=term_exclusions)
+                    )
+                else:
+                    paragraph_theme_term = coherence_manager.get_weighted_term(exclude=term_exclusions)
 
         # Determine expected_next_action based on paragraph template_type
         if template_type == 'introduction':
@@ -167,11 +240,6 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
             else:
                 paragraph_expected_next_action = "develop_argument" 
 
-        coherence_manager.record_usage(
-            concepts=[paragraph_theme_concept] if paragraph_theme_concept else [],
-            terms=[paragraph_theme_term] if paragraph_theme_term else [],
-            philosophers=[paragraph_theme_philosopher] if paragraph_theme_philosopher else []
-        )
     else: # Fallback if no coherence_manager
         if not paragraph_theme_concept: paragraph_theme_concept = random.choice([c for c in concepts if c not in forbidden_concepts_set] or concepts)
         if not paragraph_theme_philosopher: paragraph_theme_philosopher = random.choice([p for p in philosophers if p not in forbidden_philosophers_set] or philosophers)
@@ -332,20 +400,85 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
     
     # Handle [citation] placeholders with MLA 9 style citations
     if '[citation]' in paragraph_str:
+        citation_context = context.copy() if context else {}
+        citation_context['theme_concept'] = paragraph_theme_concept
+        citation_context['theme_philosopher'] = paragraph_theme_philosopher
+        citation_context['theme_term'] = paragraph_theme_term
+        citation_context['primary_concept'] = paragraph_theme_concept
+        citation_context['primary_philosopher'] = paragraph_theme_philosopher
+        citation_context['primary_term'] = paragraph_theme_term
+        citation_context['current_concepts_in_paragraph'] = list(final_used_concepts)
+        citation_context['current_terms_in_paragraph'] = list(final_used_terms)
+        citation_context['current_philosophers_in_paragraph'] = list(final_used_philosophers)
+
         # Pass coherence_manager to _handle_mla_citation if it needs thematic guidance for choosing which work to cite
-        paragraph_str = _handle_mla_citation(paragraph_str, cited_references, note_system, context, coherence_manager=coherence_manager)
+        paragraph_str = _handle_mla_citation(
+            paragraph_str,
+            cited_references,
+            note_system,
+            citation_context,
+            coherence_manager=coherence_manager,
+        )
     
     # Add meta-references or rhetorical devices based on paragraph type
     if template_type == 'introduction' and random.random() < 0.3:
         # Add a meta-reference about the paper's structure
-        meta_sentence = f" {random.choice(meta_references)}, {random.choice(concepts)} offers a productive framework for thinking through {random.choice(terms)}."
+        meta_concept = paragraph_theme_concept
+        meta_term = paragraph_theme_term
+        if coherence_manager:
+            meta_concept = (
+                meta_concept
+                or coherence_manager.get_surface_concept(
+                    exclude=list(final_used_concepts),
+                    fallback_to_general=False
+                )
+                or coherence_manager.get_surface_concept(exclude=list(final_used_concepts))
+            )
+            meta_term = (
+                meta_term
+                or coherence_manager.get_surface_term(
+                    exclude=list(final_used_terms.union({meta_concept} if meta_concept else set())),
+                    fallback_to_general=False
+                )
+                or coherence_manager.get_surface_term(
+                    exclude=list(final_used_terms.union({meta_concept} if meta_concept else set()))
+                )
+            )
+        meta_sentence = f" {random.choice(meta_references)}, {meta_concept or random.choice(concepts)} offers a productive framework for thinking through {meta_term or random.choice(terms)}."
         paragraph_str += meta_sentence
-    
+
     elif template_type == 'general' and random.random() < 0.25:
         # Add a rhetorical device
         if rhetorical_devices: # Safety check
             device = random.choice(rhetorical_devices)
-            device_sentence = f" This {device} points to the way in which {random.choice(concepts)} both enables and constrains our understanding of {random.choice(terms)}."
+            device_concept = paragraph_theme_concept
+            device_term = paragraph_theme_term
+            if coherence_manager:
+                if surface_local:
+                    device_concept = (
+                        device_concept
+                        or coherence_manager.get_surface_concept(
+                            exclude=list(final_used_concepts),
+                            fallback_to_general=False
+                        )
+                        or coherence_manager.get_surface_concept(exclude=list(final_used_concepts))
+                    )
+                    device_term = (
+                        device_term
+                        or coherence_manager.get_surface_term(
+                            exclude=list(final_used_terms.union({device_concept} if device_concept else set())),
+                            fallback_to_general=False
+                        )
+                        or coherence_manager.get_surface_term(
+                            exclude=list(final_used_terms.union({device_concept} if device_concept else set()))
+                        )
+                    )
+                else:
+                    device_concept = device_concept or coherence_manager.get_weighted_concept(exclude=list(final_used_concepts))
+                    device_term = device_term or coherence_manager.get_weighted_term(
+                        exclude=list(final_used_terms.union({device_concept} if device_concept else set()))
+                    )
+            device_sentence = f" This {device} points to the way in which {device_concept or random.choice(concepts)} both enables and constrains our understanding of {device_term or random.choice(terms)}."
             paragraph_str += device_sentence
         else:
             # Optional: log a warning or use a fallback if rhetorical_devices is empty
@@ -356,7 +489,14 @@ def generate_paragraph(template_type, num_sentences, forbidden_philosophers=[],
         if discursive_modes: # Safety check
             mode = random.choice(discursive_modes)
             # Refined sentence template for discursive modes
-            mode_sentence = f" Ultimately, the {mode} adopted in this essay highlights the inherent complexity of the relationship between {random.choice(concepts)} and {random.choice(terms)}."
+            mode_concept = paragraph_theme_concept
+            mode_term = paragraph_theme_term
+            if coherence_manager:
+                mode_concept = mode_concept or coherence_manager.get_weighted_concept(exclude=list(final_used_concepts))
+                mode_term = mode_term or coherence_manager.get_weighted_term(
+                    exclude=list(final_used_terms.union({mode_concept} if mode_concept else set()))
+                )
+            mode_sentence = f" Ultimately, the {mode} adopted in this essay highlights the inherent complexity of the relationship between {mode_concept or random.choice(concepts)} and {mode_term or random.choice(terms)}."
             paragraph_str += mode_sentence
         else:
             # Optional: log a warning or use a fallback if discursive_modes is empty
@@ -406,6 +546,16 @@ def _handle_mla_citation(paragraph_str, cited_references, note_system, context=N
         # Prioritize philosophers related to active theme or paragraph context
         if context and context.get('theme_philosopher'):
             cite_philosopher_name = context.get('theme_philosopher')
+        elif context and context.get('primary_philosopher'):
+            cite_philosopher_name = context.get('primary_philosopher')
+        elif context and context.get('current_philosophers_in_paragraph'):
+            paragraph_philosophers = [
+                philosopher
+                for philosopher in context.get('current_philosophers_in_paragraph', [])
+                if philosopher in coherence_manager.active_theme_data.get('core_philosophers', [])
+            ]
+            if paragraph_philosophers:
+                cite_philosopher_name = random.choice(paragraph_philosophers)
         elif coherence_manager.active_theme_key and coherence_manager.active_theme_data.get('core_philosophers'):
             # Choose from core philosophers of the theme, not yet cited too much in this note
             # This requires note_system to track philosopher citation frequency per note, or a simpler approach:
@@ -417,7 +567,14 @@ def _handle_mla_citation(paragraph_str, cited_references, note_system, context=N
                 cite_philosopher_name = random.choice(active_theme_philosophers)
         
         if not cite_philosopher_name: # Fallback to a generally weighted philosopher
-            cite_philosopher_name = coherence_manager.get_weighted_philosopher(exclude=(note_system.get_authors_in_current_note() if note_system else []))
+            excluded_authors = note_system.get_authors_in_current_note() if note_system else []
+            cite_philosopher_name = (
+                coherence_manager.get_surface_philosopher(
+                    exclude=excluded_authors,
+                    fallback_to_general=False,
+                )
+                or coherence_manager.get_weighted_philosopher(exclude=excluded_authors)
+            )
 
         # Try to get a key work for this philosopher
         if cite_philosopher_name and cite_philosopher_name in coherence_manager.philosopher_key_works and coherence_manager.philosopher_key_works[cite_philosopher_name]:
@@ -450,6 +607,31 @@ def _handle_mla_citation(paragraph_str, cited_references, note_system, context=N
 
 
     if note_system and work_to_cite:
+        paragraph_concepts = []
+        paragraph_terms = []
+        if context:
+            paragraph_concepts.extend(context.get('current_concepts_in_paragraph', []) or [])
+            paragraph_terms.extend(context.get('current_terms_in_paragraph', []) or [])
+            if context.get('theme_concept'):
+                paragraph_concepts.append(context.get('theme_concept'))
+            if context.get('theme_term'):
+                paragraph_terms.append(context.get('theme_term'))
+
+        note_context = {
+            'theme_concept': context.get('theme_concept') if context else None,
+            'theme_term': context.get('theme_term') if context else None,
+            'theme_philosopher': cite_philosopher_name,
+            'current_concepts_in_paragraph': list(dict.fromkeys(paragraph_concepts or work_to_cite.get('concepts', []))),
+            'current_terms_in_paragraph': list(dict.fromkeys(paragraph_terms or work_to_cite.get('terms', []))),
+        }
+        # A more generic context phrase if specific concepts/terms aren't available for work_to_cite
+        work_title = work_to_cite.get('title') or 'this work'
+        if not note_context['current_concepts_in_paragraph'] and not note_context['current_terms_in_paragraph']:
+             note_context['context_phrase'] = f"This citation relates to {context.get('theme_concept', 'the ongoing discussion') if context else 'the ongoing discussion'}."
+        else:
+             items = note_context['current_concepts_in_paragraph'] + note_context['current_terms_in_paragraph']
+             note_context['context_phrase'] = f"This citation, referencing '{work_title}', is relevant to {', '.join(items)}."
+
         # Ensure page numbers are plausible
         # page_number = random.randint(1, 300) if work_to_cite.get('type') != 'online' else None
         # The page number for the in-text citation mark will be handled by add_citation's internals.
@@ -467,23 +649,10 @@ def _handle_mla_citation(paragraph_str, cited_references, note_system, context=N
             author_name=author,
             is_article=is_article_type,
             year=year,
-            title_override=title_override
+            title_override=title_override,
+            context=note_context,
             # specific_year_override and is_article_override are not needed here as year and is_article cover it
         )
-        
-        # Construct a context for the note, if needed by _generate_substantive_note via add_citation
-        note_context = {
-            'theme_concept': context.get('theme_concept') if context else None,
-            'current_concepts_in_paragraph': work_to_cite.get('concepts', []), # Assuming work_to_cite might have concepts
-            'current_terms_in_paragraph': work_to_cite.get('terms', []) # Assuming work_to_cite might have terms
-        }
-        # A more generic context phrase if specific concepts/terms aren't available for work_to_cite
-        if not note_context['current_concepts_in_paragraph'] and not note_context['current_terms_in_paragraph']:
-             note_context['context_phrase'] = f"This citation relates to {context.get('theme_concept', 'the ongoing discussion') if context else 'the ongoing discussion'}."
-        else:
-             items = note_context['current_concepts_in_paragraph'] + note_context['current_terms_in_paragraph']
-             note_context['context_phrase'] = f"This citation, referencing '{title_override or 'this work'}', is relevant to {', '.join(items)}."
-
 
         # Call add_citation, which handles creating the note entry and returning the in-text marker.
         # The context for the note (used by _generate_substantive_note) is passed here.
@@ -498,43 +667,3 @@ def _handle_mla_citation(paragraph_str, cited_references, note_system, context=N
         paragraph_str = paragraph_str.replace('[citation]', f"({cite_philosopher_name or 'Author'}, {random.randint(1980, 2023)})", 1)
     
     return paragraph_str
-
-def generate_section(heading, num_paragraphs, references, note_system=None):
-    """
-    Generate a complete section with heading and paragraphs.
-    
-    Args:
-        heading (str): The section heading
-        num_paragraphs (int): Number of paragraphs to generate
-        references (list): References for citations
-        note_system (NoteSystem, optional): System for managing citations
-        
-    Returns:
-        list: List of section parts (heading and paragraphs)
-    """
-    section_parts = [(f"## {heading}\n\n", None)]
-    
-    # Create context for this section
-    section_context = {
-        'section': heading.lower(),
-        'concepts': set(),
-        'terms': set()
-    }
-    
-    # Generate paragraphs for this section
-    for i in range(num_paragraphs):
-        # Update context with concepts and terms from previous paragraphs
-        paragraph_text, paragraph_concepts, paragraph_terms = generate_paragraph(
-            "general", random.randint(2, 4), 
-            note_system=note_system, context=section_context
-        )
-        
-        # Update section context with new concepts and terms
-        section_context['concepts'].update(paragraph_concepts)
-        section_context['terms'].update(paragraph_terms)
-        
-        # Add paragraph to section
-        section_parts.append((paragraph_text, None))
-        section_parts.append(("\n\n", None))
-    
-    return section_parts

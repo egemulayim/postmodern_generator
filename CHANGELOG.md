@@ -5,6 +5,62 @@ All notable changes to The Postmodern Generator project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+Entries are ordered by release date. Historical pre-`0.1.6` version tags are preserved as originally written, even where their numbering does not increase monotonically.
+
+## [Unreleased]
+
+## [0.2.0] - 2026-04-02
+
+### Added
+- **Data Contract Validation**: Added `scripts/validate_data.py` plus unittest coverage to enforce the canonical theme schema and corpus membership requirements.
+- **Canonical Theme Metadata**: Normalized all 16 themes to a single schema with `core_philosophers`, `key_concepts`, `relevant_terms`, `context_phrases`, `academic_sub_fields`, and `title_context_labels`.
+- **Theme-Core Quote Coverage**: Added quote support for the current active theme-core philosophers so the validator baseline no longer depends on quote warnings.
+- **Scriptable Export Filename Support**: Added `--output <filename>` for non-interactive Markdown export workflows.
+- **Explicit Hybrid Lexicon Contract**: Added `hybrid_concept_terms` as an explicit root-level contract for theory-bearing items that are allowed to function as both concepts and terms.
+- **Theme-Core Movement Coverage**: Added canonical `philosophical_movements` coverage for every current theme-core philosopher.
+- **Theme-Core Citation Coverage**: Added canonical `citation_relationships` coverage for every current theme-core philosopher.
+- **Seeded Surface Regression Fixtures**: Added `scripts/capture_surface_regressions.py`, `tests/fixtures/theme_surface_regressions.json`, and `tests/test_generation_regression.py` to preserve representative seeded title/keyword baselines plus qualitative first-section retention checks for historically noisy themes.
+
+### Changed
+- **Theme Corpus Alignment**: Reconciled theme philosophers, concepts, and terms against the master pools and expanded the corpus where needed to support the active themes, including restoration of figures such as `Simone de Beauvoir`, `Sherry Turkle`, `Sheila Jasanoff`, `John Law`, `Andrew Pickering`, `Marshall McLuhan`, `Walter Benjamin`, `Max Horkheimer`, `Jack Halberstam`, `José Esteban Muñoz`, and `Jane Bennett`.
+- **Lexical Role Curation**: Curated the concept/term boundary so `concepts` act as argumentative anchors, `terms` act as discursive field vocabulary, and theme-local concept/term duplication is removed.
+- **Movement Taxonomy Normalization**: Removed dead non-canonical movement entries, merged duplicate movement buckets, and broadened movement labels where the previous bucket names no longer fit the active philosopher set.
+- **Citation Graph Normalization**: Rebuilt `citation_relationships` into a canonical, theme-oriented philosopher graph and removed legacy aliases, duplicate targets, and sparse theme-core gaps.
+- **Selective Notes Policy**: Reworked note generation so repeated references reuse existing notes, per-paragraph note creation is limited, and quote citations stay parenthetical.
+- **Heading Generation**: Section titles now use short title-safe theme labels rather than raw long-form context phrases, with retries and length guardrails.
+- **Theme Locking**: Abstracts, introductions, and first body paragraphs now prefer theme-local concepts and terms before falling back to global pools.
+- **Theme-Surface Containment**: Titles, abstract keywords, introduction sentences, and opening body paragraphs now draw from theme-local concepts, terms, philosophers, and title-context labels before broader corpus fallback.
+- **Targeted Corpus Curation**: Narrowed STS, speculative realism, media-theory, and psychoanalytic inventories and pruned over-broad bridge-philosopher mappings to reduce adjacent-theme bleed in seeded outputs.
+- **Residual Drift Cleanup**: Narrowed `Power and Knowledge` and `Digital Subjectivity` concept anchors so seeded titles stop over-defaulting to `decoloniality` and `cyborg`.
+- **Surface-Local Fallback Tightening**: First-section quote fallback, paragraph-level companion concept/term selection, title-theme philosopher overrides, and abstract keyword selection now stay inside the active theme more aggressively before broader fallback is allowed.
+- **Theme-Aware Reference Locality**: Fabricated references now resolve canonical key works correctly, reuse exact existing bibliography entries when author/title pairs recur, and keep generic paragraph-level citations closer to the active theme.
+- **Broader Seeded Review Loop**: Wider post-stabilization seeded review now drives follow-up corpus and locality tuning for the noisiest themes instead of relying on isolated spot checks.
+- **Later-Section Reference Locality**: Sentence-level contextual references now rebind detached non-theme authors back to the active theme when they are not actually present in the local paragraph context.
+- **Sentence-Layer Cleanup**: `sentence.py` now centralizes active-theme and contextual philosopher selection in small helper utilities, reducing duplicated fallback logic without changing the public generator contract.
+- **CLI Behavior**: Any CLI invocation now runs non-interactively; `--export` auto-generates a filename when `--output` is not provided.
+- **CLI Surface Organization**: `--list-themes` now exposes valid themes directly, parser help and interactive help use the same CLI contract, and invalid theme/output combinations now fail with explicit user-facing guidance.
+- **Documentation Baseline**: Refreshed `README.MD` and `CHANGELOG.md` so they describe the stabilized no-warning validation baseline rather than the earlier recovery-state implementation.
+
+### Fixed
+- **Progressive Repetition Control**: Replaced set-based pseudo-frequency decay with real usage counters in the coherence layer.
+- **Theme Schema Drift**: Removed legacy alternate theme keys from runtime data and normalized `academic_sub_fields`.
+- **Academic Vocabulary Contract**: Resolved the `academic_vocab` schema mismatch by treating it consistently as a flat lexical pool (`list[str]`) in the loader, validator, and tests.
+- **Concept/Term Validation Contract**: Validation now enforces that root-level concept/term overlap exists only through `hybrid_concept_terms`, and that each theme keeps `key_concepts` and `relevant_terms` locally disjoint.
+- **Movement Selection Logic**: Related-philosopher selection now aggregates candidates across all shared movement memberships instead of stopping at the first matching movement bucket.
+- **Movement Validation Contract**: Validation now requires canonical philosopher names inside `philosophical_movements`, rejects near-duplicate bucket labels, and ensures every current theme-core philosopher has movement coverage.
+- **Citation Selection Logic**: Related-philosopher selection now prefers direct outgoing and reverse incoming citation links before falling back to movement proximity.
+- **Surface Retention Coverage**: Smoke tests now verify theme-local retention in titles, abstract keywords, introductions, and first body sections for historically noisy themes.
+- **Citation Validation Contract**: Validation now requires canonical `citation_relationships`, rejects self-links and duplicate targets, and ensures every current theme-core philosopher has citation coverage.
+- **Export Prompting**: `--export` no longer triggers filename prompts, and `--no-export` no longer falls back into interactive setup.
+- **CLI Validation Contract**: `--output` is now validated as a filename-only argument inside `essays/`, and it is rejected when combined with `--no-export`.
+- **Validation Baseline**: `python3 scripts/validate_data.py` now passes cleanly on the current dataset without warnings.
+- **Regression Refresh Workflow**: `python3 scripts/capture_surface_regressions.py` now works directly from the repo root and refreshes the seeded regression fixture in the format expected by the regression test.
+- **Key-Work Lookup In Notes**: `NoteSystem.get_enhanced_citation(...)` now looks up curated key works under canonical philosopher names instead of missing them behind MLA-formatted display names.
+- **Theme-Local Bibliography Drift**: Follow-up locality tuning reduced detached outsider authors in later fabricated references for noisy themes such as psychoanalysis, STS, identity/subjectivity, and speculative realism.
+
+### Removed
+- **Legacy Citation Helper Module**: Deleted the unused `citation_utils.py` path and the unused `generate_section()` helper in `paragraph.py`.
+
 ## [0.1.6] - 2025-06-04
 
 ### Fixed
