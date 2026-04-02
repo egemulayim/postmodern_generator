@@ -122,23 +122,55 @@ Version `0.2.0` is a substantial stabilization and corpus-reconciliation release
 <details>
 <summary><strong>Click to expand previous version history</strong></summary>
 
+### **v0.1.6 - Introduction and Notes Overhaul**
+
+Version 0.1.6 focused on fixing the missing introduction content and dramatically expanding the quality and variety of generated notes.
+
+### **Fixed**
+- **Empty Introduction Section**: Resolved the critical issue where the Introduction section appeared with a header but no content. Added proper introduction paragraph generation with thematic context and relevant philosophers, ensuring substantial content.
+- **Essay Structure Completeness**: The introduction now properly follows the abstract and precedes the body sections, with coherent thematic development that connects to the overall essay themes.
+
+### **Enhanced**
+- **Notes Section Variety**: Dramatically expanded note template diversity to eliminate repetitive and generic commentary, increasing from a handful of basic categories to a much broader set of academic commentary modes.
+- **Enhanced Template Selection**: Improved the note-template selection logic to avoid repetition of recently used categories and templates.
+- **Template Tracking System**: Added stronger tracking of recently used note templates and formatted commentaries to maximize variety across generated notes.
+
+### **Technical Implementation**
+- **Introduction Generation**: Added complete introduction section generation in `essay.py` with proper paragraph structure, sentence-count management, and thematic coherence.
+- **Note Template Architecture**: Expanded the note-template system in `notes.py` into a much larger and more diverse library.
+- **Variety Tracking**: Enhanced note-system tracking so recently used note categories, note templates, and formatted commentaries are reused less aggressively.
+- **Context-Aware Selection**: Introduction generation now passes title themes, relevant philosophers, and section-positioning context correctly.
+
+### **Quality Improvements**
+- **Essay Completeness**: All essay sections now generate proper content, including abstract, introduction, body sections, conclusion, notes, and works cited.
+- **Note Authenticity**: Notes now read more like genuine academic commentary instead of generic filler.
+- **Thematic Consistency**: The introduction now establishes the essay’s themes more clearly and connects back to the title elements.
+
 ### **v0.1.5 - Code Quality and Maintenance**
 
-Version 0.1.5 focused on comprehensive code quality improvements and maintainability enhancements:
+Version 0.1.5 focused on comprehensive code quality improvements and maintainability enhancements.
 
-### **Code Quality and Maintenance**
-- **Duplicate Function Elimination**: Removed redundant `_select_theme()` function in `main.py`, replacing it with a streamlined `_select_theme_simple()` wrapper while preserving all functionality and improving code organization
-- **Legacy Code Cleanup**: Removed commented-out legacy code in `sentence.py` and `coherence.py` that was previously overriding proper imports from `json_data_provider`
-- **Debug Code Removal**: Cleaned up commented debug print statements in `json_data_provider.py` for cleaner production code
-- **Import Consistency**: Ensured all modules properly use centralized imports from `json_data_provider.py` without local overrides
-- **Function Organization**: Streamlined theme selection logic with clear separation between interactive navigation and programmatic selection
+### **Fixed**
+- **Code Quality Improvements**: Comprehensive code review and cleanup to eliminate redundancies and improve maintainability.
+- **Duplicate Function Removal**: Removed duplicate `_select_theme()` function in `main.py`, replacing it with a simplified `_select_theme_simple()` wrapper that preserves functionality while improving code organization.
+- **Legacy Code Cleanup**: Removed commented-out legacy code in `sentence.py` and `coherence.py` that was previously overriding proper imports from `json_data_provider.py`.
+- **Debug Code Removal**: Cleaned up commented debug print statements in `json_data_provider.py` for cleaner production code.
 
-### **Technical Validation**
-- **Compilation Verification**: All core modules now compile cleanly without warnings or errors
-- **Citation System Integrity**: Verified that `citation_relationships` and `philosophical_movements` are properly imported from data provider
-- **Data Loading Robustness**: Maintained all error handling and fallback mechanisms
-- **Functionality Testing**: Confirmed all essay generation features work correctly after cleanup (16 themes, 91 philosophers, 97 concepts)
-- **CLI Compatibility**: Tested all command-line arguments and interactive features maintain full functionality
+### **Enhanced**
+- **Function Organization**: Streamlined theme selection logic in `main.py` with clear separation between interactive navigation and simple programmatic selection.
+- **Import Consistency**: Ensured all modules properly use centralized imports from `json_data_provider.py` without local overrides.
+- **Code Documentation**: Improved inline documentation and removed outdated comments.
+
+### **Technical Details**
+- **Main.py Optimization**: Eliminated redundant theme-selection functions while preserving full CLI functionality and interactive navigation.
+- **Citation System Integrity**: Verified that `citation_relationships` and `philosophical_movements` are properly imported from the data provider rather than using empty local dictionaries.
+- **Data Loading Robustness**: Maintained all error handling and fallback mechanisms in the data-loading system.
+- **Compilation Verification**: All core modules now compile cleanly without warnings or errors.
+
+### **Validation**
+- **Functionality Testing**: Verified that all essay-generation features work correctly after code cleanup.
+- **Data Integrity**: Confirmed that thematic clusters, philosophers, and concepts load properly.
+- **CLI Compatibility**: Tested all command-line arguments and interactive features to ensure they maintain full functionality.
 
 ### **Previous Changes (v0.1.4)**
 
@@ -530,7 +562,6 @@ Contributions to The Postmodern Generator project are welcome! To contribute, fo
 
 ## Known Issues
 
-- **Fictional Citation Output**: Citations are intentionally parody-oriented and should not be treated as factual bibliography.
 - **Movement Taxonomy Curation**: Coverage is now complete for theme-core philosophers, but the movement buckets remain a rhetorical proximity map rather than a final scholarly taxonomy and will need periodic curation as the corpus grows.
 - **Hybrid Lexical Judgment**: The concept/term boundary is now explicit, but the exact contents of `hybrid_concept_terms` will still need periodic curation as the corpus evolves.
 - **Broad Historical README**: This document is accurate at the feature and workflow level, but it is still a broad historical overview rather than a narrowly scoped operator manual.
